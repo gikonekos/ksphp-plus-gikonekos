@@ -96,7 +96,7 @@ function ksphp_install_list_files(string $base): array {
 	return $result;
 }
 
-function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $install_dir): array {
+function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backup_root): array {
 	$log = array();
 	$files = ksphp_install_list_files($newbbs_dir);
 
@@ -108,7 +108,7 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $insta
 	$date = gmdate('Y-m-d');
 	$n = 1;
 	do {
-		$backup_dir = $install_dir . '/backup/' . $date . '-' . str_pad((string) $n, 2, '0', STR_PAD_LEFT);
+		$backup_dir = $backup_root . '/' . $date . '-' . str_pad((string) $n, 2, '0', STR_PAD_LEFT);
 		$n++;
 	} while (file_exists($backup_dir));
 
@@ -125,7 +125,7 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $insta
 			$log[] = array('ok' => false, 'text' => 'バックアップ先フォルダを作成できませんでした。導入を中止します。');
 			return $log;
 		}
-		$log[] = array('ok' => true, 'text' => "バックアップ先: install/backup/" . basename($backup_dir));
+		$log[] = array('ok' => true, 'text' => "バックアップ先: {$backup_dir}");
 	}
 
 	foreach ($files as $rel) {
@@ -169,10 +169,48 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $insta
 	return $log;
 }
 
+function ksphp_install_find_candidates(string $parent_dir, string $grandparent_dir): array {
+	$candidates = array();
+
+	$primary = $parent_dir . '/bbs.php';
+	if (file_exists($primary)) {
+		$candidates[] = $primary;
+	}
+
+	if (is_dir($grandparent_dir)) {
+		$sibling_bbs = $grandparent_dir . '/bbs.php';
+		if (file_exists($sibling_bbs) && !in_array($sibling_bbs, $candidates, true)) {
+			$candidates[] = $sibling_bbs;
+		}
+		$entries = @scandir($grandparent_dir);
+		if ($entries !== false) {
+			foreach ($entries as $entry) {
+				if ($entry === '.' || $entry === '..') {
+					continue;
+				}
+				$maybe = $grandparent_dir . '/' . $entry . '/bbs.php';
+				if (is_dir($grandparent_dir . '/' . $entry) && file_exists($maybe) && !in_array($maybe, $candidates, true)) {
+					$candidates[] = $maybe;
+				}
+			}
+		}
+	}
+
+	return $candidates;
+}
+
 if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 	header('Content-Type: application/json; charset=UTF-8');
+	$targets = ksphp_install_find_candidates($parent_dir, $grandparent_dir);
+	$idx = (int) ($_GET['target'] ?? -1);
+	if (!isset($targets[$idx])) {
+		echo json_encode(array('log' => array(array('ok' => false, 'text' => '対象が見つかりません（一覧が変わった可能性があります。ページを再読み込みしてください）。'))), JSON_UNESCAPED_UNICODE);
+		exit;
+	}
+	$target_dir = dirname($targets[$idx]);
+	$backup_root = $install_dir . '/backup/target' . $idx;
 	echo json_encode(
-		array('log' => ksphp_install_run($newbbs_dir, $parent_dir, $install_dir)),
+		array('log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root)),
 		JSON_UNESCAPED_UNICODE
 	);
 	exit;
@@ -180,10 +218,13 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 
 if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'status') {
 	header('Content-Type: application/json; charset=UTF-8');
-	$w_root = ksphp_install_check_writable($parent_dir);
-	$w_data = ksphp_install_check_writable($parent_dir . '/data');
-	$w_logs = ksphp_install_check_writable($parent_dir . '/logs');
-	$marker = $parent_dir . '/data/.migrated';
+	$targets = ksphp_install_find_candidates($parent_dir, $grandparent_dir);
+	$idx = (int) ($_GET['target'] ?? 0);
+	$target_dir = isset($targets[$idx]) ? dirname($targets[$idx]) : $parent_dir;
+	$w_root = ksphp_install_check_writable($target_dir);
+	$w_data = ksphp_install_check_writable($target_dir . '/data');
+	$w_logs = ksphp_install_check_writable($target_dir . '/logs');
+	$marker = $target_dir . '/data/.migrated';
 	echo json_encode(array(
 		'write_root' => $w_root,
 		'write_data' => $w_data,
@@ -193,31 +234,7 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'status') {
 	exit;
 }
 
-$candidates = array();
-
-$primary = $parent_dir . '/bbs.php';
-if (file_exists($primary)) {
-	$candidates[] = $primary;
-}
-
-if (is_dir($grandparent_dir)) {
-	$sibling_bbs = $grandparent_dir . '/bbs.php';
-	if (file_exists($sibling_bbs) && !in_array($sibling_bbs, $candidates, true)) {
-		$candidates[] = $sibling_bbs;
-	}
-	$entries = @scandir($grandparent_dir);
-	if ($entries !== false) {
-		foreach ($entries as $entry) {
-			if ($entry === '.' || $entry === '..') {
-				continue;
-			}
-			$maybe = $grandparent_dir . '/' . $entry . '/bbs.php';
-			if (is_dir($grandparent_dir . '/' . $entry) && file_exists($maybe) && !in_array($maybe, $candidates, true)) {
-				$candidates[] = $maybe;
-			}
-		}
-	}
-}
+$candidates = ksphp_install_find_candidates($parent_dir, $grandparent_dir);
 
 $newbbs_files = ksphp_install_list_files($newbbs_dir);
 
@@ -275,10 +292,15 @@ function h(string $s): string {
 <?php if (empty($candidates)): ?>
 	<p>近隣にbbs.phpが見つかりませんでした。まだ導入されていない可能性があります（下の「セットアップを実行する」から導入できます）。</p>
 <?php else: ?>
+	<p>
+		<button type="button" id="select-all-btn">全選択</button>
+		<button type="button" id="deselect-all-btn">全解除</button>
+	</p>
 	<table>
-	<tr><th>パス</th><th>VERSION</th><th>最終更新</th><th>判定</th></tr>
+	<tr><th>導入</th><th>パス</th><th>VERSION</th><th>最終更新</th><th>判定</th></tr>
 	<?php foreach ($candidates as $i => $path): $pair = ksphp_install_check_pair($path); ?>
 		<tr>
+			<td><input type="checkbox" class="target-checkbox" data-index="<?php echo (int) $i; ?>" <?php echo $i === 0 ? 'checked' : ''; ?>></td>
 			<td><?php echo h($path); ?><?php echo $i === 0 ? '　←このinstall.phpに対応する導入先' : ''; ?></td>
 			<td><?php echo h(ksphp_install_extract_version($path) ?? '(検出できず)'); ?></td>
 			<td><?php echo h(date('Y-m-d H:i', filemtime($path))); ?></td>
@@ -287,7 +309,7 @@ function h(string $s): string {
 	<?php endforeach; ?>
 	</table>
 	<?php if (count($candidates) > 1): ?>
-		<p class="ng">複数のbbs.phpが近隣に見つかりました。アクセスするURLを間違えないよう注意してください。</p>
+		<p class="ng">複数のbbs.phpが近隣に見つかりました。チェックボックスで導入先を選び、複数選択も可能です。</p>
 	<?php endif; ?>
 <?php endif; ?>
 
@@ -298,7 +320,7 @@ function h(string $s): string {
 	<p><?php echo h(implode('、', array_slice($newbbs_files, 0, 8))); ?><?php echo count($newbbs_files) > 8 ? ' 他' . (count($newbbs_files) - 8) . '件' : ''; ?></p>
 <?php endif; ?>
 
-<h2 id="h-write">3. 書き込み権限</h2>
+<h2 id="h-write">3. 書き込み権限（主対象：<?php echo h($parent_dir); ?> のみ表示）</h2>
 <table id="write-table">
 <tr><th>場所</th><th>状態</th><th>備考</th></tr>
 <tr><td>サイトルート</td><td class="<?php echo $write_root['ok'] ? 'ok' : 'ng'; ?>" data-key="write_root_state"><?php echo $write_root['ok'] ? 'OK' : 'NG'; ?></td><td data-key="write_root_note"><?php echo h($write_root['note']); ?></td></tr>
@@ -324,7 +346,7 @@ function h(string $s): string {
 <?php endif; ?>
 
 <h2>6. セットアップの実行</h2>
-<p>install/newbbs/ の内容をサイトルートへ導入します。上書きされる既存ファイルはすべて事前に <code>install/backup/</code> へバックアップされます。</p>
+<p>install/newbbs/ の内容を、上でチェックした導入先へ順番に導入します。上書きされる既存ファイルはすべて事前に、それぞれの導入先ごとの <code>install/backup/targetN/</code> へバックアップされます。</p>
 <button id="run-setup-btn">セットアップを実行する</button>
 <ul id="setup-log"></ul>
 
@@ -332,74 +354,96 @@ function h(string $s): string {
 <p>診断部分はコードやデータを変更しません（書き込みテスト用の一時ファイルは即座に削除しています）。セットアップ実行時のみ、上記の通りバックアップの上でファイルをコピーします。</p>
 
 <script>
+document.getElementById('select-all-btn') && document.getElementById('select-all-btn').addEventListener('click', function () {
+	document.querySelectorAll('.target-checkbox').forEach(function (cb) { cb.checked = true; });
+});
+document.getElementById('deselect-all-btn') && document.getElementById('deselect-all-btn').addEventListener('click', function () {
+	document.querySelectorAll('.target-checkbox').forEach(function (cb) { cb.checked = false; });
+});
+
 document.getElementById('run-setup-btn').addEventListener('click', function () {
 	var btn = this;
 	var logList = document.getElementById('setup-log');
-	btn.disabled = true;
-	btn.textContent = '実行中…';
+	var indices = Array.prototype.slice.call(document.querySelectorAll('.target-checkbox:checked'))
+		.map(function (cb) { return cb.getAttribute('data-index'); });
+
 	logList.innerHTML = '';
 
-	fetch('?ajax=1&action=run_setup')
-		.then(function (res) { return res.json(); })
-		.then(function (data) {
-			var lines = data.log || [];
-			var i = 0;
-			function showNext() {
-				if (i >= lines.length) {
-					btn.textContent = '完了しました';
-					refreshStatus();
-					var linkLi = document.createElement('li');
-					linkLi.innerHTML = '<a href="../bbs.php" target="_blank">→ bbs.php を開く</a>';
-					logList.appendChild(linkLi);
-					return;
+	if (indices.length === 0) {
+		var noneLi = document.createElement('li');
+		noneLi.className = 'ng';
+		noneLi.textContent = '導入先が選択されていません。チェックボックスで1つ以上選んでください。';
+		logList.appendChild(noneLi);
+		return;
+	}
+
+	btn.disabled = true;
+	btn.textContent = '実行中…';
+
+	var targetIdx = 0;
+	function runNextTarget() {
+		if (targetIdx >= indices.length) {
+			btn.textContent = '完了しました';
+			var doneLi = document.createElement('li');
+			doneLi.textContent = 'すべての導入先の処理が終わりました。最新の状態を見るにはページを再読み込みしてください。';
+			logList.appendChild(doneLi);
+			return;
+		}
+		var idx = indices[targetIdx];
+		var header = document.createElement('li');
+		header.innerHTML = '<strong>--- 導入先 #' + idx + ' ---</strong>';
+		logList.appendChild(header);
+
+		fetch('?ajax=1&action=run_setup&target=' + encodeURIComponent(idx))
+			.then(function (res) { return res.json(); })
+			.then(function (data) {
+				var lines = data.log || [];
+				var i = 0;
+				function showNext() {
+					if (i >= lines.length) {
+						var linkLi = document.createElement('li');
+						linkLi.innerHTML = '<a href="?ajax=0" data-bbs-index="' + idx + '" class="bbs-link" target="_blank">→ この導入先のbbs.phpを開く</a>';
+						logList.appendChild(linkLi);
+						targetIdx++;
+						runNextTarget();
+						return;
+					}
+					var li = document.createElement('li');
+					li.className = lines[i].ok ? 'ok' : 'ng';
+					li.textContent = lines[i].text;
+					logList.appendChild(li);
+					i++;
+					setTimeout(showNext, 60);
 				}
+				showNext();
+			})
+			.catch(function () {
 				var li = document.createElement('li');
-				li.className = lines[i].ok ? 'ok' : 'ng';
-				li.textContent = lines[i].text;
+				li.className = 'ng';
+				li.textContent = '導入先 #' + idx + ' で通信エラーが発生しました。';
 				logList.appendChild(li);
-				i++;
-				setTimeout(showNext, 80);
-			}
-			showNext();
-		})
-		.catch(function () {
-			var li = document.createElement('li');
-			li.className = 'ng';
-			li.textContent = '通信エラーが発生しました。ページを再読み込みしてもう一度お試しください。';
-			logList.appendChild(li);
-			btn.disabled = false;
-			btn.textContent = 'セットアップを実行する';
-		});
+				targetIdx++;
+				runNextTarget();
+			});
+	}
+	runNextTarget();
 });
 
-function refreshStatus() {
-	fetch('?ajax=1&action=status')
-		.then(function (res) { return res.json(); })
-		.then(function (data) {
-			setCell('write_root_state', data.write_root.ok ? 'OK' : 'NG', data.write_root.ok);
-			setCell('write_root_note', data.write_root.note, null);
-			setCell('write_data_state', data.write_data.ok ? 'OK' : 'NG', data.write_data.ok);
-			setCell('write_data_note', data.write_data.note, null);
-			setCell('write_logs_state', data.write_logs.ok ? 'OK' : 'NG', data.write_logs.ok);
-			setCell('write_logs_note', data.write_logs.note, null);
-
-			var migrateEl = document.getElementById('migrate-status');
-			if (data.migrated) {
-				migrateEl.innerHTML = '<span class="ok">移行済みです（' + data.migrated + '）。</span>';
-			} else {
-				migrateEl.textContent = 'まだ移行されていません。';
-			}
-		});
-}
-
-function setCell(key, text, okOrNull) {
-	var el = document.querySelector('[data-key="' + key + '"]');
-	if (!el) { return; }
-	el.textContent = text;
-	if (okOrNull !== null) {
-		el.className = okOrNull ? 'ok' : 'ng';
+// 「この導入先のbbs.phpを開く」リンクは、対応するテーブル行のパスから
+// 実際のURLを組み立てられないため（ファイルシステムパスのみ保持）、
+// 導入先#0（このinstall.phpに対応する場所）のみ ../bbs.php で開けるように
+// しておく。それ以外の導入先はパスをコピーしてご確認ください。
+document.addEventListener('click', function (e) {
+	if (e.target.classList && e.target.classList.contains('bbs-link')) {
+		var idx = e.target.getAttribute('data-bbs-index');
+		if (idx === '0') {
+			e.target.href = '../bbs.php';
+		} else {
+			e.preventDefault();
+			alert('導入先#' + idx + ' は、このinstall.phpの近隣スキャンで見つかった別のフォルダです。ブラウザで直接URLを開くには、そのフォルダのURLを手動で確認してください。');
+		}
 	}
-}
+});
 </script>
 </body>
 </html>
