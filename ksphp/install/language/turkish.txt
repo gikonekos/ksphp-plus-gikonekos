@@ -1,0 +1,137 @@
+# install.php language file (Turkish / Türkçe)
+# Format: KEY=value (no spaces around "=")
+# Lines starting with "#" or ";" are comments. Empty lines are ignored.
+# Encoding: UTF-8 (no BOM)
+# %s is a placeholder substituted by PHP's sprintf(); {NAME} is a
+# placeholder substituted by simple string replacement on the JS side
+# (keep the placeholder spelling as-is).
+
+WRITABLE_DIR_CREATE_FAIL=Dizin oluşturulamadı (üst dizinin yazma iznini kontrol edin).
+WRITABLE_OK=Yazılabilir.
+WRITABLE_NG=Yazılamıyor (izinleri kontrol edin).
+WRITABLE_TEST_DIR_CREATED= (bu dizin bu kontrol için yeni oluşturuldu)
+VERDICT_KSPHP_PLUS=Muhtemelen KSPHP Plus ailesi (conf.php ve migrate.php onaylandı; bu araçla uyumlu olma olasılığı yüksek)
+VERDICT_OLD_KSPHP_PLUS=conf.php mevcut ama migrate.php eksik (birçok ayırt edici anahtar eşleşti; muhtemelen eski bir KSPHP Plus sürümü. Bu araç tarafından desteklenmiyor)
+VERDICT_UNRELATED_CONF=conf.php adlı bir dosya var, ancak ayırt edici yapılandırma anahtarlarının neredeyse hiçbiri eşleşmiyor. Muhtemelen ilgisiz bir kurulum; yüklemeden önce içeriği görsel olarak kontrol edin.
+VERDICT_UNRELATED_NO_CONF=conf.php bulunamadı; muhtemelen başka bir kaynaktan gelen ilgisiz bir bbs.php
+MERGE_TEMPLATE_READ_FAIL=newbbs/conf.php okunamadı.
+MERGE_KEY_PARSE_FAIL=conf.php: %s eski ayarlardan ayrıştırılamadı, bu yüzden yeni sürümün varsayılan değeri kullanıldı (lütfen gözden geçirin).
+MERGE_KEY_KEPT=conf.php: %s mevcut değerini korudu.
+MERGE_KEY_INHERITED_LEGACY=conf.php: %s değerini eski %s ayarından devraldı.
+MERGE_KEY_ADDED_NEW=conf.php: %s yeni sürümde eklenen yeni bir öğe olarak eklendi.
+MERGE_KEY_DROPPED=conf.php: %s yeni sürümde mevcut değil, bu yüzden aktarılmadı.
+MERGE_KEY_PATH_MANUAL_REQUIRED=conf.php: %s yeni bir yol ayarı öğesi olduğundan boş olarak eklendi. Kurulumdan sonra manuel olarak ayarlayın.
+PATH_KEY_MANUAL_NOTE=Manuel ayar gerekli: bu yol otomatik olarak ayarlanmaz. Kurulumdan sonra kendiniz belirtin.
+INSTALL_NO_FILES=install/newbbs/ altında dosya bulunamadı. Yüklenecek bir şey yok.
+INSTALL_ENTRY_RENAMED=Ana dosya %s olarak algılandı, bu yüzden bbs.php yerine %s olarak yüklenecek.
+INSTALL_BACKUP_DIR_FAIL=Yedek hedef klasörü oluşturulamadı. Kurulum iptal edildi.
+INSTALL_BACKUP_DIR=Yedek hedefi: %s
+INSTALL_SKIP_BACKUP_FAIL=Atlandı: %s (mevcut dosya yedeklemeye taşınamadığı için üzerine yazılmadı)
+INSTALL_CONF_MERGED=Yüklendi: %s (mevcut ayarlar korunarak birleştirildi)
+INSTALL_CONF_WRITE_FAIL=Başarısız: %s (birleştirme sonucu yazılamadı. İzinleri kontrol edin)
+INSTALL_COPIED=Yüklendi: %s
+INSTALL_COPY_FAIL=Başarısız: %s (kopyalanamadı. İzinleri kontrol edin)
+INSTALL_MIGRATE_DONE=Migration Engine çalıştırıldı (eski düzendeki veriler varsa data/ ve logs/ dizinlerine taşındı).
+INSTALL_DONE=Kurulum tamamlandı.
+ADMIN_MIGRATION_LABEL=Mevcut bir yönetici parolası algılandı. Taşıma işlemi için önce eski parola ile kimlik doğrulama gerekiyor.
+ADMIN_MIGRATION_OLD_LABEL=Eski parola (doğrulama için)
+ADMIN_MIGRATION_NEW_LABEL=Yeni parola
+ADMIN_MIGRATION_NOTE=Bu sitede zaten ADMINPOST yapılandırılmış. RC8'den itibaren yönetici parolası conf.php dışında (local.php'de) yönetilmektedir, bu yüzden eski parola doğrulandıktan sonra yeni parolaya taşınacaktır. Yönetici modu anahtar kelimesi (ADMINKEY) otomatik olarak devralınacaktır.
+ADMIN_MIGRATION_REQUIRED=Yönetici parolası taşıma işlemi gerekli, ancak yeni parola girilmediği için bu hedefin işlenmesi iptal edildi.
+ADMIN_MIGRATION_AUTH_FAIL=Eski parola doğrulaması başarısız oldu, hesap ele geçirme girişimlerini önlemek için bu hedef için tüm işlem (dosya yüklemesi dahil) iptal edildi. Eski parolayı unuttuysanız, conf.php'deki ADMINPOST değerini manuel olarak boşaltarak _setup.php üzerinden yeni bir parola belirleyebilirsiniz (yeni kurulumla aynı şekilde).
+ADMIN_MIGRATION_DONE=Yönetici parolası local.php'ye taşındı (yönetici modu anahtar kelimesi mevcut ayardan devralındı).
+ADMIN_MIGRATION_WRITE_FAIL=local.php yazılamadı (izinleri kontrol edin). Kurulumun kendisi tamamlandı, ancak şu anda yönetici girişi mümkün değil.
+JS_ADMIN_MIGRATION_EMPTY=Hedef "{LABEL}" yönetici parolası taşıma işlemi gerektiriyor. Lütfen hem eski parolayı hem de yeni parolayı girin.
+ERROR_INVALID_PATH=Belirtilen yol geçersiz (mutlak yollar ve ".." izin verilmiyor).
+ERROR_TARGET_NOT_FOUND=Hedef bulunamadı (liste değişmiş olabilir. Sayfayı yenileyin).
+NOT_SET=(ayarlanmamış)
+PAGE_TITLE=KSPHP Plus Tanılama ve Kurulum Aracı
+LANG_SELECT_LABEL=Dil:
+LABEL_TOOL_LOCATION=Bu aracın konumu: 
+LABEL_INSTALL_TARGET=Kurulum hedefi (site kökü): 
+H2_STEP1=1. bbs.php ana dosyasının algılanması
+NO_CANDIDATES_FOUND=Yakınlarda bbs.php bulunamadı. Henüz kurulmamış olabilir (aşağıdaki "Kurulumu çalıştır" ile kurabilirsiniz).
+BTN_SELECT_ALL=Tümünü seç
+BTN_DESELECT_ALL=Tümünü kaldır
+TABLE_HEADER_INSTALL=Kur
+TABLE_HEADER_PATH=Yol
+TABLE_HEADER_VERSION=SÜRÜM
+TABLE_HEADER_MODIFIED=Son değişiklik
+TABLE_HEADER_VERDICT=Değerlendirme
+CURRENT_INSTALL_MARK=  ← bu install.php'ye karşılık gelen kurulum
+VERSION_UNKNOWN=(algılanamadı)
+MULTIPLE_CANDIDATES_WARN=Yakınlarda birden fazla bbs.php dosyası bulundu. Kurulum hedeflerini seçmek için onay kutularını kullanın; çoklu seçime izin verilir.
+NEW_DIR_INSTRUCTION=Yakınlık taramasının bulamadığı bir konuma (örneğin hiçbir şey kurulmamış tamamen yeni bir klasör) yüklemek istiyorsanız, %s göreceli bir yol girin (örnek: %s).
+NEW_DIR_INPUT_PLACEHOLDER=örn: z/newboard
+BTN_ADD_NEW_DIR=Yeni ekle
+H2_STEP2=2. Yüklenecek dosyalar (install/newbbs/, %d dosya)
+NO_NEWBBS_FILES=install/newbbs/ altında dosya yok.
+FILE_LIST_SEPARATOR=, 
+FILES_LIST_MORE= ve %d tane daha
+H2_STEP3=3. Yazma izinleri (yalnızca ana hedef gösterildi: %s)
+TABLE_HEADER_LOCATION=Konum
+TABLE_HEADER_STATE=Durum
+TABLE_HEADER_NOTE=Not
+LOCATION_SITEROOT=Site kökü
+SITEROOT_NOT_WRITABLE_WARN=Site köküne yazılamıyor. Bu genellikle dosya sahibinin (örn. ubuntu) Apache/PHP çalıştırma kullanıcısından (örn. www-data) farklı olmasından kaynaklanır. doc/permissions.md dosyasına bakın.
+H2_STEP4=4. Migration Engine durumu
+MIGRATE_DONE_LABEL=Taşıma tamamlandı (%s).
+MIGRATE_NOT_DONE=Henüz taşınmadı.
+H2_STEP5=5. conf.php ayar özeti (hedefte zaten mevcutsa)
+H2_STEP6=6. Kurulumu çalıştır
+STEP6_INTRO=install/newbbs/ içeriği yukarıda işaretlenen hedeflere sırayla yüklenecektir. Üzerine yazılacak mevcut dosyalar önce <code>install/backup/targetN/</code> dizinine yedeklenir.
+BTN_RUN_SETUP=Kurulumu çalıştır
+FOOTER_NOTE=Tanılama bölümü hiçbir kodu veya veriyi değiştirmez (yazma testi için kullanılan geçici dosyalar hemen silinir). Dosyalar yalnızca kurulumu çalıştırdığınızda yukarıda açıklanan yedeklemeyle birlikte kopyalanır.
+JS_ALERT_EMPTY_PATH=Lütfen göreli bir yol girin.
+JS_CONFIRM_NEW_DIR="{PATH}" dizinine yüklensin mi?
+
+Bu klasör zaten mevcut dosyalar içeriyorsa yedeklenip birleştirilecektir; aksi takdirde yeni kurulum yapılacaktır.
+(Gerçek kurulum aşağıdaki "Kurulumu çalıştır"a tıkladığınızda gerçekleştirilir.)
+JS_NEW_DIR_TAG=  (yeni eklendi)
+JS_NO_TARGET_SELECTED=Hiçbir hedef seçilmedi.
+JS_NO_CONF_YET=Henüz conf.php yok (yeni kurulumdan önce).
+JS_TARGET_LABEL_FALLBACK=Hedef #{IDX}
+JS_NO_TARGET_SELECTED_RUN=Hiçbir hedef seçilmedi. Bir veya daha fazla onay kutusunu işaretleyin.
+JS_RUNNING=Çalıştırılıyor…
+JS_DONE_WITH_ERRORS_BTN=Tamamlandı (bazı hatalarla)
+JS_DONE_WITH_ERRORS_MSG=Tüm hedefler için işlem tamamlandı, ancak bazı hatalar oluştu (kırmızı ile gösterilir). Günlüğü dikkatlice gözden geçirin. En son durumu görmek için sayfayı yenileyin.
+JS_DONE_BTN=Tamamlandı
+JS_DONE_MSG=Tüm hedefler için işlem tamamlandı. En son durumu görmek için sayfayı yenileyin.
+JS_TARGET_HEADER=Hedef {LABEL}
+JS_COMM_ERROR=Hedef {LABEL} ile iletişim hatası oluştu.
+JS_OPEN_NEW_DIR_ALERT="{PATH}" yeni eklenen bir hedeftir. Doğrudan tarayıcıda açmak için o klasörün URL'sini manuel olarak kontrol edin (ana dosya adı: {ENTRY}).
+JS_OPEN_SCAN_ALERT=Hedef #{IDX}, bu install.php'nin yakınlık taraması ile bulunan başka bir klasördür. URL'sini doğrudan tarayıcıda açmak için o klasörün URL'sini manuel olarak kontrol edin (ana dosya adı: {ENTRY}).
+JS_OPEN_LINK_TEXT=→ Bu hedefteki {ENTRY} dosyasını aç
+INSTALL_UNSAFE_TARGET=Hedef güvensiz olarak değerlendirildiği için iptal edildi (dosya sistemi köküne yakın olabilir veya install klasörünün kendisi olabilir).
+INSTALL_BACKUP_MKDIR_FAIL=Atlandı: %s (yedek klasörü oluşturulamadığı için üzerine yazılmadı)
+INSTALL_ROLLBACK_OK=Daha önce yedeklemeye taşınan orijinal dosya geri yüklendi: %s
+INSTALL_ROLLBACK_FAIL=Orijinal dosyanın geri yüklenmesi de başarısız oldu. Yedekten (%s) manuel olarak geri yükleyin.
+
+# 20260801 Gikoneko: conf.php review screen (install.php)
+H2_CONF_REVIEW=Adım 3.5: conf.php Ayarlarını Gözden Geçir
+CONF_REVIEW_INTRO=Kurulumdan önce, mevcut conf.php dosyanızdan aktarılan ayarları gözden geçirip düzenleyebilirsiniz. Değerler otomatik birleştirme sonucuyla önceden doldurulmuştur.
+CONF_REVIEW_REQUIRED_MARK=Zorunlu alan
+CONF_REVIEW_NEW_KEY_TAG=(yeni)
+CONF_REVIEW_LIST_HINT=Satır başına bir öğe
+CONF_REVIEW_CONFIRM_BTN=Bu ayarlarla kuruluma devam et
+CONF_REVIEW_TOGGLE_LABEL=Kurulumdan önce conf.php gözden geçirme ekranını göster (işareti kaldırırsanız tamamen otomatik birleştirme kullanılır)
+CONF_REVIEW_ERROR_REQUIRED=%s zorunludur ve boş bırakılamaz.
+CONF_REVIEW_ERROR_INVALID_REGEX=%s içindeki %d. satır geçerli bir desen değil.
+CONF_REVIEW_ERROR_NUMERIC=%s bir sayı olmalıdır.
+CONF_REVIEW_ERROR_RADIO=%s için geçersiz bir seçim yapıldı.
+CONF_BOOL_ENABLED=Etkin
+CONF_BOOL_DISABLED=Devre dışı
+CONF_FOLLOWWIN_0=Yeni pencerede aç
+CONF_FOLLOWWIN_1=Aynı ekranda göster
+CONF_OLDLOGFMT_0=HTML biçimi
+CONF_OLDLOGFMT_1=İkili (binary) biçim
+CONF_OLDLOGBTN_0=İzin verilmiyor
+CONF_OLDLOGBTN_1=İzin veriliyor
+CONF_OLDLOGSAVESW_0=Günlük
+CONF_OLDLOGSAVESW_1=Aylık
+CONF_BBSMODE_ADMINONLY_0=Devre dışı
+CONF_BBSMODE_ADMINONLY_1=Yalnızca yönetici yeni gönderi, yanıt yok
+CONF_BBSMODE_ADMINONLY_2=Yalnızca yönetici yeni gönderi, yanıtlara izin var
+CONF_IPREC_0=Kaydetme
+CONF_IPREC_1=Yalnızca anonim proxy'ler
+CONF_IPREC_2=Tümünü kaydet

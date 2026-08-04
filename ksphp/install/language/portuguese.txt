@@ -1,0 +1,137 @@
+# install.php language file (Portuguese / Português)
+# Format: KEY=value (no spaces around "=")
+# Lines starting with "#" or ";" are comments. Empty lines are ignored.
+# Encoding: UTF-8 (no BOM)
+# %s is a placeholder substituted by PHP's sprintf(); {NAME} is a
+# placeholder substituted by simple string replacement on the JS side
+# (keep the placeholder spelling as-is).
+
+WRITABLE_DIR_CREATE_FAIL=Não foi possível criar o próprio diretório (verifique a permissão de escrita no diretório pai).
+WRITABLE_OK=Gravável.
+WRITABLE_NG=Não gravável (verifique as permissões).
+WRITABLE_TEST_DIR_CREATED= (este diretório foi criado agora para esta verificação)
+VERDICT_KSPHP_PLUS=Provavelmente da família KSPHP Plus (conf.php e migrate.php confirmados; provavelmente compatível com esta ferramenta)
+VERDICT_OLD_KSPHP_PLUS=conf.php presente, migrate.php ausente (várias chaves distintivas corresponderam; provavelmente uma versão mais antiga do KSPHP Plus. Não suportada por esta ferramenta)
+VERDICT_UNRELATED_CONF=Existe um arquivo chamado conf.php, mas quase nenhuma das chaves de configuração distintivas corresponde. Provavelmente é uma instalação não relacionada; verifique visualmente o conteúdo antes de instalar.
+VERDICT_UNRELATED_NO_CONF=Nenhum conf.php encontrado; provavelmente um bbs.php não relacionado, de outra linhagem
+MERGE_TEMPLATE_READ_FAIL=Não foi possível ler newbbs/conf.php.
+MERGE_KEY_PARSE_FAIL=conf.php: falha ao analisar %s nas configurações antigas, então o valor padrão da nova versão foi usado (por favor, revise).
+MERGE_KEY_KEPT=conf.php: %s manteve seu valor existente.
+MERGE_KEY_INHERITED_LEGACY=conf.php: %s herdou seu valor do antigo %s.
+MERGE_KEY_ADDED_NEW=conf.php: %s foi adicionado como um novo item introduzido na nova versão.
+MERGE_KEY_DROPPED=conf.php: %s não existe na nova versão, então não foi transferido.
+MERGE_KEY_PATH_MANUAL_REQUIRED=conf.php: %s é uma nova configuração de caminho, então foi adicionada em branco. Defina-a manualmente após a instalação.
+PATH_KEY_MANUAL_NOTE=Configuração manual necessária: este caminho não é definido automaticamente. Especifique-o após a instalação.
+INSTALL_NO_FILES=Nenhum arquivo encontrado em install/newbbs/. Não há nada para instalar.
+INSTALL_ENTRY_RENAMED=O arquivo principal foi detectado como %s, então será instalado como %s em vez de bbs.php.
+INSTALL_BACKUP_DIR_FAIL=Não foi possível criar a pasta de destino do backup. Instalação abortada.
+INSTALL_BACKUP_DIR=Destino do backup: %s
+INSTALL_SKIP_BACKUP_FAIL=Ignorado: %s (não sobrescrito porque falhou mover o arquivo existente para o backup)
+INSTALL_CONF_MERGED=Instalado: %s (mesclado mantendo as configurações existentes)
+INSTALL_CONF_WRITE_FAIL=Falhou: %s (a gravação do resultado mesclado falhou. Verifique as permissões)
+INSTALL_COPIED=Instalado: %s
+INSTALL_COPY_FAIL=Falhou: %s (não foi possível copiar. Verifique as permissões)
+INSTALL_MIGRATE_DONE=Migration Engine executado (quaisquer dados do layout antigo foram migrados para data/ e logs/).
+INSTALL_DONE=Instalação concluída.
+ADMIN_MIGRATION_LABEL=Uma senha de administrador existente foi detectada. A migração requer autenticação com a senha antiga primeiro.
+ADMIN_MIGRATION_OLD_LABEL=Senha antiga (para verificação)
+ADMIN_MIGRATION_NEW_LABEL=Nova senha
+ADMIN_MIGRATION_NOTE=Este site já tem ADMINPOST configurado. A partir do RC8, a senha de administrador é gerenciada fora do conf.php (em local.php), então ela será migrada para uma nova senha após a verificação da antiga. A palavra-chave do modo administrador (ADMINKEY) será transferida automaticamente.
+ADMIN_MIGRATION_REQUIRED=A migração da senha de administrador é necessária, mas nenhuma nova senha foi inserida, então o processamento deste destino foi abortado.
+ADMIN_MIGRATION_AUTH_FAIL=A verificação da senha antiga falhou, então todo o processo para este destino (incluindo a instalação de arquivos) foi abortado para prevenir tentativas de sequestro. Se você esqueceu a senha antiga, pode limpar manualmente o ADMINPOST no conf.php para definir uma nova senha via _setup.php, como em uma instalação nova.
+ADMIN_MIGRATION_DONE=Senha de administrador migrada para local.php (a palavra-chave do modo administrador foi transferida da configuração existente).
+ADMIN_MIGRATION_WRITE_FAIL=Falha ao gravar local.php (verifique as permissões). A instalação em si foi concluída, mas o login de administrador não é possível no momento.
+JS_ADMIN_MIGRATION_EMPTY=O destino "{LABEL}" requer migração da senha de administrador. Insira tanto a senha antiga quanto a nova senha.
+ERROR_INVALID_PATH=O caminho especificado é inválido (caminhos absolutos e ".." não são permitidos).
+ERROR_TARGET_NOT_FOUND=Destino não encontrado (a lista pode ter mudado. Recarregue a página).
+NOT_SET=(não definido)
+PAGE_TITLE=KSPHP Plus — Diagnóstico e Instalador
+LANG_SELECT_LABEL=Idioma:
+LABEL_TOOL_LOCATION=Localização desta ferramenta: 
+LABEL_INSTALL_TARGET=Destino da instalação (raiz do site): 
+H2_STEP1=1. Detectando o arquivo principal bbs.php
+NO_CANDIDATES_FOUND=Nenhum bbs.php foi encontrado nas proximidades. Pode ainda não estar instalado (você pode instalá-lo abaixo com "Executar instalação").
+BTN_SELECT_ALL=Selecionar tudo
+BTN_DESELECT_ALL=Desmarcar tudo
+TABLE_HEADER_INSTALL=Instalar
+TABLE_HEADER_PATH=Caminho
+TABLE_HEADER_VERSION=VERSÃO
+TABLE_HEADER_MODIFIED=Última modificação
+TABLE_HEADER_VERDICT=Avaliação
+CURRENT_INSTALL_MARK=  ← a instalação correspondente a este install.php
+VERSION_UNKNOWN=(não foi possível detectar)
+MULTIPLE_CANDIDATES_WARN=Vários arquivos bbs.php foram encontrados nas proximidades. Use as caixas de seleção para escolher os destinos de instalação; a seleção múltipla é permitida.
+NEW_DIR_INSTRUCTION=Se quiser instalar em um local que a varredura das proximidades não encontrou (por exemplo, uma pasta totalmente nova sem nada instalado), insira um caminho relativo a %s (exemplo: %s).
+NEW_DIR_INPUT_PLACEHOLDER=ex.: z/newboard
+BTN_ADD_NEW_DIR=Adicionar novo
+H2_STEP2=2. Arquivos a instalar (install/newbbs/, %d arquivos)
+NO_NEWBBS_FILES=Não há arquivos em install/newbbs/.
+FILE_LIST_SEPARATOR=, 
+FILES_LIST_MORE= e mais %d
+H2_STEP3=3. Permissões de escrita (mostrando apenas o destino principal: %s)
+TABLE_HEADER_LOCATION=Local
+TABLE_HEADER_STATE=Estado
+TABLE_HEADER_NOTE=Observação
+LOCATION_SITEROOT=Raiz do site
+SITEROOT_NOT_WRITABLE_WARN=Não é possível escrever na raiz do site. Isso geralmente ocorre porque o proprietário do arquivo (ex.: ubuntu) é diferente do usuário de execução do Apache/PHP (ex.: www-data). Consulte doc/permissions.md.
+H2_STEP4=4. Estado do Migration Engine
+MIGRATE_DONE_LABEL=Já migrado (%s).
+MIGRATE_NOT_DONE=Ainda não migrado.
+H2_STEP5=5. Resumo das configurações do conf.php (se já existir um no destino)
+H2_STEP6=6. Executar instalação
+STEP6_INTRO=O conteúdo de install/newbbs/ será instalado, em ordem, nos destinos marcados acima. Quaisquer arquivos existentes que seriam sobrescritos são copiados antes para <code>install/backup/targetN/</code> de cada destino.
+BTN_RUN_SETUP=Executar instalação
+FOOTER_NOTE=A seção de diagnóstico não altera nenhum código ou dado (os arquivos temporários usados para o teste de escrita são excluídos imediatamente). Os arquivos só são copiados, com os backups descritos acima, quando você executa a instalação.
+JS_ALERT_EMPTY_PATH=Insira um caminho relativo.
+JS_CONFIRM_NEW_DIR=Instalar em "{PATH}"?
+
+Se esta pasta já contiver arquivos existentes, eles serão copiados para backup e mesclados; caso contrário, será uma instalação nova.
+(A instalação de fato é executada quando você clica em "Executar instalação" abaixo.)
+JS_NEW_DIR_TAG=  (recém-adicionado)
+JS_NO_TARGET_SELECTED=Nenhum destino está selecionado.
+JS_NO_CONF_YET=Ainda não há conf.php (antes de uma instalação nova).
+JS_TARGET_LABEL_FALLBACK=Destino #{IDX}
+JS_NO_TARGET_SELECTED_RUN=Nenhum destino está selecionado. Marque uma ou mais caixas.
+JS_RUNNING=Executando…
+JS_DONE_WITH_ERRORS_BTN=Concluído (com alguns erros)
+JS_DONE_WITH_ERRORS_MSG=O processamento foi concluído para todos os destinos, mas ocorreram alguns erros (mostrados em vermelho). Revise o log com atenção. Recarregue a página para ver o estado mais recente.
+JS_DONE_BTN=Concluído
+JS_DONE_MSG=O processamento foi concluído para todos os destinos. Recarregue a página para ver o estado mais recente.
+JS_TARGET_HEADER=Destino {LABEL}
+JS_COMM_ERROR=Ocorreu um erro de comunicação com o destino {LABEL}.
+JS_OPEN_NEW_DIR_ALERT="{PATH}" é um destino recém-adicionado. Para abri-lo diretamente no navegador, verifique manualmente a URL dessa pasta (nome do arquivo principal: {ENTRY}).
+JS_OPEN_SCAN_ALERT=O destino #{IDX} é uma pasta diferente encontrada pela varredura das proximidades deste install.php. Para abrir sua URL diretamente no navegador, verifique manualmente a URL dessa pasta (nome do arquivo principal: {ENTRY}).
+JS_OPEN_LINK_TEXT=→ Abrir {ENTRY} neste destino
+INSTALL_UNSAFE_TARGET=Abortado porque o destino foi considerado inseguro (pode estar perto da raiz do sistema de arquivos, ou ser a própria pasta install).
+INSTALL_BACKUP_MKDIR_FAIL=Ignorado: %s (não sobrescrito porque a criação da pasta de backup falhou)
+INSTALL_ROLLBACK_OK=Arquivo original que havia sido movido para o backup foi restaurado: %s
+INSTALL_ROLLBACK_FAIL=A restauração do arquivo original também falhou. Restaure-o manualmente a partir do backup (%s).
+
+# 20260801 Gikoneko: conf.php review screen (install.php)
+H2_CONF_REVIEW=Etapa 3.5: Revisar configurações do conf.php
+CONF_REVIEW_INTRO=Antes de instalar, revise e ajuste as configurações herdadas do conf.php existente. Os valores já vêm preenchidos com o resultado da mesclagem automática.
+CONF_REVIEW_REQUIRED_MARK=Campo obrigatório
+CONF_REVIEW_NEW_KEY_TAG=(novo)
+CONF_REVIEW_LIST_HINT=Um item por linha
+CONF_REVIEW_CONFIRM_BTN=Continuar a instalação com estas configurações
+CONF_REVIEW_TOGGLE_LABEL=Mostrar a tela de revisão do conf.php antes de instalar (desmarque para usar a mesclagem totalmente automática)
+CONF_REVIEW_ERROR_REQUIRED=%s é obrigatório e não pode ficar em branco.
+CONF_REVIEW_ERROR_INVALID_REGEX=A linha %d de %s não é um padrão válido.
+CONF_REVIEW_ERROR_NUMERIC=%s deve ser um número.
+CONF_REVIEW_ERROR_RADIO=%s tem uma seleção inválida.
+CONF_BOOL_ENABLED=Ativado
+CONF_BOOL_DISABLED=Desativado
+CONF_FOLLOWWIN_0=Abrir em uma nova janela
+CONF_FOLLOWWIN_1=Exibir na mesma tela
+CONF_OLDLOGFMT_0=Formato HTML
+CONF_OLDLOGFMT_1=Formato binário
+CONF_OLDLOGBTN_0=Não permitido
+CONF_OLDLOGBTN_1=Permitido
+CONF_OLDLOGSAVESW_0=Diário
+CONF_OLDLOGSAVESW_1=Mensal
+CONF_BBSMODE_ADMINONLY_0=Desativado
+CONF_BBSMODE_ADMINONLY_1=Apenas o admin posta, sem respostas
+CONF_BBSMODE_ADMINONLY_2=Apenas o admin cria tópicos, respostas permitidas
+CONF_IPREC_0=Não registrar
+CONF_IPREC_1=Apenas proxies anônimos
+CONF_IPREC_2=Registrar tudo

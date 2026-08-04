@@ -1,0 +1,350 @@
+# ksphp-plus language file (Traditional Chinese / 繁體中文)
+# Format: KEY=value  (no spaces around "=" -- anything after "=" is taken
+# literally, including leading/trailing spaces, up to end of line)
+# Lines starting with "#" or ";" are comments. Blank lines are ignored.
+# Encoding: UTF-8, no BOM.
+# Placeholders like {MAXNAMELENGTH} are substituted by the script and must
+# be kept as-is (same spelling, including the curly braces).
+
+# Service / access
+BBS_OUT_OF_SERVICE=本佈告欄目前暫停服務。
+ACCESS_PROHIBITED=禁止存取。
+
+# Generic / IO errors
+FAILED_TO_READ_MESSAGE=讀取訊息失敗
+FILE_AUTOCREATED=未找到 %s，已自動新建。
+FAILED_TO_OPEN_LOG=無法開啟記錄檔: %s
+FAILED_TO_OUTPUT_LOG=輸出訊息記錄失敗
+OLDLOG_TOO_LARGE=訊息記錄檔超過檔案大小限制
+PARTICIPANT_FILE_ERROR=參與者檔案輸出錯誤
+
+# Posting / validation
+POSTING_SUSPENDED=本佈告欄的發文功能目前已暫停。
+ADMIN_ONLY_POSTING=僅管理員可在本佈告欄發文。
+ADMIN_POST_DISABLED=已停用透過發文表單的管理員存取。請使用「管理」連結。
+BAD_REFERER=無法從以下網址以外的地方發文
+POST_TOO_WIDE=發文內容的字元數過多。
+POST_TOO_MANY_LINES=發文內容的換行數過多。
+POST_TOO_LARGE=發文內容過大。
+NAME_TOO_LONG=名稱欄的字元數過多。（最多 %s 個字元）
+EMAIL_TOO_LONG=電子郵件欄的字元數過多。（最多 %s 個字元）
+TITLE_TOO_LONG=標題欄的字元數過多。（最多 %s 個字元）
+POST_TOO_FAST=兩次發文的間隔太短。請稍後再試。
+NGWORD_FOUND=發文內容包含禁止詞彙。
+SPAM_KUN=垃圾訊息滾開！！！
+
+# Caller / request
+INVALID_CALLER=無效的呼叫者。
+NO_PARAMETERS=沒有參數。
+INVALID_PASSWORD=密碼不正確。
+
+# Follow / search / reference
+MESSAGE_NOT_FOUND=找不到指定的訊息。
+REFERENCE_NOT_FOUND=找不到參考文章。
+REFERENCE_COLON=參考:
+FOLLOW_UP_POST=回覆文章
+POST_SEARCH=文章搜尋
+
+# Completion / undo
+POST_COMPLETE=發文完成
+DELETION_COMPLETE=刪除完成
+UNDO_POST_NOT_FOUND=找不到對應的文章。
+UNDO_NOT_PERMITTED=不允許刪除對應的文章。
+
+# Main list footer
+POSTS_RANGE_NEWEST_TO_OLDEST=以上顯示的是第 {BINDEX} 至第 {EINDEX} 篇文章，按由新到舊排列。 
+NO_UNREAD_MESSAGES=沒有未讀訊息。 
+NO_POSTS_BELOW=此處以下沒有文章。
+
+# New post page
+NEW_POST=發表新文章
+
+# Labels / tags inserted into messages
+HACKER_TAG= (駭客)
+FRAUDSTER_TAG= (冒充者)
+SELF_REPLY_TAG= (自我回覆)
+
+# Weekdays
+SUNDAY=週日
+MONDAY=週一
+TUESDAY=週二
+WEDNESDAY=週三
+THURSDAY=週四
+FRIDAY=週五
+SATURDAY=週六
+
+# Admin / image upload errors
+NO_PASSWORD_SET=尚未設定密碼。
+FILE_SIZE_OVER_LIMIT=檔案大小超過 %sKB。
+FILE_UPLOAD_FAILED=檔案上傳處理失敗。代碼: %s
+FAILED_TO_LOAD_UPLOAD_ID=載入已上傳的圖片檔案失敗。
+IMAGE_WIDTH_EXCEEDED=圖片寬度超過限制。
+INVALID_FILE_FORMAT=檔案格式不正確。
+DIRECTORY_OPEN_FAILED=無法開啟此目錄。
+TOO_MANY_KEYWORDS=搜尋關鍵字過多。
+
+# Page titles
+TITLE_ADMIN_MENU=管理選單
+TITLE_MESSAGE_DELETE_MODE=訊息刪除模式
+TITLE_PASSWORD_SETTINGS=密碼設定頁面
+TITLE_OLDLOG_SEARCH=訊息記錄搜尋
+TITLE_OLDLOG_SEARCH_RESULTS=訊息記錄搜尋結果
+TITLE_OLDLOG=訊息記錄
+TITLE_TOPIC_LIST=主題列表
+TITLE_OLDLOG_ARCHIVE=訊息記錄封存
+TITLE_TREEVIEW_MAIN=樹狀檢視
+TITLE_ERROR=錯誤
+TITLE_NOTICE=通知
+
+# HTML titles
+TITLE_FOLLOWUP=回覆文章（回應）
+TITLE_SEARCH_BY_USER=依使用者搜尋
+TITLE_THREAD_VIEW=主題檢視
+TITLE_TREE_VIEW=樹狀檢視
+TITLE_DELETE_POST=刪除文章
+
+# Additional UI strings
+URL_REDIRECTION=URL 重新導向
+USER_SETTINGS=使用者設定
+COUNTER_ERROR=計數器錯誤
+
+# template.html UI strings
+NAV_PR_OFFICE=公關室
+NAV_CONTACT=聯絡
+NAV_MESSAGE_LOGS=訊息記錄
+NAV_MANAGE=管理
+BRAND_NAME=KuzuhaScriptPHP+
+RETURN=返回
+MSG_USER_LABEL=使用者：
+MSG_POST_DATE_LABEL=發文日期：
+NEXT_PAGE=下一頁
+RELOAD=重新載入
+UNREAD=未讀
+TITLE_ADMIN_POST=以管理員身分發文
+FORM_NAME_LABEL=名稱
+FORM_EMAIL_LABEL=電子郵件
+FORM_TITLE_LABEL=標題
+POST_RELOAD=發文／重新載入
+CLEAR=清除
+FORM_CONTENTS_LABEL=內容
+FORM_CONTENTS_HELP_SIMPLE=（最多 %s 字元寬、%s 行。請在適當處插入換行。無法使用 HTML/BBCode 標籤。）
+FORM_CONTENTS_HELP_IMAGE=（最多 %s 字元寬、%s 行。請在適當處插入換行。無法使用 HTML/BBCode 標籤。<br>            在文字中寫入 %s 即可在該位置插入上傳的圖片。）
+KAOMOJI_SHOW_MORE=顯示更多顏文字
+KAOMOJI_INTRO=更多「怪しいわーるど」風格顏文字。也請參考 <a target="_blank" href="//mattari.heyuri.net/">Mattari AA</a>。
+KAOMOJI_CAT_MATTARI=悠閒
+KAOMOJI_CAT_DAUSO=哀傷
+KAOMOJI_CAT_ANGRY=憤怒／邪惡
+KAOMOJI_CAT_EHHH=咦!?
+KAOMOJI_CAT_GESTURES=手勢／揮手
+KAOMOJI_CAT_SLEEPY=瞌睡／其他
+KAOMOJI_CAT_DROOLING=流口水
+KAOMOJI_CAT_SMOKING=抽煙／喝茶
+KAOMOJI_CAT_FUN=趣味／雜項
+IMAGE_UPLOAD_LABEL=圖片上傳
+IMAGE_UPLOAD_HELP=（僅限 JPG/GIF/PNG。寬度上限 %spx；高度上限 %spx；檔案大小上限 %sKB。）
+POSTS_DISPLAYED_LABEL=顯示&nbsp;文章數
+AUTO_LINK_URLS_LABEL=自動&nbsp;連結&nbsp;URL
+LOG_READING_MODE_LABEL=記錄&nbsp;閱讀&nbsp;模式
+HIDE_LINK_LINE_LABEL=隱藏&nbsp;連結列
+SHOW_IMAGES_LABEL=顯示&nbsp;圖片
+COUNTER_TEXT=自&nbsp;%s&nbsp;起的瀏覽次數：&nbsp;%s（防灌水等級：&nbsp;%s）
+MBRCOUNT_TEXT=目前&nbsp;參與者：&nbsp;%s&nbsp;位使用者（%s&nbsp;秒內）
+LOGSAVE_TEXT=最多&nbsp;保存&nbsp;文章數：&nbsp;%s&nbsp;篇
+THREAD_LABEL=主題
+TREE_LABEL=樹狀
+DELETE_PREVIOUS_POST=刪除&nbsp;上一篇&nbsp;文章
+LATEST_30_POSTS=最新 30 篇文章
+POSTS_FOUND= 篇文章。
+RETURN_TO_BBS_HELP=點擊上方連結或按下 <kbd>Alt</kbd>(+<kbd>Shift</kbd>)+<b><kbd>O</kbd></b> 返回佈告欄。
+DISPLAY_COLORS_LEGEND=顯示顏色（十六進位）
+TEXT_COLOR_LABEL=文字顏色
+BACKGROUND_COLOR_LABEL=背景顏色
+LINK_COLOR_LABEL=連結顏色
+VISITED_LINK_COLOR_LABEL=已訪問連結顏色
+ACTIVE_LINK_COLOR_LABEL=啟用連結顏色
+MOUSEOVER_LINK_COLOR_LABEL=滑鼠懸停連結顏色
+TITLE_COLOR_LABEL=標題顏色
+QUOTE_COLOR_LABEL=引用顏色
+ADDITIONAL_FEATURES_LEGEND=附加功能
+GZIP_LABEL=使用 gzip 壓縮傳輸（顯示速度更快）
+LOG_READING_MODE_DESC_LABEL=記錄閱讀模式（不顯示發文表單）
+AUTO_LINK_URLS_DESC_LABEL=自動連結 URL（發文內容中的 URL 將在發文時自動轉為連結）
+COOKIE_LABEL=發文時將名稱和電子郵件地址儲存在 Cookie 中
+HIDE_LINK_ROW_DESC_LABEL=隱藏連結列（不顯示發文表單下方的連結列表）
+FOLLOW_DISPLAY_LEGEND=回覆頁面的顯示方式
+FOLLOW_NEW_WINDOW_LABEL=在新視窗中開啟顯示
+FOLLOW_SAME_PAGE_LABEL=在同一頁面顯示
+BOOKMARK_HELP=如果您將點擊「註冊」後出現的 URL 加入書籤，即可以上述設定瀏覽佈告欄。
+REGISTER=註冊
+UNDO_CHANGES=復原變更
+RESTORE_DEFAULTS=還原預設值
+REDIRECTING=重新導向中…
+PAGE_GEN_TIME_TEXT=頁面產生時間: %s 秒
+OG_LOCALE=zh_TW
+
+# tmpltree.html UI strings
+STANDARD_VIEW=標準&nbsp;檢視
+TOP_LABEL=頂部
+
+# login.html UI strings
+MOD_LOGIN_TITLE=管理員登入
+PASSWORD_LABEL=密碼：
+LOGIN_BUTTON=登入
+LOGIN_ERROR=使用者名稱或密碼無效。
+
+# tmpladmin.html UI strings
+DELETE_MESSAGES_BTN=刪除訊息
+VIEW_LOG_FILE_BTN=檢視記錄檔
+REGEN_PASSWORD_BTN=重新產生加密密碼
+PHP_CONFIG_INFO_BTN=伺服器 PHP 設定資訊
+LOGOUT_BTN=登出
+CLOSE_BTN=關閉
+PERFORM_DELETION_BTN=執行刪除
+DELETE_INSTRUCTIONS=請勾選要刪除的文章的核取方塊，然後點擊底部的［執行刪除］按鈕。
+DELETE_COL_HEADER=刪除
+VIEW_COL_HEADER=檢視
+DATE_POSTED_COL_HEADER=發文日期
+SUBJECT_COL_HEADER=主題
+USERNAME_COL_HEADER=使用者名稱
+HOST_COL_HEADER=主機
+COMMENT_COL_HEADER=留言
+SETPASS_INSTRUCTIONS=設定您的密碼。<br>		請輸入您今後用於管理佈告欄的管理員密碼。<br>	此處輸入的密碼將用於以管理員名義發文，以及進入管理模式時的身分驗證。
+ADMIN_PASSWORD_LABEL=管理員密碼
+SET_BTN=設定
+RESET_BTN=重設
+PASSWORD_GENERATED_MSG=加密密碼已產生！<br>	請將以下加密密碼字串貼到佈告欄主程式的指定區段。
+BULLETIN_BOARD_LABEL=佈告欄
+WARNING_LABEL=警告
+ADMIN_ACCESS_WARNING=嚴禁未經授權人員存取。違者將被追蹤、定位並拘留。
+
+# tmpllog.html UI strings
+FROM_DAY_LABEL=從日期
+HOUR_LABEL=時
+TO_DAY_LABEL=至日期
+MINUTE_LABEL=分
+ZIP_ARCHIVES_LINK=訊息記錄 ZIP 封存
+LIST_OF_LOGS_HEADING=訊息記錄列表
+DOWNLOAD_LABEL=下載
+SELECT_DESELECT_ALL_LABEL=全選／全部取消
+JS_UNAVAILABLE_WARNING=JavaScript 不可用。
+JS_UNAVAILABLE_HELP=請啟用 JavaScript 以使用全選／全部取消功能。
+SEARCH_LOGS_HEADING=搜尋訊息記錄
+SPECIFY_KEYWORDS_LEGEND=指定關鍵字
+SEARCH_BTN=搜尋
+SPECIFY_TIME_RANGE_LEGEND=指定時間範圍
+BOOLEAN_OPERATOR_LEGEND=布林運算子
+AND_SEARCH_OPTION=AND 搜尋（且）
+OR_SEARCH_OPTION=OR 搜尋（或）
+SEARCH_TARGET_LEGEND=搜尋目標
+ALL_TEXT_OPTION=全部文字
+USERNAMES_OPTION=使用者名稱
+TITLES_OPTION=標題
+OTHER_LEGEND=其他
+CASE_INSENSITIVE_LABEL=搜尋時不區分大小寫
+SHOW_POST_BUTTONS_LABEL=顯示發文按鈕
+GZIP_SIMPLE_LABEL=使用 gzip 壓縮傳輸
+UNABLE_TO_OPEN_FILE_TEXT=無法開啟 %s。
+TOPIC_LIST_COLUMN_HEADERS=主題檢視 - 樹狀檢視 - 回覆數 - 最後更新 - 內容
+ZIP_ARCHIVES_HEADING=訊息記錄 ZIP 封存
+ZIP_ARCHIVE_COLUMN_HEADERS=下載 - 日期 - 時間 - 大小
+
+# JavaScript UI strings, exposed via window.KSPHP_LANG
+MAKE_LINE_BREAKS_BTN=插入換行
+UPLOADER_THUMBNAILS_LABEL=上傳器縮圖
+LINK_THUMBNAILS_LABEL=連結縮圖
+LINK_THUMBNAIL_EXTENSIONS_LEGEND=連結縮圖副檔名
+NGWORD_LINK_START=過濾詞彙&nbsp;(
+NGWORD_LINK_HITS=&nbsp;筆)
+NGWORD_UPDATE_BTN=更新
+ADMIN_FILTER_BY_LABEL=篩選依據 
+ADMIN_FILTER_HOST_LABEL=主機
+ADMIN_FILTER_NAME_LABEL=名稱
+ADMIN_FILTER_CLEAR_BTN=清除 ✕
+ADMIN_RANGE_START_MSG=範圍起點已設定 — 點擊另一個日期儲存格以完成
+
+# sub/bbstree.php UI strings
+TREE_RANGE_TEXT=以上顯示的是第 {BINDEX} 至第 {EINDEX} 個主題，按最近更新排列。
+TREE_NO_THREADS_BELOW=此處以下沒有主題。
+TREE_DATE_UPDATED=[更新日期: %s]
+TREE_USER_LABEL=使用者: 
+
+# sub/bbslog.php search result summary
+SEARCH_RESULT_FOR_QUERY=搜尋「%s」共 
+SEARCH_RESULTS_COUNT=找到 %d 筆結果。
+SEARCH_NO_RESULTS=未找到任何結果。
+
+# sub/bbsimage.php error messages
+UPLOAD_DISABLED_ERROR=錯誤：檔案上傳功能未開放。
+IMAGE_PROCESSING_UNSUPPORTED_ERROR=錯誤：不支援圖片處理功能。
+
+# title attribute tooltips
+TITLE_ADMIN_LOGIN=管理員／版主登入
+TITLE_SETTINGS_SHORTCUT=Alt(+Shift)+C，進入設定頁面
+TITLE_POST_RELOAD_SHORTCUT_P=Alt(+Shift)+P，若未輸入內容即點擊發文按鈕，頁面將重新載入
+TITLE_POST_RELOAD_SHORTCUT_R=Alt(+Shift)+R，若未輸入內容即點擊發文按鈕，頁面將重新載入
+TITLE_BOTTOM=底部
+TITLE_BOTTOM_SHORTCUT=底部 Alt(+Shift)+B
+TITLE_BROWSE_OLD_POSTS=瀏覽與搜尋舊文章。
+TITLE_DELETE_CHANGES_RETURN=刪除所有變更並返回佈告欄。
+TITLE_DELETE_LAST_POST=刪除您最近的一篇文章
+TITLE_STACK_BBS_DISPLAY=以堆疊型佈告欄的形式顯示文章。
+TITLE_DISPLAY_REPLY_THREAD=將回覆鏈顯示為主題
+TITLE_DISPLAY_AS_TREE=將主題顯示為樹狀
+TITLE_DISPLAY_THREADS_BRANCHES=將主題顯示為分支
+TITLE_EMAIL_ADMIN=發送電子郵件給管理員
+TITLE_GO_TO_PR_OFFICE=前往公關室
+TITLE_TO_PR_OFFICE=前往公關室
+TITLE_PR_OFFICE=公關室
+TITLE_LIST_USER_POSTS=列出同一使用者的所有文章
+TITLE_POST_REPLY=發表回覆
+TITLE_RETURN_PREV_PAGE=返回上一頁
+TITLE_RETURN_PREV_PAGE2=返回上一頁
+TITLE_RETURN_BBS_SHORTCUT=返回佈告欄 Alt(+Shift)+O
+TITLE_SAVE_SETTINGS_RETURN=儲存設定並返回佈告欄。
+TITLE_RESET_SETTINGS=重設您的設定
+TITLE_TOP_SHORTCUT=頂部 Alt(+Shift)+T
+
+# Gikoneko Together (gikoneko.php / gikonekoadd.php)
+GIKO_TOGETHER=擬古貓同在
+GIKO_TEACH_LINK_TEXT=教擬古貓一個詞
+GIKO_FORTUNE_SHOKICHI=小吉
+GIKO_FORTUNE_CHUKICHI=中吉
+GIKO_FORTUNE_KYOU=凶
+GIKO_FORTUNE_DAIKICHI=大吉
+GIKO_FORTUNE_YOUKICHI=幼吉
+GIKO_FORTUNE_GOUKICHI=豪吉
+GIKO_FORTUNE_NEKOKICHI=貓吉
+GIKO_FORTUNE_DOKICHI=怒吉
+GIKO_FORTUNE_AIKICHI=愛吉
+GIKO_FORTUNE_INKICHI=隱吉
+GIKO_FORTUNE_KICHI=吉
+GIKO_FORTUNE_RAKUKICHI=樂吉
+GIKO_ADD_TITLE=擬古貓同在 - 發文畫面
+GIKO_ERR_DUPLICATE=此詞已被登錄。
+GIKO_ERR_TOO_LONG=該詞太長了。
+GIKO_ERR_WRITE_FAILED=寫入失敗。請檢查資料檔案（%s）的位置與寫入權限。
+GIKO_POST_COMPLETE=發文完成
+GIKO_BACK_TO_BBS=返回佈告欄
+GIKO_ADD_PROMPT=寫些東西讓擬古貓說（最多 %s 個半形字元）
+GIKO_ADD_SUBMIT=教一個詞
+GIKO_ADD_RESET=清除
+
+LANG_SELECT_LABEL=語言：
+
+# 20260801 Gikoneko: tree-hide (unread thread deletion) JS feature
+TREE_HIDE_LINK=[隱藏]
+TREE_HIDE_SETTING_LABEL=啟用隱藏主題功能（個人設定，僅本瀏覽器）
+TREE_HIDDEN_PANEL_TITLE=已隱藏的主題
+TREE_RESTORE_LINK=恢復
+TREE_RESTORE_ALL_LINK=全部恢復
+TREE_HIDDEN_EMPTY=沒有已隱藏的主題。
+
+# 20260801 Gikoneko: long-post line-count NG filter JS feature
+LONGPOST_SETTING_LABEL=啟用長文過濾（個人設定，僅本瀏覽器）
+LONGPOST_THRESHOLD_LABEL=行數閾值：
+LONGPOST_COLLAPSED_TEXT=已摺疊超過 {N} 行的貼文。
+LONGPOST_EXPAND_LINK=展開
+LONGPOST_COLLAPSE_LINK=摺疊
+
+# 20260801 Gikoneko: LaTeX math rendering JS feature (KaTeX via CDN)
+LATEX_SETTING_LABEL=啟用 LaTeX 公式渲染（個人設定，僅本瀏覽器，將從 CDN 載入 KaTeX）
