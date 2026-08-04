@@ -6,7 +6,7 @@ Last legacy PHP (from 4.1.0 to 7.4) version can be found here: [https://github.c
 [https://hiru.coresv.com/ksphp-plus/](https://hiru.coresv.com/ksphp-plus/)
 
 
-This program is based on the 2005/04/01 modified version of KuzuhaScriptPHP (くずはすくりぷとPHP) by cion (しおん).
+This program is based on the 2005/04/01 modified version of KuzuhaScriptPHP (くずはすくりぷとPHP).
 
 This program has originally been translated to English by [Anonymous-san at Strange World@Heyuri.net](https://dis.heyuri.net/bbs.php?c=08&m=tree&ff=202205.dat&s=3555) and several anonymous developers from Heyuri have contributed to it since.
 
@@ -215,6 +215,34 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
 * ayashiibreaker.js updated to v0.4.0: Japanese lines are now
   line-broken by character count with kinsoku shori (禁則処理) rules,
   instead of relying on space-delimited word wrapping
+
+### 2026/07/19
+* bbs.php: the main board display (`getdispmessage()`) and the current-log
+  branch of `msgsearchlist()` now stream the log file line-by-line
+  (`Func::fgetline()`) instead of loading the whole file into memory via
+  `file()`. Peak memory for a normal page view no longer scales with
+  `LOGSAVE` / log file size (verified: ~131MB -> ~2MB peak on a
+  102,300-line / ~58MB log; a simulated 100-concurrent-request traffic
+  spike no longer triggers OOM kills, unlike the previous implementation)
+* bbs.php: removed the long-commented-out YouTube embedding code
+  (superseded by ytthumb.js since 2024/10/16)
+* bbs.php / conf.php: whether "Gikoneko-to-issho" is shown when there are
+  no unread posts is now configurable via `GIKONEKO_TOISSHO` (1=on,
+  0=off, default 1); disabling it falls back to the previous plain
+  "no unread posts" message
+* install.php: added a text-input "add a new install destination" flow
+  for folders not found by the nearby-scan (with path-traversal
+  validation and a confirmation step before use)
+* install.php: added Japanese/English UI language switching (default
+  Japanese), including translated install-log messages
+* install.php: added a safety guard rejecting installs targeting the
+  filesystem root, overly shallow paths, or the install/ folder itself
+* install.php: existing files are now moved to backup via `rename()`
+  (atomic) instead of `copy()`, per-file backup/rename failures now skip
+  just that file instead of aborting the whole run, a failed write of
+  the new file automatically rolls back the moved-aside original, and
+  failures are additionally recorded to
+  `install/backup/install-errors-YYYY-MM-DD.txt` for later review
 
 ## ToDo:
 * View posts by thread

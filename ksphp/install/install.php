@@ -31,6 +31,41 @@ $newbbs_dir   = $install_dir . '/newbbs';
 $parent_dir   = dirname($install_dir);       // 想定サイトルート
 $grandparent_dir = dirname($parent_dir);     // その一つ上（近隣の旧設置検出用）
 
+// 20260719 Gikoneko: install.php多言語化。newbbs/bbs.phpと同じ
+// 単一スクリプト＋言語ファイル切り替え方式（sub/ja・sub/en分離は不採用）。
+// bbs.php本体側の既定は'english'だが、この診断・導入ツールは
+// 既定を'japanese'とする（利用者からの明示指定）。
+function ksphp_install_load_language(string $lang): array {
+	$result = array();
+	$lines = @file(__DIR__ . '/language/' . $lang . '.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+	if ($lines === false) {
+		return $result;
+	}
+	foreach ($lines as $line) {
+		$trimmed = ltrim($line);
+		if ($trimmed === '' || $trimmed[0] === '#' || $trimmed[0] === ';') {
+			continue;
+		}
+		$pos = strpos($line, '=');
+		if ($pos === false) {
+			continue;
+		}
+		$key = trim(substr($line, 0, $pos));
+		$result[$key] = substr($line, $pos + 1);
+	}
+	return $result;
+}
+
+$lang_options = array('japanese', 'english');
+$lang = (string) ($_GET['lang'] ?? 'japanese');
+if (!in_array($lang, $lang_options, true)) {
+	$lang = 'japanese';
+}
+$MSG = ksphp_install_load_language($lang);
+function T($key) {
+	return $GLOBALS['MSG'][$key] ?? $key;
+}
+
 function ksphp_install_extract_version(string $bbs_php_path): ?string {
 	$head = @file_get_contents($bbs_php_path, false, null, 0, 8192);
 	if ($head === false) {
@@ -47,7 +82,7 @@ function ksphp_install_check_writable(string $dir): array {
 	if (!is_dir($dir)) {
 		$created_dir = @mkdir($dir, 0755, true);
 		if (!$created_dir) {
-			return array('ok' => false, 'note' => 'ディレクトリ自体が作成できません（親ディレクトリの書き込み権限を確認してください）。');
+			return array('ok' => false, 'note' => T('WRITABLE_DIR_CREATE_FAIL'));
 		}
 	}
 	$test_file = $dir . '/.ksphp_install_writetest';
@@ -55,9 +90,9 @@ function ksphp_install_check_writable(string $dir): array {
 	if ($ok) {
 		@unlink($test_file);
 	}
-	$note = $ok ? '書き込み可能です。' : '書き込みできません（権限を確認してください）。';
+	$note = $ok ? T('WRITABLE_OK') : T('WRITABLE_NG');
 	if ($created_dir) {
-		$note .= '（このチェックのためにディレクトリを新規作成しました）';
+		$note .= T('WRITABLE_TEST_DIR_CREATED');
 	}
 	return array('ok' => $ok, 'note' => $note);
 }
@@ -93,16 +128,16 @@ function ksphp_install_check_pair(string $bbs_php_path): array {
 	$has_migrate = file_exists($dir . '/migrate.php');
 
 	if ($has_conf && $has_migrate) {
-		$verdict = 'KSPHP Plus系（conf.php・migrate.php確認、本ツール対応版の可能性が高い）';
+		$verdict = T('VERDICT_KSPHP_PLUS');
 	} elseif ($has_conf) {
 		$score = ksphp_install_conf_marker_score($dir . '/conf.php');
 		if ($score >= 2) {
-			$verdict = 'conf.phpあり・migrate.phpなし（固有設定キーが複数一致、KSPHP Plus系の旧バージョンの可能性が高い。本ツール未対応）';
+			$verdict = T('VERDICT_OLD_KSPHP_PLUS');
 		} else {
-			$verdict = 'conf.phpという名前のファイルはありますが、固有の設定キーがほとんど一致しません。別系統（無関係な設置）の可能性が高いため、導入前に必ず内容を目視確認してください。';
+			$verdict = T('VERDICT_UNRELATED_CONF');
 		}
 	} else {
-		$verdict = 'conf.phpが見当たらず、別系統のbbs.php（無関係な設置）の可能性が高い';
+		$verdict = T('VERDICT_UNRELATED_NO_CONF');
 	}
 
 	return array('has_conf' => $has_conf, 'has_migrate' => $has_migrate, 'verdict' => $verdict);
@@ -347,7 +382,7 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 	$log = array();
 
 	if ($new_content === false) {
-		return array('content' => '', 'log' => array(array('ok' => false, 'text' => 'newbbs/conf.php を読み込めませんでした。')));
+		return array('content' => '', 'log' => array(array('ok' => false, 'text' => T('MERGE_TEMPLATE_READ_FAIL'))));
 	}
 	if ($old_content === false) {
 		return array('content' => $new_content, 'log' => array());
@@ -383,9 +418,9 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 				$res = ksphp_conf_merge_entry($entry, $old_entry);
 				$merged_entries[] = $res['text'];
 				if (!empty($res['merge_failed'])) {
-					$log[] = array('ok' => false, 'text' => "conf.php: {$key} は旧設定の解析に失敗したため、新版の既定値を使用しました（要確認）。");
+					$log[] = array('ok' => false, 'text' => sprintf(T('MERGE_KEY_PARSE_FAIL'), $key));
 				} elseif (!empty($res['changed'])) {
-					$log[] = array('ok' => true, 'text' => "conf.php: {$key} は既存の設定値を維持しました。");
+					$log[] = array('ok' => true, 'text' => sprintf(T('MERGE_KEY_KEPT'), $key));
 				}
 				continue;
 			}
@@ -410,10 +445,10 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 
 			if ($legacy_val !== null) {
 				$merged_entries[] = ksphp_conf_entry_with_value($entry, $legacy_val);
-				$log[] = array('ok' => true, 'text' => "conf.php: {$key} は旧 {$legacy_rel} の設定値を引き継ぎました。");
+				$log[] = array('ok' => true, 'text' => sprintf(T('MERGE_KEY_INHERITED_LEGACY'), $key, $legacy_rel));
 			} else {
 				$merged_entries[] = $entry;
-				$log[] = array('ok' => true, 'text' => "conf.php: {$key} は新版の新規項目のため追加しました。");
+				$log[] = array('ok' => true, 'text' => sprintf(T('MERGE_KEY_ADDED_NEW'), $key));
 			}
 		} else {
 			$merged_entries[] = $entry;
@@ -422,7 +457,7 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 
 	foreach ($old_by_key as $key => $oe) {
 		if (!isset($seen[$key])) {
-			$log[] = array('ok' => true, 'text' => "conf.php: {$key} は新版に存在しないため引き継ぎませんでした。");
+			$log[] = array('ok' => true, 'text' => sprintf(T('MERGE_KEY_DROPPED'), $key));
 		}
 	}
 
@@ -431,17 +466,78 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 }
 
 
+/**
+ * 20260719 Gikoneko: 導入先パスの安全ガード（最終防衛線）。
+ *
+ * 呼び出し元（近隣スキャン・新規フォルダ追加のいずれも）のロジックが
+ * 正しくても、install.php自体が想定外に浅い場所（ファイルシステム
+ * ルート近く）に設置されている等の環境依存の事情で、导入先が
+ * ファイルシステムルートや浅すぎる場所に解決されてしまう可能性を
+ * 排除できない。過去に「ルートフォルダに設置すると全削除される」
+ * 事故が実際に起きたことを踏まえ、ksphp_install_run()に入る直前で
+ * 必ずこのチェックを通す。
+ *
+ * 拒否する条件：
+ *   - 空文字列・"/"・"."
+ *   - パスの深さが1階層以下（例："/var"）
+ *   - install/フォルダ自身、またはその配下（インストーラー自身を
+ *     上書きしてしまうため）。前方一致だけだと"install2"のような
+ *     別フォルダを誤検出するため、区切り単位で比較する。
+ */
+function ksphp_install_is_safe_target_dir(string $dir, string $install_dir): bool {
+	if ($dir === '' || $dir === '/' || $dir === '.') {
+		return false;
+	}
+	$trimmed = trim($dir, '/');
+	if ($trimmed === '' || strpos($trimmed, '/') === false) {
+		return false;
+	}
+	$dir_norm = rtrim($dir, '/');
+	$install_norm = rtrim($install_dir, '/');
+	if ($dir_norm === $install_norm || strpos($dir_norm, $install_norm . '/') === 0) {
+		return false;
+	}
+	return true;
+}
+
+/**
+ * 20260719 Gikoneko: バックアップ・退避処理の失敗は「処理を止めるのは
+ * もったいない」ためスキップして続行する方針だが、そのままだと
+ * ブラウザ上のログ（閉じたら消える）にしか残らず、後から気づかれずに
+ * 埋もれてしまう危険がある。install/backup/install-errors-YYYY-MM-DD.txt
+ * に追記形式（複数回の実行分を蓄積）で永続的に記録する保険を設ける。
+ */
+function ksphp_install_log_error(string $install_dir, string $message): void {
+	$dir = $install_dir . '/backup';
+	if (!is_dir($dir)) {
+		@mkdir($dir, 0755, true);
+	}
+	$path = $dir . '/install-errors-' . gmdate('Y-m-d') . '.txt';
+	$line = gmdate('Y-m-d\TH:i:s\Z') . ' ' . $message . "\n";
+	@file_put_contents($path, $line, FILE_APPEND | LOCK_EX);
+}
+
 function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backup_root, string $entry_filename = 'bbs.php'): array {
 	$log = array();
+
+	// newbbs_dir は常に {install_dir}/newbbs なので、ここから install_dir を逆算する。
+	$install_dir_check = dirname($newbbs_dir);
+	if (!ksphp_install_is_safe_target_dir($parent_dir, $install_dir_check)) {
+		$log[] = array('ok' => false, 'text' => T('INSTALL_UNSAFE_TARGET'));
+		ksphp_install_log_error($install_dir_check, "unsafe target rejected: $parent_dir");
+		return $log;
+	}
+
 	$files = ksphp_install_list_files($newbbs_dir);
 
 	if (empty($files)) {
-		$log[] = array('ok' => false, 'text' => 'install/newbbs/ にファイルが見つかりません。導入対象がありません。');
+		$log[] = array('ok' => false, 'text' => T('INSTALL_NO_FILES'));
+		ksphp_install_log_error($install_dir_check, "no files under $newbbs_dir");
 		return $log;
 	}
 
 	if ($entry_filename !== 'bbs.php') {
-		$log[] = array('ok' => true, 'text' => "本体ファイル名は {$entry_filename} として検出されたため、bbs.php ではなく {$entry_filename} として導入します。");
+		$log[] = array('ok' => true, 'text' => sprintf(T('INSTALL_ENTRY_RENAMED'), $entry_filename, $entry_filename));
 	}
 
 	$date = gmdate('Y-m-d');
@@ -462,10 +558,11 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 
 	if ($any_existing) {
 		if (!@mkdir($backup_dir, 0755, true)) {
-			$log[] = array('ok' => false, 'text' => 'バックアップ先フォルダを作成できませんでした。導入を中止します。');
+			$log[] = array('ok' => false, 'text' => T('INSTALL_BACKUP_DIR_FAIL'));
+			ksphp_install_log_error($install_dir_check, "backup root mkdir failed: $backup_dir");
 			return $log;
 		}
-		$log[] = array('ok' => true, 'text' => "バックアップ先: {$backup_dir}");
+		$log[] = array('ok' => true, 'text' => sprintf(T('INSTALL_BACKUP_DIR'), $backup_dir));
 	}
 
 	foreach ($files as $rel) {
@@ -483,11 +580,21 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 		if ($existed) {
 			$backup_target = $backup_dir . '/' . $dst_rel;
 			$backup_target_dir = dirname($backup_target);
-			if (!is_dir($backup_target_dir)) {
-				@mkdir($backup_target_dir, 0755, true);
+			if (!is_dir($backup_target_dir) && !@mkdir($backup_target_dir, 0755, true)) {
+				$log[] = array('ok' => false, 'text' => sprintf(T('INSTALL_BACKUP_MKDIR_FAIL'), $dst_rel));
+				ksphp_install_log_error($install_dir_check, "backup subfolder mkdir failed: $backup_target_dir (file: $dst_rel)");
+				continue;
 			}
-			if (!@copy($dst, $backup_target)) {
-				$log[] = array('ok' => false, 'text' => "スキップ: {$dst_rel}（既存ファイルのバックアップに失敗したため上書きしていません）");
+			// 20260719 Gikoneko: copy()ではなくrename()で退避する。rename()は
+			// 同一ファイルシステム内であれば原子的（atomic）に行われるため、
+			// 「バックアップが完了していないのに元ファイルが失われる」という
+			// 中間状態が起こり得ない：成功すれば退避完了・元の場所には何も
+			// 残らない、失敗すれば元ファイルはそのまま残る（部分的に消えたり
+			// しない）。失敗時はこのファイルの導入だけをスキップし、全体は
+			// 中断せず次のファイルへ進む。
+			if (!@rename($dst, $backup_target)) {
+				$log[] = array('ok' => false, 'text' => sprintf(T('INSTALL_SKIP_BACKUP_FAIL'), $dst_rel));
+				ksphp_install_log_error($install_dir_check, "backup rename failed: $dst -> $backup_target");
 				continue;
 			}
 		}
@@ -499,20 +606,40 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 		if ($rel === 'conf.php' && $existed && $backup_target !== null) {
 			$merged = ksphp_conf_merge($backup_target, $src, $parent_dir);
 			if (@file_put_contents($dst, $merged['content']) !== false) {
-				$log[] = array('ok' => true, 'text' => "導入: {$dst_rel}（既存設定を維持してマージしました）");
+				$log[] = array('ok' => true, 'text' => sprintf(T('INSTALL_CONF_MERGED'), $dst_rel));
 				foreach ($merged['log'] as $entry) {
 					$log[] = $entry;
 				}
 			} else {
-				$log[] = array('ok' => false, 'text' => "失敗: {$dst_rel}（マージ結果の書き込みに失敗しました。権限を確認してください）");
+				$log[] = array('ok' => false, 'text' => sprintf(T('INSTALL_CONF_WRITE_FAIL'), $dst_rel));
+				ksphp_install_log_error($install_dir_check, "conf merge write failed: $dst");
+				// 20260719 Gikoneko: 新版の書き込みに失敗した場合、退避済みの
+				// 元ファイルをその場に戻す（ベストエフォートの自動ロール
+				// バック）。これにより「退避はできたが新版が書けず、結局
+				// 元ファイルも無くなる」という最悪の状態を避ける。
+				if (@rename($backup_target, $dst)) {
+					$log[] = array('ok' => true, 'text' => sprintf(T('INSTALL_ROLLBACK_OK'), $dst_rel));
+				} else {
+					$log[] = array('ok' => false, 'text' => sprintf(T('INSTALL_ROLLBACK_FAIL'), $backup_target));
+					ksphp_install_log_error($install_dir_check, "rollback rename failed: $backup_target -> $dst");
+				}
 			}
 			continue;
 		}
 
 		if (@copy($src, $dst)) {
-			$log[] = array('ok' => true, 'text' => "導入: {$dst_rel}");
+			$log[] = array('ok' => true, 'text' => sprintf(T('INSTALL_COPIED'), $dst_rel));
 		} else {
-			$log[] = array('ok' => false, 'text' => "失敗: {$dst_rel}（コピーできませんでした。権限を確認してください）");
+			$log[] = array('ok' => false, 'text' => sprintf(T('INSTALL_COPY_FAIL'), $dst_rel));
+			ksphp_install_log_error($install_dir_check, "copy failed: $src -> $dst");
+			if ($backup_target !== null) {
+				if (@rename($backup_target, $dst)) {
+					$log[] = array('ok' => true, 'text' => sprintf(T('INSTALL_ROLLBACK_OK'), $dst_rel));
+				} else {
+					$log[] = array('ok' => false, 'text' => sprintf(T('INSTALL_ROLLBACK_FAIL'), $backup_target));
+					ksphp_install_log_error($install_dir_check, "rollback rename failed: $backup_target -> $dst");
+				}
+			}
 		}
 	}
 
@@ -521,11 +648,11 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 		require_once $migrate_file;
 		if (function_exists('ksphp_migrate')) {
 			ksphp_migrate();
-			$log[] = array('ok' => true, 'text' => 'Migration Engineを実行しました（旧構成データがあれば data/・logs/ へ移行済みです）。');
+			$log[] = array('ok' => true, 'text' => T('INSTALL_MIGRATE_DONE'));
 		}
 	}
 
-	$log[] = array('ok' => true, 'text' => '導入処理が完了しました。');
+	$log[] = array('ok' => true, 'text' => T('INSTALL_DONE'));
 	return $log;
 }
 
@@ -629,12 +756,63 @@ function ksphp_install_find_candidates(string $parent_dir, string $grandparent_d
 	return $candidates;
 }
 
+/**
+ * 20260719 Gikoneko: 新規インストール先フォルダ選択機能。
+ *
+ * ユーザーがテキスト入力欄で指定した相対パスを$grandparent_dir基準で
+ * 解決する。「/」区切りの各セグメントが空・「.」・「..」でないことを
+ * 確認するだけで、ディレクトリトラバーサル（例："../../etc"）を
+ * 構造的に排除できる（realpath()は対象がまだ存在しない新規フォルダ
+ * では使えないため、この方式を採用）。絶対パス・NULLバイトも拒否する。
+ *
+ * @return string|null 解決できた絶対パス。不正な入力の場合はnull。
+ */
+function ksphp_install_validate_new_dir(string $grandparent_dir, string $relative, string $install_dir): ?string {
+	if ($relative === '' || strpos($relative, "\0") !== false) {
+		return null;
+	}
+	// 絶対パス（先頭が"/"、またはWindows形式のドライブレター）は拒否
+	if ($relative[0] === '/' || preg_match('/^[A-Za-z]:/', $relative)) {
+		return null;
+	}
+	$relative = str_replace('\\', '/', $relative);
+	$segments = explode('/', $relative);
+	foreach ($segments as $seg) {
+		if ($seg === '' || $seg === '.' || $seg === '..') {
+			return null;
+		}
+	}
+	$resolved = rtrim($grandparent_dir, '/') . '/' . implode('/', $segments);
+	if (!ksphp_install_is_safe_target_dir($resolved, $install_dir)) {
+		return null;
+	}
+	return $resolved;
+}
+
+if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup_new') {
+	header('Content-Type: application/json; charset=UTF-8');
+	$new_dir = ksphp_install_validate_new_dir($grandparent_dir, (string) ($_GET['dir'] ?? ''), $install_dir);
+	if ($new_dir === null) {
+		echo json_encode(array('log' => array(array('ok' => false, 'text' => T('ERROR_INVALID_PATH')))), JSON_UNESCAPED_UNICODE);
+		exit;
+	}
+	$backup_root = $install_dir . '/backup/new_' . substr(md5($new_dir), 0, 12);
+	echo json_encode(
+		array(
+			'log' => ksphp_install_run($newbbs_dir, $new_dir, $backup_root, 'bbs.php'),
+			'entry_filename' => 'bbs.php',
+		),
+		JSON_UNESCAPED_UNICODE
+	);
+	exit;
+}
+
 if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 	header('Content-Type: application/json; charset=UTF-8');
 	$targets = ksphp_install_find_candidates($parent_dir, $grandparent_dir);
 	$idx = (int) ($_GET['target'] ?? -1);
 	if (!isset($targets[$idx])) {
-		echo json_encode(array('log' => array(array('ok' => false, 'text' => '対象が見つかりません（一覧が変わった可能性があります。ページを再読み込みしてください）。'))), JSON_UNESCAPED_UNICODE);
+		echo json_encode(array('log' => array(array('ok' => false, 'text' => T('ERROR_TARGET_NOT_FOUND')))), JSON_UNESCAPED_UNICODE);
 		exit;
 	}
 	$target_dir = dirname($targets[$idx]);
@@ -699,8 +877,8 @@ function ksphp_install_read_conf_summary(string $conf_path): ?array {
 		return null;
 	}
 	return array(
-		'BBSTITLE'      => $conf['BBSTITLE'] ?? '(未設定)',
-		'LANGUAGE_FILE' => $conf['LANGUAGE_FILE'] ?? '(未設定)',
+		'BBSTITLE'      => $conf['BBSTITLE'] ?? T('NOT_SET'),
+		'LANGUAGE_FILE' => $conf['LANGUAGE_FILE'] ?? T('NOT_SET'),
 	);
 }
 
@@ -715,10 +893,10 @@ function h(string $s): string {
 
 ?>
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="<?php echo $lang === 'english' ? 'en' : 'ja'; ?>">
 <head>
 <meta charset="UTF-8">
-<title>KSPHP Plus セットアップ診断・導入</title>
+<title><?php echo h(T('PAGE_TITLE')); ?></title>
 <style>
 	body { background:#004040; color:#efefef; font-family:"BIZ UDゴシック","Noto Sans Mono CJK JP",monospace; padding:1.5em; }
 	h1 { font-size:1.2em; }
@@ -737,73 +915,117 @@ function h(string $s): string {
 	button:disabled { background:#555; cursor:default; }
 	#setup-log { list-style:none; margin:0.5em 0; padding:0; font-size:0.9em; }
 	#setup-log li { padding:0.15em 0; }
+	#lang-select-wrap { float:right; }
 </style>
 </head>
 <body>
-<h1>KSPHP Plus セットアップ診断・導入</h1>
-<p>このツール自身の場所：<code><?php echo h($install_dir); ?></code></p>
-<p>導入先（サイトルート）：<code><?php echo h($parent_dir); ?></code></p>
+<p id="lang-select-wrap">
+	<label for="lang-select"><?php echo h(T('LANG_SELECT_LABEL')); ?></label>
+	<select id="lang-select">
+		<option value="japanese" <?php echo $lang === 'japanese' ? 'selected' : ''; ?>>日本語</option>
+		<option value="english" <?php echo $lang === 'english' ? 'selected' : ''; ?>>English</option>
+	</select>
+</p>
+<h1><?php echo h(T('PAGE_TITLE')); ?></h1>
+<p><?php echo h(T('LABEL_TOOL_LOCATION')); ?><code><?php echo h($install_dir); ?></code></p>
+<p><?php echo h(T('LABEL_INSTALL_TARGET')); ?><code><?php echo h($parent_dir); ?></code></p>
 
-<h2>1. bbs.php本体の検出</h2>
+<h2><?php echo h(T('H2_STEP1')); ?></h2>
 <?php if (empty($candidates)): ?>
-	<p>近隣にbbs.phpが見つかりませんでした。まだ導入されていない可能性があります（下の「セットアップを実行する」から導入できます）。</p>
+	<p><?php echo h(T('NO_CANDIDATES_FOUND')); ?></p>
 <?php else: ?>
 	<p>
-		<button type="button" id="select-all-btn">全選択</button>
-		<button type="button" id="deselect-all-btn">全解除</button>
+		<button type="button" id="select-all-btn"><?php echo h(T('BTN_SELECT_ALL')); ?></button>
+		<button type="button" id="deselect-all-btn"><?php echo h(T('BTN_DESELECT_ALL')); ?></button>
 	</p>
 	<table>
-	<tr><th>導入</th><th>パス</th><th>VERSION</th><th>最終更新</th><th>判定</th></tr>
+	<tr><th><?php echo h(T('TABLE_HEADER_INSTALL')); ?></th><th><?php echo h(T('TABLE_HEADER_PATH')); ?></th><th><?php echo h(T('TABLE_HEADER_VERSION')); ?></th><th><?php echo h(T('TABLE_HEADER_MODIFIED')); ?></th><th><?php echo h(T('TABLE_HEADER_VERDICT')); ?></th></tr>
 	<?php foreach ($candidates as $i => $path): $pair = ksphp_install_check_pair($path); ?>
 		<tr>
 			<td><input type="checkbox" class="target-checkbox" data-index="<?php echo (int) $i; ?>" <?php echo $i === 0 ? 'checked' : ''; ?>></td>
-			<td><?php echo h($path); ?><?php echo $i === 0 ? '　←このinstall.phpに対応する導入先' : ''; ?></td>
-			<td><?php echo h(ksphp_install_extract_version($path) ?? '(検出できず)'); ?></td>
+			<td><?php echo h($path); ?><?php echo $i === 0 ? h(T('CURRENT_INSTALL_MARK')) : ''; ?></td>
+			<td><?php echo h(ksphp_install_extract_version($path) ?? T('VERSION_UNKNOWN')); ?></td>
 			<td><?php echo h(date('Y-m-d H:i', filemtime($path))); ?></td>
 			<td class="<?php echo $pair['has_conf'] ? 'ok' : 'ng'; ?>"><?php echo h($pair['verdict']); ?></td>
 		</tr>
 	<?php endforeach; ?>
 	</table>
 	<?php if (count($candidates) > 1): ?>
-		<p class="ng">複数のbbs.phpが近隣に見つかりました。チェックボックスで導入先を選び、複数選択も可能です。</p>
+		<p class="ng"><?php echo h(T('MULTIPLE_CANDIDATES_WARN')); ?></p>
 	<?php endif; ?>
 <?php endif; ?>
 
-<h2>2. 導入対象（install/newbbs/、<?php echo count($newbbs_files); ?>ファイル）</h2>
+<p>
+	<?php echo sprintf(h(T('NEW_DIR_INSTRUCTION')), '<code>' . h($grandparent_dir) . '</code>', '<code>z/newboard</code>'); ?>
+</p>
+<p>
+	<input type="text" id="new-dir-input" placeholder="<?php echo h(T('NEW_DIR_INPUT_PLACEHOLDER')); ?>" style="width:20em;">
+	<button type="button" id="new-dir-add-btn"><?php echo h(T('BTN_ADD_NEW_DIR')); ?></button>
+</p>
+<table id="new-dir-table"></table>
+
+<h2><?php echo sprintf(h(T('H2_STEP2')), count($newbbs_files)); ?></h2>
 <?php if (empty($newbbs_files)): ?>
-	<p class="ng">install/newbbs/ にファイルがありません。</p>
+	<p class="ng"><?php echo h(T('NO_NEWBBS_FILES')); ?></p>
 <?php else: ?>
-	<p><?php echo h(implode('、', array_slice($newbbs_files, 0, 8))); ?><?php echo count($newbbs_files) > 8 ? ' 他' . (count($newbbs_files) - 8) . '件' : ''; ?></p>
+	<p><?php echo h(implode(T('FILE_LIST_SEPARATOR'), array_slice($newbbs_files, 0, 8))); ?><?php echo count($newbbs_files) > 8 ? h(sprintf(T('FILES_LIST_MORE'), count($newbbs_files) - 8)) : ''; ?></p>
 <?php endif; ?>
 
-<h2 id="h-write">3. 書き込み権限（主対象：<?php echo h($parent_dir); ?> のみ表示）</h2>
+<h2 id="h-write"><?php echo sprintf(h(T('H2_STEP3')), h($parent_dir)); ?></h2>
 <table id="write-table">
-<tr><th>場所</th><th>状態</th><th>備考</th></tr>
-<tr><td>サイトルート</td><td class="<?php echo $write_root['ok'] ? 'ok' : 'ng'; ?>" data-key="write_root_state"><?php echo $write_root['ok'] ? 'OK' : 'NG'; ?></td><td data-key="write_root_note"><?php echo h($write_root['note']); ?></td></tr>
+<tr><th><?php echo h(T('TABLE_HEADER_LOCATION')); ?></th><th><?php echo h(T('TABLE_HEADER_STATE')); ?></th><th><?php echo h(T('TABLE_HEADER_NOTE')); ?></th></tr>
+<tr><td><?php echo h(T('LOCATION_SITEROOT')); ?></td><td class="<?php echo $write_root['ok'] ? 'ok' : 'ng'; ?>" data-key="write_root_state"><?php echo $write_root['ok'] ? 'OK' : 'NG'; ?></td><td data-key="write_root_note"><?php echo h($write_root['note']); ?></td></tr>
 <tr><td>install/backup/</td><td class="<?php echo $write_backup['ok'] ? 'ok' : 'ng'; ?>"><?php echo $write_backup['ok'] ? 'OK' : 'NG'; ?></td><td><?php echo h($write_backup['note']); ?></td></tr>
 <tr><td>data/</td><td class="<?php echo $write_data['ok'] ? 'ok' : 'ng'; ?>" data-key="write_data_state"><?php echo $write_data['ok'] ? 'OK' : 'NG'; ?></td><td data-key="write_data_note"><?php echo h($write_data['note']); ?></td></tr>
 <tr><td>logs/</td><td class="<?php echo $write_logs['ok'] ? 'ok' : 'ng'; ?>" data-key="write_logs_state"><?php echo $write_logs['ok'] ? 'OK' : 'NG'; ?></td><td data-key="write_logs_note"><?php echo h($write_logs['note']); ?></td></tr>
 </table>
 <?php if (!$write_root['ok']): ?>
-<p class="ng">サイトルートに書き込めません。多くの場合、ファイルの所有者（例：ubuntu）とApache/PHPの実行ユーザー（例：www-data）が異なることが原因です。doc/permissions.md を参照してください。</p>
+<p class="ng"><?php echo h(T('SITEROOT_NOT_WRITABLE_WARN')); ?></p>
 <?php endif; ?>
 
-<h2 id="h-migrate">4. Migration Engineの状態</h2>
-<p id="migrate-status"><?php echo $migrated !== null ? '<span class="ok">移行済みです（' . h($migrated) . '）。</span>' : 'まだ移行されていません。'; ?></p>
+<h2 id="h-migrate"><?php echo h(T('H2_STEP4')); ?></h2>
+<p id="migrate-status"><?php echo $migrated !== null ? '<span class="ok">' . sprintf(h(T('MIGRATE_DONE_LABEL')), h($migrated)) . '</span>' : h(T('MIGRATE_NOT_DONE')); ?></p>
 
-<h2>5. conf.php設定の概要（導入先に既存のものがある場合）</h2>
+<h2><?php echo h(T('H2_STEP5')); ?></h2>
 <div id="conf-summary-container"></div>
 <script id="conf-summaries-data" type="application/json"><?php echo json_encode($conf_summaries, JSON_UNESCAPED_UNICODE); ?></script>
 <script id="conf-summaries-paths" type="application/json"><?php echo json_encode(array_values($candidates), JSON_UNESCAPED_UNICODE); ?></script>
 
-<h2>6. セットアップの実行</h2>
-<p>install/newbbs/ の内容を、上でチェックした導入先へ順番に導入します。上書きされる既存ファイルはすべて事前に、それぞれの導入先ごとの <code>install/backup/targetN/</code> へバックアップされます。</p>
-<button id="run-setup-btn">セットアップを実行する</button>
+<h2><?php echo h(T('H2_STEP6')); ?></h2>
+<p><?php echo T('STEP6_INTRO'); ?></p>
+<button id="run-setup-btn"><?php echo h(T('BTN_RUN_SETUP')); ?></button>
 <ul id="setup-log"></ul>
 
-<hr>
-<p>診断部分はコードやデータを変更しません（書き込みテスト用の一時ファイルは即座に削除しています）。セットアップ実行時のみ、上記の通りバックアップの上でファイルをコピーします。</p>
 
+<hr>
+<p><?php echo h(T('FOOTER_NOTE')); ?></p>
+
+<script id="install-lang-data" type="application/json"><?php echo json_encode($MSG, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP); ?></script>
+<script>
+// 20260719 Gikoneko: JS側でも$MSGの翻訳文字列を参照できるようにする
+// （bbs.php本体のwindow.KSPHP_LANGと同じ方式）。プレースホルダは
+// sprintf形式ではなく{NAME}形式とし、Lf()で単純な文字列置換を行う。
+var INSTALL_LANG = {};
+try {
+	INSTALL_LANG = JSON.parse(document.getElementById('install-lang-data').textContent || '{}');
+} catch (e) {
+	INSTALL_LANG = {};
+}
+function L(key) {
+	return (key in INSTALL_LANG) ? INSTALL_LANG[key] : key;
+}
+function Lf(key, replacements) {
+	var s = L(key);
+	for (var name in replacements) {
+		s = s.split('{' + name + '}').join(replacements[name]);
+	}
+	return s;
+}
+
+document.getElementById('lang-select').addEventListener('change', function () {
+	location.href = '?lang=' + encodeURIComponent(this.value);
+});
+</script>
 <script>
 document.getElementById('select-all-btn') && document.getElementById('select-all-btn').addEventListener('click', function () {
 	document.querySelectorAll('.target-checkbox').forEach(function (cb) { cb.checked = true; });
@@ -815,6 +1037,28 @@ document.getElementById('deselect-all-btn') && document.getElementById('deselect
 });
 document.querySelectorAll('.target-checkbox').forEach(function (cb) {
 	cb.addEventListener('change', renderConfSummaries);
+});
+
+// 20260719 Gikoneko: 新規インストール先フォルダ選択機能
+var newDirCount = 0;
+document.getElementById('new-dir-add-btn').addEventListener('click', function () {
+	var input = document.getElementById('new-dir-input');
+	var path = input.value.trim();
+	if (!path) {
+		alert(L('JS_ALERT_EMPTY_PATH'));
+		return;
+	}
+	if (!confirm(Lf('JS_CONFIRM_NEW_DIR', { PATH: path }))) {
+		return;
+	}
+	var table = document.getElementById('new-dir-table');
+	var row = document.createElement('tr');
+	var idx = 'new' + (newDirCount++);
+	row.innerHTML = '<td><input type="checkbox" class="target-checkbox" data-new-dir="' + escapeHtml(path) + '" checked></td>'
+		+ '<td>' + escapeHtml(path) + escapeHtml(L('JS_NEW_DIR_TAG')) + '</td>';
+	table.appendChild(row);
+	input.value = '';
+	renderConfSummaries();
 });
 
 function escapeHtml(s) {
@@ -834,19 +1078,29 @@ function renderConfSummaries() {
 	try { summaries = JSON.parse(summariesEl.textContent || '{}'); } catch (e) { summaries = {}; }
 	try { paths = JSON.parse(pathsEl.textContent || '[]'); } catch (e) { paths = []; }
 
-	var indices = Array.prototype.slice.call(document.querySelectorAll('.target-checkbox:checked'))
-		.map(function (cb) { return cb.getAttribute('data-index'); });
+	var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.target-checkbox:checked'));
 
-	if (indices.length === 0) {
-		container.innerHTML = '<p>導入先が選択されていません。</p>';
+	if (checkboxes.length === 0) {
+		container.innerHTML = '<p>' + escapeHtml(L('JS_NO_TARGET_SELECTED')) + '</p>';
 		return;
 	}
 
-	var multi = indices.length > 1;
+	var multi = checkboxes.length > 1;
 	var html = '';
-	indices.forEach(function (idx) {
+	checkboxes.forEach(function (cb) {
+		var newDir = cb.getAttribute('data-new-dir');
+		if (newDir !== null) {
+			// 20260719 Gikoneko: 新規追加分はまだconf.phpがあるはずがないため、
+			// サーバー側の要約データを持たない。常に「新規導入前」表示にする。
+			if (multi) {
+				html += '<p><code>' + escapeHtml(newDir) + '</code></p>';
+			}
+			html += '<p>' + escapeHtml(L('JS_NO_CONF_YET')) + '</p>';
+			return;
+		}
+		var idx = cb.getAttribute('data-index');
 		var summary = summaries[idx];
-		var path = paths[idx] || ('対象#' + idx);
+		var path = paths[idx] || Lf('JS_TARGET_LABEL_FALLBACK', { IDX: idx });
 		if (multi) {
 			html += '<p><code>' + escapeHtml(path) + '</code></p>';
 		}
@@ -856,7 +1110,7 @@ function renderConfSummaries() {
 				+ '<tr><th>LANGUAGE_FILE</th><td>' + escapeHtml(summary.LANGUAGE_FILE) + '</td></tr>'
 				+ '</table>';
 		} else {
-			html += '<p>まだconf.phpがありません（新規導入前）。</p>';
+			html += '<p>' + escapeHtml(L('JS_NO_CONF_YET')) + '</p>';
 		}
 	});
 	container.innerHTML = html;
@@ -867,46 +1121,61 @@ renderConfSummaries();
 document.getElementById('run-setup-btn').addEventListener('click', function () {
 	var btn = this;
 	var logList = document.getElementById('setup-log');
-	var indices = Array.prototype.slice.call(document.querySelectorAll('.target-checkbox:checked'))
-		.map(function (cb) { return cb.getAttribute('data-index'); });
+	// 20260719 Gikoneko: data-index（近隣スキャン検出分）と
+	// data-new-dir（新規フォルダ追加分）の両方に対応する。
+	var targetsList = Array.prototype.slice.call(document.querySelectorAll('.target-checkbox:checked'))
+		.map(function (cb) {
+			var newDir = cb.getAttribute('data-new-dir');
+			if (newDir !== null) {
+				return { kind: 'new', value: newDir, label: newDir + L('JS_NEW_DIR_TAG') };
+			}
+			var idx = cb.getAttribute('data-index');
+			return { kind: 'index', value: idx, label: '#' + idx };
+		});
 
 	logList.innerHTML = '';
 
-	if (indices.length === 0) {
+	if (targetsList.length === 0) {
 		var noneLi = document.createElement('li');
 		noneLi.className = 'ng';
-		noneLi.textContent = '導入先が選択されていません。チェックボックスで1つ以上選んでください。';
+		noneLi.textContent = L('JS_NO_TARGET_SELECTED_RUN');
 		logList.appendChild(noneLi);
 		return;
 	}
 
 	btn.disabled = true;
-	btn.textContent = '実行中…';
+	btn.textContent = L('JS_RUNNING');
 
 	var targetIdx = 0;
 	var hadFailure = false;
 	function runNextTarget() {
-		if (targetIdx >= indices.length) {
+		if (targetIdx >= targetsList.length) {
 			if (hadFailure) {
-				btn.textContent = '完了しました（一部エラーあり）';
+				btn.textContent = L('JS_DONE_WITH_ERRORS_BTN');
 				var doneLi = document.createElement('li');
 				doneLi.className = 'ng';
-				doneLi.textContent = 'すべての導入先の処理が終わりましたが、一部でエラー（赤字）がありました。ログの内容を必ずご確認ください。最新の状態を見るにはページを再読み込みしてください。';
+				doneLi.textContent = L('JS_DONE_WITH_ERRORS_MSG');
 				logList.appendChild(doneLi);
 			} else {
-				btn.textContent = '完了しました';
+				btn.textContent = L('JS_DONE_BTN');
 				var doneLi = document.createElement('li');
-				doneLi.textContent = 'すべての導入先の処理が終わりました。最新の状態を見るにはページを再読み込みしてください。';
+				doneLi.textContent = L('JS_DONE_MSG');
 				logList.appendChild(doneLi);
 			}
 			return;
 		}
-		var idx = indices[targetIdx];
+		var target = targetsList[targetIdx];
+		var idx = target.value;
 		var header = document.createElement('li');
-		header.innerHTML = '<strong>--- 導入先 #' + idx + ' ---</strong>';
+		header.innerHTML = '<strong>--- ' + Lf('JS_TARGET_HEADER', { LABEL: escapeHtml(target.label) }) + ' ---</strong>';
 		logList.appendChild(header);
 
-		fetch('?ajax=1&action=run_setup&target=' + encodeURIComponent(idx))
+		var langParam = '&lang=' + encodeURIComponent(<?php echo json_encode($lang); ?>);
+		var url = (target.kind === 'new')
+			? '?ajax=1&action=run_setup_new&dir=' + encodeURIComponent(target.value) + langParam
+			: '?ajax=1&action=run_setup&target=' + encodeURIComponent(target.value) + langParam;
+
+		fetch(url)
 			.then(function (res) { return res.json(); })
 			.then(function (data) {
 				var lines = data.log || [];
@@ -915,7 +1184,8 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 				function showNext() {
 					if (i >= lines.length) {
 						var linkLi = document.createElement('li');
-						linkLi.innerHTML = '<a href="?ajax=0" data-bbs-index="' + idx + '" data-entry-filename="' + entryFilename + '" class="bbs-link" target="_blank">→ この導入先の' + entryFilename + 'を開く</a>';
+						var bbsIndexAttr = (target.kind === 'new') ? ('new:' + idx) : idx;
+						linkLi.innerHTML = '<a href="?ajax=0" data-bbs-index="' + escapeHtml(bbsIndexAttr) + '" data-entry-filename="' + entryFilename + '" class="bbs-link" target="_blank">' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + '</a>';
 						logList.appendChild(linkLi);
 						targetIdx++;
 						runNextTarget();
@@ -936,7 +1206,7 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 			.catch(function () {
 				var li = document.createElement('li');
 				li.className = 'ng';
-				li.textContent = '導入先 #' + idx + ' で通信エラーが発生しました。';
+				li.textContent = Lf('JS_COMM_ERROR', { LABEL: target.label });
 				logList.appendChild(li);
 				hadFailure = true;
 				targetIdx++;
@@ -957,9 +1227,12 @@ document.addEventListener('click', function (e) {
 		var entryFilename = e.target.getAttribute('data-entry-filename') || 'bbs.php';
 		if (idx === '0') {
 			e.target.href = '../' + entryFilename;
+		} else if (idx && idx.indexOf('new:') === 0) {
+			e.preventDefault();
+			alert(Lf('JS_OPEN_NEW_DIR_ALERT', { PATH: idx.substring(4), ENTRY: entryFilename }));
 		} else {
 			e.preventDefault();
-			alert('導入先#' + idx + ' は、このinstall.phpの近隣スキャンで見つかった別のフォルダです。ブラウザで直接URLを開くには、そのフォルダのURLを手動で確認してください（本体ファイル名: ' + entryFilename + '）。');
+			alert(Lf('JS_OPEN_SCAN_ALERT', { IDX: idx, ENTRY: entryFilename }));
 		}
 	}
 });

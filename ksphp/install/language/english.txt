@@ -1,0 +1,97 @@
+# install.php language file (English)
+# Format: KEY=value (no spaces around "=")
+# Lines starting with "#" or ";" are comments. Empty lines are ignored.
+# Encoding: UTF-8 (no BOM)
+# %s is a placeholder substituted by PHP's sprintf(); {NAME} is a
+# placeholder substituted by simple string replacement on the JS side
+# (keep the placeholder spelling as-is).
+
+WRITABLE_DIR_CREATE_FAIL=Could not create the directory itself (check write permission on the parent directory).
+WRITABLE_OK=Writable.
+WRITABLE_NG=Not writable (check permissions).
+WRITABLE_TEST_DIR_CREATED= (this directory was newly created for this check)
+VERDICT_KSPHP_PLUS=Likely KSPHP Plus family (conf.php and migrate.php confirmed; likely compatible with this tool)
+VERDICT_OLD_KSPHP_PLUS=conf.php present, migrate.php absent (several distinctive keys matched; likely an older KSPHP Plus version. Not supported by this tool)
+VERDICT_UNRELATED_CONF=A file named conf.php exists, but almost none of the distinctive setting keys match. This is likely an unrelated installation, so please visually check its contents before installing.
+VERDICT_UNRELATED_NO_CONF=No conf.php found; likely an unrelated bbs.php from a different lineage
+MERGE_TEMPLATE_READ_FAIL=Could not read newbbs/conf.php.
+MERGE_KEY_PARSE_FAIL=conf.php: %s failed to parse from the old settings, so the new version's default value was used (please review).
+MERGE_KEY_KEPT=conf.php: %s kept its existing value.
+MERGE_KEY_INHERITED_LEGACY=conf.php: %s inherited its value from the old %s.
+MERGE_KEY_ADDED_NEW=conf.php: %s was added as a new item introduced in the new version.
+MERGE_KEY_DROPPED=conf.php: %s does not exist in the new version, so it was not carried over.
+INSTALL_NO_FILES=No files found under install/newbbs/. There is nothing to install.
+INSTALL_ENTRY_RENAMED=The main file was detected as %s, so it will be installed as %s instead of bbs.php.
+INSTALL_BACKUP_DIR_FAIL=Could not create the backup destination folder. Aborting installation.
+INSTALL_BACKUP_DIR=Backup destination: %s
+INSTALL_SKIP_BACKUP_FAIL=Skipped: %s (not overwritten because moving the existing file to backup failed)
+INSTALL_CONF_MERGED=Installed: %s (merged while keeping existing settings)
+INSTALL_CONF_WRITE_FAIL=Failed: %s (writing the merged result failed. Please check permissions)
+INSTALL_COPIED=Installed: %s
+INSTALL_COPY_FAIL=Failed: %s (could not copy. Please check permissions)
+INSTALL_MIGRATE_DONE=Ran the Migration Engine (any old-layout data has been migrated to data/ and logs/).
+INSTALL_DONE=Installation finished.
+ERROR_INVALID_PATH=The specified path is invalid (absolute paths and ".." are not allowed).
+ERROR_TARGET_NOT_FOUND=Target not found (the list may have changed. Please reload the page).
+NOT_SET=(not set)
+PAGE_TITLE=KSPHP Plus Setup Diagnostics & Installer
+LANG_SELECT_LABEL=Language:
+LABEL_TOOL_LOCATION=Location of this tool: 
+LABEL_INSTALL_TARGET=Install destination (site root): 
+H2_STEP1=1. Detecting the bbs.php main file
+NO_CANDIDATES_FOUND=No bbs.php was found nearby. It may not be installed yet (you can install it below with "Run setup").
+BTN_SELECT_ALL=Select all
+BTN_DESELECT_ALL=Deselect all
+TABLE_HEADER_INSTALL=Install
+TABLE_HEADER_PATH=Path
+TABLE_HEADER_VERSION=VERSION
+TABLE_HEADER_MODIFIED=Last modified
+TABLE_HEADER_VERDICT=Verdict
+CURRENT_INSTALL_MARK=  ← the install matching this install.php
+VERSION_UNKNOWN=(could not detect)
+MULTIPLE_CANDIDATES_WARN=Multiple bbs.php files were found nearby. Use the checkboxes to choose install destinations; multiple selection is allowed.
+NEW_DIR_INSTRUCTION=If you want to install to a location the nearby scan did not find (e.g. a brand-new folder with nothing installed yet), enter a path relative to %s (example: %s).
+NEW_DIR_INPUT_PLACEHOLDER=e.g. z/newboard
+BTN_ADD_NEW_DIR=Add new
+H2_STEP2=2. Files to install (install/newbbs/, %d files)
+NO_NEWBBS_FILES=There are no files under install/newbbs/.
+FILE_LIST_SEPARATOR=, 
+FILES_LIST_MORE= and %d more
+H2_STEP3=3. Write permissions (showing the main target only: %s)
+TABLE_HEADER_LOCATION=Location
+TABLE_HEADER_STATE=State
+TABLE_HEADER_NOTE=Note
+LOCATION_SITEROOT=Site root
+SITEROOT_NOT_WRITABLE_WARN=Cannot write to the site root. This is often because the file owner (e.g. ubuntu) differs from the Apache/PHP execution user (e.g. www-data). See doc/permissions.md.
+H2_STEP4=4. Migration Engine status
+MIGRATE_DONE_LABEL=Already migrated (%s).
+MIGRATE_NOT_DONE=Not migrated yet.
+H2_STEP5=5. Summary of conf.php settings (if one already exists at the destination)
+H2_STEP6=6. Run setup
+STEP6_INTRO=The contents of install/newbbs/ will be installed, in order, to the destinations checked above. Any existing files that would be overwritten are backed up beforehand to <code>install/backup/targetN/</code> for each destination.
+BTN_RUN_SETUP=Run setup
+FOOTER_NOTE=The diagnostics section does not change any code or data (temporary files used for the write test are deleted immediately). Files are only copied, with backups as described above, when you run setup.
+JS_ALERT_EMPTY_PATH=Please enter a relative path.
+JS_CONFIRM_NEW_DIR=Install to "{PATH}"?
+
+If this folder already has existing files, they will be backed up and merged; otherwise it will be installed as a fresh install.
+(The actual installation runs when you click "Run setup" below.)
+JS_NEW_DIR_TAG=  (newly added)
+JS_NO_TARGET_SELECTED=No destination is selected.
+JS_NO_CONF_YET=There is no conf.php yet (before a fresh install).
+JS_TARGET_LABEL_FALLBACK=Target #{IDX}
+JS_NO_TARGET_SELECTED_RUN=No destination is selected. Please check one or more boxes.
+JS_RUNNING=Running…
+JS_DONE_WITH_ERRORS_BTN=Finished (with some errors)
+JS_DONE_WITH_ERRORS_MSG=Processing finished for all destinations, but some errors occurred (shown in red). Please review the log carefully. Reload the page to see the latest state.
+JS_DONE_BTN=Finished
+JS_DONE_MSG=Processing finished for all destinations. Reload the page to see the latest state.
+JS_TARGET_HEADER=Destination {LABEL}
+JS_COMM_ERROR=A communication error occurred for destination {LABEL}.
+JS_OPEN_NEW_DIR_ALERT="{PATH}" is a newly added destination. To open it directly in the browser, please check that folder's URL manually (main file name: {ENTRY}).
+JS_OPEN_SCAN_ALERT=Destination #{IDX} is a different folder found by this install.php's nearby scan. To open its URL directly in the browser, please check that folder's URL manually (main file name: {ENTRY}).
+JS_OPEN_LINK_TEXT=→ Open {ENTRY} at this destination
+INSTALL_UNSAFE_TARGET=Aborted because the destination was judged unsafe (it may be near the filesystem root, or the install folder itself).
+INSTALL_BACKUP_MKDIR_FAIL=Skipped: %s (not overwritten because creating the backup folder failed)
+INSTALL_ROLLBACK_OK=Restored the original file that had been moved to backup: %s
+INSTALL_ROLLBACK_FAIL=Restoring the original file also failed. Please restore it manually from the backup (%s).

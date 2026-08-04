@@ -48,7 +48,7 @@ $CONF = array(
   // * Bulletin board name
   ## TL note: Ayashii World titles usually take the form of "AyashiiWorld@[web host name]
   ## TL note: StrangeWorld@ is the common English way to start it
-  'BBSTITLE' => 'あやしいわーるど＠しおん',
+  'BBSTITLE' => 'あやしいわーるど＠PHP+',
 
   // * 広報室のURL
   // * URL for the Public Relations Office (home/information page)
@@ -86,7 +86,7 @@ $CONF = array(
 
   // 検索エンジンに掲示板の概要を教えます。短い文章にするといいでしょう
   // Gives search engines an overview of the bulletin board. Keep it short and sweet
-  'META_DESCRIPTION' => 'あやしいわーるど＠しおん',
+  'META_DESCRIPTION' => 'あやしいわーるど＠PHP+',
 
   // 掲示板に関連した単語をカンマ区切りで入力します。あまり多すぎるとペナルティを食らう場合もあるようです
   // Enter some words related to the bulletin board, seperated by commas. If there's too many, you may be penalized by search engines
@@ -156,6 +156,12 @@ $CONF = array(
   #   0 : 表示しない (Do not display)
   #   1 : 表示する (Display)
   'SHOW_READNEWBTN' => 1,
+
+  // 未読が0件のときに「擬古猫といっしょ」を表示するかどうか
+  // Whether to show "Gikoneko-to-issho" when there are no unread posts
+  #   0 : 表示しない・従来通りのメッセージを表示 (Disabled; show the old message instead)
+  #   1 : 表示する (Enabled)
+  'GIKONEKO_TOISSHO' => 1,
 
   // gzip圧縮の初期値
   // （表示が高速化されます）

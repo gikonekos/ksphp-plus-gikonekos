@@ -1,0 +1,96 @@
+# install.php 言語ファイル（日本語）
+# 書式：KEY=値　（「=」の前後にスペースを入れないこと）
+# 「#」または「;」で始まる行はコメント。空行は無視される。
+# 文字コード：UTF-8（BOM無し）
+# %sはPHP側のsprintf()で置換されるプレースホルダ、{NAME}はJS側で
+# 単純な文字列置換されるプレースホルダ（綴りをそのまま残すこと）。
+
+WRITABLE_DIR_CREATE_FAIL=ディレクトリ自体が作成できません（親ディレクトリの書き込み権限を確認してください）。
+WRITABLE_OK=書き込み可能です。
+WRITABLE_NG=書き込みできません（権限を確認してください）。
+WRITABLE_TEST_DIR_CREATED=（このチェックのためにディレクトリを新規作成しました）
+VERDICT_KSPHP_PLUS=KSPHP Plus系（conf.php・migrate.php確認、本ツール対応版の可能性が高い）
+VERDICT_OLD_KSPHP_PLUS=conf.phpあり・migrate.phpなし（固有設定キーが複数一致、KSPHP Plus系の旧バージョンの可能性が高い。本ツール未対応）
+VERDICT_UNRELATED_CONF=conf.phpという名前のファイルはありますが、固有の設定キーがほとんど一致しません。別系統（無関係な設置）の可能性が高いため、導入前に必ず内容を目視確認してください。
+VERDICT_UNRELATED_NO_CONF=conf.phpが見当たらず、別系統のbbs.php（無関係な設置）の可能性が高い
+MERGE_TEMPLATE_READ_FAIL=newbbs/conf.php を読み込めませんでした。
+MERGE_KEY_PARSE_FAIL=conf.php: %s は旧設定の解析に失敗したため、新版の既定値を使用しました（要確認）。
+MERGE_KEY_KEPT=conf.php: %s は既存の設定値を維持しました。
+MERGE_KEY_INHERITED_LEGACY=conf.php: %s は旧 %s の設定値を引き継ぎました。
+MERGE_KEY_ADDED_NEW=conf.php: %s は新版の新規項目のため追加しました。
+MERGE_KEY_DROPPED=conf.php: %s は新版に存在しないため引き継ぎませんでした。
+INSTALL_NO_FILES=install/newbbs/ にファイルが見つかりません。導入対象がありません。
+INSTALL_ENTRY_RENAMED=本体ファイル名は %s として検出されたため、bbs.php ではなく %s として導入します。
+INSTALL_BACKUP_DIR_FAIL=バックアップ先フォルダを作成できませんでした。導入を中止します。
+INSTALL_BACKUP_DIR=バックアップ先: %s
+INSTALL_SKIP_BACKUP_FAIL=スキップ: %s（既存ファイルの退避（リネーム）に失敗したため上書きしていません）
+INSTALL_CONF_MERGED=導入: %s（既存設定を維持してマージしました）
+INSTALL_CONF_WRITE_FAIL=失敗: %s（マージ結果の書き込みに失敗しました。権限を確認してください）
+INSTALL_COPIED=導入: %s
+INSTALL_COPY_FAIL=失敗: %s（コピーできませんでした。権限を確認してください）
+INSTALL_MIGRATE_DONE=Migration Engineを実行しました（旧構成データがあれば data/・logs/ へ移行済みです）。
+INSTALL_DONE=導入処理が完了しました。
+ERROR_INVALID_PATH=指定されたパスが不正です（絶対パスや「..」は使えません）。
+ERROR_TARGET_NOT_FOUND=対象が見つかりません（一覧が変わった可能性があります。ページを再読み込みしてください）。
+NOT_SET=(未設定)
+PAGE_TITLE=KSPHP Plus セットアップ診断・導入
+LANG_SELECT_LABEL=表示言語：
+LABEL_TOOL_LOCATION=このツール自身の場所：
+LABEL_INSTALL_TARGET=導入先（サイトルート）：
+H2_STEP1=1. bbs.php本体の検出
+NO_CANDIDATES_FOUND=近隣にbbs.phpが見つかりませんでした。まだ導入されていない可能性があります（下の「セットアップを実行する」から導入できます）。
+BTN_SELECT_ALL=全選択
+BTN_DESELECT_ALL=全解除
+TABLE_HEADER_INSTALL=導入
+TABLE_HEADER_PATH=パス
+TABLE_HEADER_VERSION=VERSION
+TABLE_HEADER_MODIFIED=最終更新
+TABLE_HEADER_VERDICT=判定
+CURRENT_INSTALL_MARK=　←このinstall.phpに対応する導入先
+VERSION_UNKNOWN=(検出できず)
+MULTIPLE_CANDIDATES_WARN=複数のbbs.phpが近隣に見つかりました。チェックボックスで導入先を選び、複数選択も可能です。
+NEW_DIR_INSTRUCTION=近隣スキャンで見つからない場所（例：まだ何も設置していない新規フォルダ）に導入したい場合は、%s からの相対パスを入力してください（例：%s）。
+NEW_DIR_INPUT_PLACEHOLDER=例: z/newboard
+BTN_ADD_NEW_DIR=新規に追加
+H2_STEP2=2. 導入対象（install/newbbs/、%dファイル）
+NO_NEWBBS_FILES=install/newbbs/ にファイルがありません。
+FILE_LIST_SEPARATOR=、
+FILES_LIST_MORE= 他%d件
+H2_STEP3=3. 書き込み権限（主対象：%s のみ表示）
+TABLE_HEADER_LOCATION=場所
+TABLE_HEADER_STATE=状態
+TABLE_HEADER_NOTE=備考
+LOCATION_SITEROOT=サイトルート
+SITEROOT_NOT_WRITABLE_WARN=サイトルートに書き込めません。多くの場合、ファイルの所有者（例：ubuntu）とApache/PHPの実行ユーザー（例：www-data）が異なることが原因です。doc/permissions.md を参照してください。
+H2_STEP4=4. Migration Engineの状態
+MIGRATE_DONE_LABEL=移行済みです（%s）。
+MIGRATE_NOT_DONE=まだ移行されていません。
+H2_STEP5=5. conf.php設定の概要（導入先に既存のものがある場合）
+H2_STEP6=6. セットアップの実行
+STEP6_INTRO=install/newbbs/ の内容を、上でチェックした導入先へ順番に導入します。上書きされる既存ファイルはすべて事前に、それぞれの導入先ごとの <code>install/backup/targetN/</code> へバックアップされます。
+BTN_RUN_SETUP=セットアップを実行する
+FOOTER_NOTE=診断部分はコードやデータを変更しません（書き込みテスト用の一時ファイルは即座に削除しています）。セットアップ実行時のみ、上記の通りバックアップの上でファイルをコピーします。
+JS_ALERT_EMPTY_PATH=相対パスを入力してください。
+JS_CONFIRM_NEW_DIR=「{PATH}」に新規インストールしますか？
+
+このフォルダに既存のファイルがあればバックアップの上でマージし、なければ新規インストールとして導入します。
+（実際の導入は下の「セットアップを実行する」ボタンを押したときに実行されます）
+JS_NEW_DIR_TAG=　（新規追加）
+JS_NO_TARGET_SELECTED=導入先が選択されていません。
+JS_NO_CONF_YET=まだconf.phpがありません（新規導入前）。
+JS_TARGET_LABEL_FALLBACK=対象#{IDX}
+JS_NO_TARGET_SELECTED_RUN=導入先が選択されていません。チェックボックスで1つ以上選んでください。
+JS_RUNNING=実行中…
+JS_DONE_WITH_ERRORS_BTN=完了しました（一部エラーあり）
+JS_DONE_WITH_ERRORS_MSG=すべての導入先の処理が終わりましたが、一部でエラー（赤字）がありました。ログの内容を必ずご確認ください。最新の状態を見るにはページを再読み込みしてください。
+JS_DONE_BTN=完了しました
+JS_DONE_MSG=すべての導入先の処理が終わりました。最新の状態を見るにはページを再読み込みしてください。
+JS_TARGET_HEADER=導入先 {LABEL}
+JS_COMM_ERROR=導入先 {LABEL} で通信エラーが発生しました。
+JS_OPEN_NEW_DIR_ALERT=「{PATH}」は新規に追加した導入先です。ブラウザで直接開くには、そのフォルダのURLを手動でご確認ください（本体ファイル名: {ENTRY}）。
+JS_OPEN_SCAN_ALERT=導入先#{IDX} は、このinstall.phpの近隣スキャンで見つかった別のフォルダです。ブラウザで直接URLを開くには、そのフォルダのURLを手動で確認してください（本体ファイル名: {ENTRY}）。
+JS_OPEN_LINK_TEXT=→ この導入先の{ENTRY}を開く
+INSTALL_UNSAFE_TARGET=導入先が安全でないと判定されたため、処理を中止しました（ファイルシステムのルート付近、またはinstallフォルダ自身が指定された可能性があります）。
+INSTALL_BACKUP_MKDIR_FAIL=スキップ: %s（バックアップ用フォルダの作成に失敗したため上書きしていません）
+INSTALL_ROLLBACK_OK=退避していた元のファイルを元の場所に復元しました: %s
+INSTALL_ROLLBACK_FAIL=元のファイルの復元にも失敗しました。バックアップ（%s）から手動で復元してください。

@@ -26,14 +26,14 @@ require_once("./migrate.php");
 ksphp_migrate();
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '[20260717] (<span title="Heyuri Applicable Research & Development">Heyuri</span>, <span title="Hiru-ga-take">ヶ</span>, ＠Links, <span title="Giko-neko">擬古猫</span>)';
+$CONF['VERSION'] = '[20260719] (<span title="Heyuri Applicable Research & Development">Heyuri</span>, <span title="Hiru-ga-take">ヶ</span>, ＠Links, <span title="Giko-neko">擬古猫</span>)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
 // display/branding version and does not change on every build; this constant
 // is for precise build-to-build comparison (e.g. future differential-update
 // tooling). Update this value whenever a new package zip is built.
-define('KSPHP_PLUS_BUILD', 'ksphp-plus-main-rc5-2026-07-19-02');
+define('KSPHP_PLUS_BUILD', 'ksphp-plus-main-rc6-2026-07-19-01');
 
 /* Launch */
 
@@ -691,17 +691,6 @@ function tripuse($key) {
 		$message['MSG'] = preg_replace("/{/i","&#123;", $message['MSG'], -1);
         $message['MSG'] = preg_replace("/}/i","&#125;", $message['MSG'], -1);
 
-	#20241016 Heyuri: Deprecated by ytthumb.js, embedding each video in browser slows stuff down a lot
-        ##20200524 Gikoneko: youtube embedding
-        #$message['MSG'] = preg_replace("/<a href=\"https:\/\/youtu.be\/([^\"]+?)\" target=\"link\">([^<]+?)<\/a>/",
-        #"<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/$1\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>\r<a href=\"https://youtu.be/$1\">$2</a>", $message['MSG']);
-        ##20200524 Gikoneko: youtube embedding 2
-        #$message['MSG'] = preg_replace("/<a href=\"https:\/\/www.youtube.com\/watch\?v=([^\"]+?)\" target=\"link\">([^<]+?)<\/a>/",
-        #"<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/$1\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>\r<a href=\"https://www.youtube.com/watch?v=$1\">$2</a>", $message['MSG']);
-        ##20200524 Gikoneko: youtube embedding 3
-        #$message['MSG'] = preg_replace("/<a href=\"https:\/\/m.youtube.com\/watch\?v=([^\"]+?)\" target=\"link\">([^<]+?)<\/a>/",
-        #"<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/$1\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>\r<a href=\"https://m.youtube.com/watch?v=$1\">$2</a>", $message['MSG']);
-
 #20260601 gikoneko ttp -> http converted
             $message['MSG'] = preg_replace("/[^h]((ttps?|ftp|news):\/\/[-_.,!~*'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)/",
                 "<a href=\"h$1\" target=\"link\">$1</a>", $message['MSG']);
@@ -1176,13 +1165,19 @@ class Bbs extends Webapp {
         }
         else {
 
-#gikoneko 20260718 gikoneko to issho
-#            $msgmore = T('NO_UNREAD_MESSAGES') . ' ';
+#20260719 Gikoneko: conf.php の GIKONEKO_TOISSHO（あり=1／なし=0）で
+#分岐できるようにした。旧処理（NO_UNREAD_MESSAGES表示）はGIKONEKO_TOISSHO=0の
+#場合のフォールバックとして残す。
+            if ($this->c['GIKONEKO_TOISSHO']) {
 require_once("./gikoneko.php");
 
 ob_start();
 giko_display();
 $msgmore = ob_get_clean();
+            }
+            else {
+                $msgmore = T('NO_UNREAD_MESSAGES') . ' ';
+            }
 
         }
         if ($eindex >= $lastindex) {
@@ -1221,10 +1216,32 @@ $msgmore = ob_get_clean();
      */
     function getdispmessage() {
 
-        $logdata = $this->loadmessage();
-        # Unread pointer (latest POSTID)
-        $items = @explode (',', $logdata[0], 3);
+        # 20260719 Gikoneko: one-pass streaming read (Func::fgetline) instead of
+        # loading the whole log via file(), to avoid holding LOGSAVE lines in
+        # memory when only a small display window is needed. array_splice()'s
+        # PHP-specific negative offset/length ("count from the end") semantics
+        # require knowing the total line count in advance, so that rare edge
+        # case (bindex<0, or eindex-bindex<0 before clamping) falls back to a
+        # cheap count-only pre-pass + a second targeted read. The normal case
+        # (bindex>=0 and eindex>=bindex) stays a true single pass.
+        $logfilename = $this->c['LOGFILENAME'];
+        #20260717 Gikoneko: auto-create the main log file on first run
+        if (!file_exists($logfilename) and $this->ensurefile($logfilename)) {
+            $this->prtfilecreated(array(sprintf(T('FILE_AUTOCREATED'), $logfilename)));
+        }
+        if (!file_exists($logfilename)) {
+            $this->prterror(T('FAILED_TO_READ_MESSAGE'));
+        }
+        $fh = @fopen($logfilename, "rb");
+        if (!$fh) {
+            $this->prterror(T('FAILED_TO_READ_MESSAGE'));
+        }
+
+        # Unread pointer (latest POSTID) -- only line 0 is needed for this
+        $firstline = Func::fgetline($fh);
+        $items = @explode (',', $firstline, 3);
         $toppostid = $items[1];
+
         # Number of posts displayed
         $msgdisp = Func::fixnumberstr(@$this->f['d']);
         if ($msgdisp === FALSE) {
@@ -1260,25 +1277,74 @@ $msgmore = ob_get_clean();
             $bindex = 0;
             $eindex = $toppostid - @$this->f['p'];
         }
-        # For the last page, truncate
-        $lastindex = count($logdata);
-        if ($eindex > $lastindex) {
-            $eindex = $lastindex;
-        }
         # Display posts -1
         if ($msgdisp < 0) {
             $bindex = 0;
             $eindex = 0;
         }
-        # Display messages
-        if ($bindex == 0 and $eindex == 0) {
+
+        # 20260717 Gikoneko: does resolving this window require knowing the
+        # total line count in advance? (true array_splice() would need it
+        # whenever the offset is negative, or the length is negative even
+        # before clamping to the actual total)
+        $needsEndCount = ($bindex < 0 or ($eindex - $bindex) < 0);
+
+        if ($needsEndCount) {
+            # Pre-pass: count remaining lines only, no storage (line 0 already read above)
+            $lastindex = ($firstline === FALSE) ? 0 : 1;
+            while (Func::fgetline($fh) !== FALSE) {
+                $lastindex++;
+            }
+            # Resolve the exact array_splice-equivalent [start, end) range
+            $offset = $bindex;
+            $start = ($offset >= 0) ? min($offset, $lastindex) : max($lastindex + $offset, 0);
+            if ($eindex > $lastindex) {
+                $eindex = $lastindex;
+            }
+            $lengthparam = $eindex - $bindex;
+            $end = ($lengthparam >= 0) ? min($start + $lengthparam, $lastindex) : max($lastindex + $lengthparam, $start);
+
+            # Second pass: re-open and read only the resolved [start, end) range
+            fclose($fh);
+            $fh = @fopen($logfilename, "rb");
+            if (!$fh) {
+                $this->prterror(T('FAILED_TO_READ_MESSAGE'));
+            }
             $logdatadisp = array();
+            $lineindex = 0;
+            while (($line = Func::fgetline($fh)) !== FALSE) {
+                if ($lineindex >= $start and $lineindex < $end) {
+                    $logdatadisp[] = $line;
+                }
+                $lineindex++;
+                if ($lineindex >= $end) {
+                    break;
+                }
+            }
+            fclose($fh);
         }
         else {
-            $logdatadisp = array_splice ($logdata, $bindex, ($eindex - $bindex));
-            if ($this->c['RELTYPE'] and (@$this->f['readnew'] or ($msgdisp == '0' and $bindex == 0))) {
-                $logdatadisp = array_reverse($logdatadisp);
+            # Normal case: single forward pass, buffer only [bindex, eindex)
+            $logdatadisp = array();
+            $lineindex = 0;
+            $line = $firstline;
+            while ($line !== FALSE) {
+                if ($lineindex >= $bindex and $lineindex < $eindex) {
+                    $logdatadisp[] = $line;
+                }
+                $lineindex++;
+                $line = Func::fgetline($fh);
             }
+            fclose($fh);
+            $lastindex = $lineindex;
+            # For the last page, truncate (mirrors original array_splice truncation)
+            if ($eindex > $lastindex) {
+                $eindex = $lastindex;
+            }
+        }
+
+        if ($this->c['RELTYPE'] and (@$this->f['readnew'] or ($msgdisp == '0' and $bindex == 0))) {
+            $logdatadisp = array_reverse($logdatadisp);
         }
         $this->s['TOPPOSTID'] = $toppostid;
         $this->s['MSGDISP'] = $msgdisp;
@@ -1550,21 +1616,34 @@ $msgmore = ob_get_clean();
             fclose ($fh);
         }
         else {
-            $logdata = $this->loadmessage();
-            foreach ($logdata as $logline) {
-                $message = $this->getmessage($logline);
-                # Search by user
-                if ($mode == 's' and preg_replace("/<[^>]*>/", '', $message['USER']) == @$this->f['s']) {
-                    $result[] = $message;
-                }
-                # Search by thread
-                elseif ($mode == 't'
-                    and ($message['THREAD'] == @$this->f['s'] or $message['POSTID'] == @$this->f['s'])) {
-                    $result[] = $message;
-                    if ($message['POSTID'] == @$this->f['s']) {
-                        break;
+            # 20260719 Gikoneko: loadmessage()（file()で全件配列化）ではなく、
+            # "ff"分岐と同じFunc::fgetline()によるストリーム読みに統一。
+            # 全件を配列で保持しないため、ログが大きいほどメモリ削減効果が出る。
+            $logfilename = $this->c['LOGFILENAME'];
+            if (!file_exists($logfilename) and $this->ensurefile($logfilename)) {
+                $this->prtfilecreated(array(sprintf(T('FILE_AUTOCREATED'), $logfilename)));
+            }
+            if (!file_exists($logfilename)) {
+                $this->prterror(T('FAILED_TO_READ_MESSAGE'));
+            }
+            $fh2 = @fopen($logfilename, "rb");
+            if ($fh2) {
+                while (($logline = Func::fgetline($fh2)) !== FALSE) {
+                    $message = $this->getmessage($logline);
+                    # Search by user
+                    if ($mode == 's' and preg_replace("/<[^>]*>/", '', $message['USER']) == @$this->f['s']) {
+                        $result[] = $message;
+                    }
+                    # Search by thread
+                    elseif ($mode == 't'
+                        and ($message['THREAD'] == @$this->f['s'] or $message['POSTID'] == @$this->f['s'])) {
+                        $result[] = $message;
+                        if ($message['POSTID'] == @$this->f['s']) {
+                            break;
+                        }
                     }
                 }
+                fclose($fh2);
             }
         }
         return $result;
