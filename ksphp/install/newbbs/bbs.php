@@ -679,6 +679,10 @@ function tripuse($key) {
         #$message['MSG'] = preg_replace("/<a href=\"https:\/\/m.youtube.com\/watch\?v=([^\"]+?)\" target=\"link\">([^<]+?)<\/a>/",
         #"<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/$1\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>\r<a href=\"https://m.youtube.com/watch?v=$1\">$2</a>", $message['MSG']);
 
+#20260601 gikoneko ttp -> http converted
+            $message['MSG'] = preg_replace("/[^h]((ttps?|ftp|news):\/\/[-_.,!~*'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)/",
+                "<a href=\"h$1\" target=\"link\">$1</a>", $message['MSG']);
+
         # "Reference"
         if (!$mode) {
             $message['MSG'] = preg_replace("/<a href=\"m=f&s=(\d+)[^>]+>([^<]+)<\/a>$/i",
@@ -1148,7 +1152,15 @@ class Bbs extends Webapp {
 		$msgmore = str_replace(['{BINDEX}','{EINDEX}'], [$bindex,$eindex], T('POSTS_RANGE_NEWEST_TO_OLDEST'));
         }
         else {
-            $msgmore = T('NO_UNREAD_MESSAGES') . ' ';
+
+#gikoneko 20260718 gikoneko to issho
+#            $msgmore = T('NO_UNREAD_MESSAGES') . ' ';
+require_once("./gikoneko.php");
+
+ob_start();
+giko_display();
+$msgmore = ob_get_clean();
+
         }
         if ($eindex >= $lastindex) {
             $msgmore .= T('NO_POSTS_BELOW');
