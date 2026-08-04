@@ -442,8 +442,8 @@ class Treeview extends Bbs {
                 $isrequote = FALSE;
                 if ($parentbody !== null && preg_match("/(^|\r)&gt;/", $treemsg['MSG'])) {
                     $normqline = function ($line) {
-                        $line = preg_replace("/<[^>]*>/", "", $line);        // HTMLタグ除去
-                        $line = preg_replace("/^\s*&gt;\s?/", "", $line);   // 引用記号を1段除去
+                        $line = preg_replace("/<[^>]*>/", "", $line);              // HTMLタグ除去
+                        $line = preg_replace("/^(\s*&gt;\s?)+/", "", $line);      // 引用記号を全段除去
                         return trim($line);
                     };
                     $parentset = array();
