@@ -57,6 +57,24 @@ function ksphp_migrate(): void {
 		return;
 	}
 
+	// 【2026-07-19決定：ファイル移動処理を一時停止】
+	// bbs.log・log/・bbs.cnt・count/等の実データをdata/・logs/へ物理的に
+	// 移動する処理は、conf.php側のパス設定（LOGFILENAME等）との整合性を
+	// 保つのが難しく（要求元: 実機で原因不明のOLDLOGFILEDIR不整合が発生）、
+	// 事故の温床になりやすいと判断し、当面停止する。
+	//
+	// 現在の方針：旧設置のログ・カウント関連ファイルは、物理的な場所も
+	// conf.php側のパス設定も、一切変更せず「単純移植」する（通常の
+	// conf.phpマージと同じ扱い。特別扱いをしない）。新規インストール
+	// （旧データが無い場合）は、newbbs/conf.phpの既定値（./logs/bbs.log等）
+	// がそのまま使われる。
+	//
+	// ディレクトリ構成をdata/・logs/へ整理統合する機能自体は、TODO
+	// （doc/migration-engine-spec-2026-07-19-01.txt）として再検討予定。
+	// マーカーだけ立てて終了し、以降のコストを避ける。
+	ksphp_migrate_mark_done($root, $marker);
+	return;
+
 	// 移行対象ファイル／ディレクトリと、移行先トップディレクトリの対応。
 	// キー：ルート直下の相対パス、値：移行先（'data' または 'logs'）。
 	$targets = array(
@@ -201,7 +219,7 @@ function ksphp_migrate_update_conf_value(string $conf_path, string $key, array $
 		return null;
 	}
 
-	$pattern = "/'" . preg_quote($key, '/') . "'\\s*=>\\s*'((?:[^'\\\\]|\\\\.)*)'\\s*,/u";
+	$pattern = "/'" . preg_quote($key, '/') . "'\\s*=>\\s*'((?:[^'\\\\]|\\\\.)*)'\\s*,/s";
 	if (!preg_match($pattern, $content, $m)) {
 		return null;
 	}

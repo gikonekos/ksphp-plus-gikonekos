@@ -33,7 +33,7 @@ $CONF['VERSION'] = '[20260717] (<span title="Heyuri Applicable Research & Develo
 // display/branding version and does not change on every build; this constant
 // is for precise build-to-build comparison (e.g. future differential-update
 // tooling). Update this value whenever a new package zip is built.
-define('KSPHP_PLUS_BUILD', 'ksphp-plus-main-rc5-2026-07-19-01');
+define('KSPHP_PLUS_BUILD', 'ksphp-plus-main-rc5-2026-07-19-02');
 
 /* Launch */
 
@@ -406,7 +406,17 @@ class Webapp {
 
 function tripuse($key) {
     #$tripkey = '#istrip';? // String to be used as password (with #)
-            $key = mb_convert_encoding($key, "SJIS-win", "UTF-8,SJIS-win");	// to, from
+            if (function_exists('mb_convert_encoding')) {
+                $key = mb_convert_encoding($key, "SJIS-win", "UTF-8,SJIS-win");	// to, from
+            } else {
+                // mbstringが無効な環境向けのフォールバック（iconv）。
+                // SJIS-winとCP932は一部文字（波ダッシュ等）の扱いが異なるため、
+                // 他サイトのトリップ計算機と結果が完全一致しない可能性はあるが、
+                // mbstring不在による500エラーで投稿自体ができなくなるよりは
+                // 望ましいための代替措置（2026-07-19）。
+                $converted = @iconv('UTF-8', 'CP932//IGNORE', $key);
+                $key = ($converted !== false) ? $converted : $key;
+            }
     #		$key = '#'.substr($key, strpos($key, '#'));
     
     # Trip

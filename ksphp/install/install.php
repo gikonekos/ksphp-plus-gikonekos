@@ -62,6 +62,31 @@ function ksphp_install_check_writable(string $dir): array {
 	return array('ok' => $ok, 'note' => $note);
 }
 
+function ksphp_install_conf_marker_score(string $conf_path): int {
+	// KSPHP Plus独自の命名規則にリネームされたキー群。
+	// Heyuri・古いkuzuhaphp等の別系統は、conf.phpという同名ファイルを
+	// 持っていても、これらのキー名は使っていない（BBSMODE_IMAGE・
+	// TXTTREE等、別の命名規則を使う）ことを実データで確認済み
+	// （2026-07-19）。1個の一致は偶然の可能性もあるため、複数一致を
+	// もって「同系統らしさ」の判定材料とする。
+	static $markers = array(
+		'TREEDISP', 'SECRETCODE', 'UPLOADIDFILE', 'MULTIPLESEARCH',
+		'MAX_UPLOADSPACE', 'IMAGE_PREVIEW_RESIZE',
+		'C_BRANCH', 'C_NEWMSG', 'C_QUERY', 'C_UPDATE',
+	);
+	$content = @file_get_contents($conf_path);
+	if ($content === false) {
+		return 0;
+	}
+	$score = 0;
+	foreach ($markers as $key) {
+		if (strpos($content, "'" . $key . "'") !== false) {
+			$score++;
+		}
+	}
+	return $score;
+}
+
 function ksphp_install_check_pair(string $bbs_php_path): array {
 	$dir = dirname($bbs_php_path);
 	$has_conf    = file_exists($dir . '/conf.php');
@@ -70,7 +95,12 @@ function ksphp_install_check_pair(string $bbs_php_path): array {
 	if ($has_conf && $has_migrate) {
 		$verdict = 'KSPHP Plus系（conf.php・migrate.php確認、本ツール対応版の可能性が高い）';
 	} elseif ($has_conf) {
-		$verdict = 'conf.phpあり・migrate.phpなし（KSPHP Plus系だが本ツール未対応の旧バージョンの可能性）';
+		$score = ksphp_install_conf_marker_score($dir . '/conf.php');
+		if ($score >= 2) {
+			$verdict = 'conf.phpあり・migrate.phpなし（固有設定キーが複数一致、KSPHP Plus系の旧バージョンの可能性が高い。本ツール未対応）';
+		} else {
+			$verdict = 'conf.phpという名前のファイルはありますが、固有の設定キーがほとんど一致しません。別系統（無関係な設置）の可能性が高いため、導入前に必ず内容を目視確認してください。';
+		}
 	} else {
 		$verdict = 'conf.phpが見当たらず、別系統のbbs.php（無関係な設置）の可能性が高い';
 	}
@@ -208,7 +238,7 @@ function ksphp_parse_module_array(string $content, string $global_var_name): arr
 
 	$values = array();
 	foreach ($scan['entries'] as $entry) {
-		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/su', $entry, $em)) {
+		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $entry, $em)) {
 			$values[$em[2]] = $em[3];
 		}
 	}
@@ -252,7 +282,7 @@ function ksphp_legacy_module_key_source(string $key): ?array {
  * 差し替える。リード部・トレイル部（コメント等）はそのまま残す。
  */
 function ksphp_conf_entry_with_value(string $entry, string $raw_value): string {
-	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/su', $entry, $m)) {
+	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/s', $entry, $m)) {
 		return $entry;
 	}
 	return $m[1] . "'" . $m[2] . "'" . $m[3] . $raw_value . ',' . $m[5];
@@ -264,7 +294,7 @@ function ksphp_conf_entry_with_value(string $entry, string $raw_value): string {
  * 新版（テンプレート）側のものをそのまま残す。
  */
 function ksphp_conf_merge_entry(string $new_entry, ?string $old_entry): array {
-	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/su', $new_entry, $m)) {
+	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/s', $new_entry, $m)) {
 		return array('text' => $new_entry, 'key' => null);
 	}
 	$lead = $m[1];
@@ -276,8 +306,11 @@ function ksphp_conf_merge_entry(string $new_entry, ?string $old_entry): array {
 	if ($old_entry === null) {
 		return array('text' => $new_entry, 'key' => $key, 'is_new' => true);
 	}
-	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/su', $old_entry, $om)) {
-		return array('text' => $new_entry, 'key' => $key, 'is_new' => true);
+	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $old_entry, $om)) {
+		// 旧エントリは存在するのに値の切り出しに失敗した場合。
+		// 「本当に新規キーで旧設定が無い」ケースと区別し、呼び出し側で
+		// 「マージ失敗・要確認」として明示的にログへ残せるようにする。
+		return array('text' => $new_entry, 'key' => $key, 'is_new' => true, 'merge_failed' => true);
 	}
 	$old_val = $om[3];
 	$changed = ($old_val !== $new_val);
@@ -329,7 +362,7 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 
 	$old_by_key = array();
 	foreach ($old_parsed['entries'] as $oe) {
-		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/su', $oe, $om)) {
+		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/s', $oe, $om)) {
 			$old_by_key[$om[2]] = $oe;
 		}
 	}
@@ -341,7 +374,7 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 	$seen = array();
 	$merged_entries = array();
 	foreach ($new_parsed['entries'] as $entry) {
-		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/su', $entry, $km)) {
+		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/s', $entry, $km)) {
 			$key = $km[2];
 			$seen[$key] = true;
 			$old_entry = isset($old_by_key[$key]) ? $old_by_key[$key] : null;
@@ -349,7 +382,9 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 			if ($old_entry !== null) {
 				$res = ksphp_conf_merge_entry($entry, $old_entry);
 				$merged_entries[] = $res['text'];
-				if (!empty($res['changed'])) {
+				if (!empty($res['merge_failed'])) {
+					$log[] = array('ok' => false, 'text' => "conf.php: {$key} は旧設定の解析に失敗したため、新版の既定値を使用しました（要確認）。");
+				} elseif (!empty($res['changed'])) {
 					$log[] = array('ok' => true, 'text' => "conf.php: {$key} は既存の設定値を維持しました。");
 				}
 				continue;
@@ -849,12 +884,21 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 	btn.textContent = '実行中…';
 
 	var targetIdx = 0;
+	var hadFailure = false;
 	function runNextTarget() {
 		if (targetIdx >= indices.length) {
-			btn.textContent = '完了しました';
-			var doneLi = document.createElement('li');
-			doneLi.textContent = 'すべての導入先の処理が終わりました。最新の状態を見るにはページを再読み込みしてください。';
-			logList.appendChild(doneLi);
+			if (hadFailure) {
+				btn.textContent = '完了しました（一部エラーあり）';
+				var doneLi = document.createElement('li');
+				doneLi.className = 'ng';
+				doneLi.textContent = 'すべての導入先の処理が終わりましたが、一部でエラー（赤字）がありました。ログの内容を必ずご確認ください。最新の状態を見るにはページを再読み込みしてください。';
+				logList.appendChild(doneLi);
+			} else {
+				btn.textContent = '完了しました';
+				var doneLi = document.createElement('li');
+				doneLi.textContent = 'すべての導入先の処理が終わりました。最新の状態を見るにはページを再読み込みしてください。';
+				logList.appendChild(doneLi);
+			}
 			return;
 		}
 		var idx = indices[targetIdx];
@@ -879,6 +923,9 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 					}
 					var li = document.createElement('li');
 					li.className = lines[i].ok ? 'ok' : 'ng';
+					if (!lines[i].ok) {
+						hadFailure = true;
+					}
 					li.textContent = lines[i].text;
 					logList.appendChild(li);
 					i++;
@@ -891,6 +938,7 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 				li.className = 'ng';
 				li.textContent = '導入先 #' + idx + ' で通信エラーが発生しました。';
 				logList.appendChild(li);
+				hadFailure = true;
 				targetIdx++;
 				runNextTarget();
 			});
