@@ -79,6 +79,7 @@ FILE_SIZE_OVER_LIMIT=파일 크기가 %sKB를 초과합니다.
 FILE_UPLOAD_FAILED=파일 업로드 처리에 실패했습니다. 코드: %s
 FAILED_TO_LOAD_UPLOAD_ID=업로드된 이미지 파일을 불러오는 데 실패했습니다.
 IMAGE_WIDTH_EXCEEDED=이미지 너비가 제한을 초과합니다.
+IMAGE_FILEMSG=이미지%s %s %s*%s %sKB
 INVALID_FILE_FORMAT=파일 형식이 올바르지 않습니다.
 DIRECTORY_OPEN_FAILED=이 디렉터리를 열 수 없습니다.
 TOO_MANY_KEYWORDS=검색 키워드가 너무 많습니다.
@@ -351,6 +352,7 @@ LATEX_SETTING_LABEL=LaTeX 수식 렌더링 사용 (개인 설정, 이 브라우�
 
 # 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
 JS_SETTINGS_LEGEND=JS 설정
+JS_GIKO_LABEL=Gikoneko-to-issho (읽지 않은 게시물이 없을 때)
 JS_IMGTHUMB_LABEL=이미지 썸네일 표시
 JS_KAOMOJI_LABEL=이모티콘 팔레트 표시
 JS_LATEX_LABEL=LaTeX 수식 렌더링(CDN에서 KaTeX를 불러옵니다)

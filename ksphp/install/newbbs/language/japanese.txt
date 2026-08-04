@@ -82,6 +82,7 @@ FILE_SIZE_OVER_LIMIT=ファイルサイズが%sKBを超えています。
 FILE_UPLOAD_FAILED=ファイルアップロードの処理に失敗しました。コード:%s
 FAILED_TO_LOAD_UPLOAD_ID=アップロード記録ファイルの読み込みに失敗しました
 IMAGE_WIDTH_EXCEEDED=画像の幅が許可量を超えています。
+IMAGE_FILEMSG=画像%s %s %s*%s %sKB
 INVALID_FILE_FORMAT=ファイルの形式が正しくありません。
 DIRECTORY_OPEN_FAILED=ディレクトリが開けませんでした
 TOO_MANY_KEYWORDS=検索キーワードが多すぎます。
@@ -358,6 +359,7 @@ LATEX_SETTING_LABEL=LaTeX数式レンダリングを有効にする（個人設�
 
 # 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
 JS_SETTINGS_LEGEND=JS設定
+JS_GIKO_LABEL=擬古猫といっしょ（未読0件時）
 JS_IMGTHUMB_LABEL=画像サムネイル表示
 JS_KAOMOJI_LABEL=顔文字パレット表示
 JS_LATEX_LABEL=LaTeX数式レンダリング（CDNからKaTeXを読み込みます）

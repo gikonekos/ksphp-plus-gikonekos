@@ -592,6 +592,9 @@
 <br>
 <fieldset>
         <legend>{JS_SETTINGS_LEGEND}</legend>
+        <patTemplate:tmpl name="js_giko_row" visibility="hidden">
+        <input type="checkbox" name="js_giko" value="1"{CHK_JS_GIKO} id="js0" /> <label for="js0">{JS_GIKO_LABEL}</label><br>
+        </patTemplate:tmpl>
         <input type="checkbox" name="js_imgthumb" value="1"{CHK_JS_IMGTHUMB} id="js1" /> <label for="js1">{JS_IMGTHUMB_LABEL}</label><br>
         <input type="checkbox" name="js_kaomoji" value="1"{CHK_JS_KAOMOJI} id="js2" /> <label for="js2">{JS_KAOMOJI_LABEL}</label><br>
         <input type="checkbox" name="js_latex" value="1"{CHK_JS_LATEX} id="js3" /> <label for="js3">{JS_LATEX_LABEL}</label><br>

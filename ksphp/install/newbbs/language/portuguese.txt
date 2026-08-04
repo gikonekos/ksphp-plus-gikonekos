@@ -81,6 +81,7 @@ FILE_SIZE_OVER_LIMIT=O tamanho do arquivo excede %sKB.
 FILE_UPLOAD_FAILED=O processo de envio do arquivo falhou. Código: %s
 FAILED_TO_LOAD_UPLOAD_ID=Falha ao carregar o arquivo de imagem enviado.
 IMAGE_WIDTH_EXCEEDED=A largura da imagem excede o limite.
+IMAGE_FILEMSG=Imagem%s %s %s*%s %sKB
 INVALID_FILE_FORMAT=O formato do arquivo está incorreto.
 DIRECTORY_OPEN_FAILED=Não foi possível abrir este diretório.
 TOO_MANY_KEYWORDS=Há palavras-chave de pesquisa demais.
@@ -359,6 +360,7 @@ LATEX_SETTING_LABEL=Ativar renderização de fórmulas LaTeX (configuração pes
 
 # 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
 JS_SETTINGS_LEGEND=Configurações de JS
+JS_GIKO_LABEL=Gikoneko-to-issho (quando não há posts não lidos)
 JS_IMGTHUMB_LABEL=Miniaturas de imagens
 JS_KAOMOJI_LABEL=Paleta de emoticons
 JS_LATEX_LABEL=Renderização de fórmulas LaTeX (carrega o KaTeX via CDN)

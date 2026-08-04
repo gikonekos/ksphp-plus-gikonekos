@@ -387,12 +387,13 @@ function ksphp_conf_entry_split_lead_comments(string $entry): array {
 
 /**
  * エントリの先頭コメント（ksphp_conf_entry_split_lead_comments()の
- * lead_comments）から、レビュー画面のヘルプテキストとして表示する
+ * lead_comments）から、レビュー画面のヘルプテキストのフォールバック用
  * 原文（日本語＋英語、conf.php記述のまま）を作る。
  *
- * 【20260801】多言語UI（7言語）向けの翻訳は行わない（原文をそのまま表示し、
- * 閲覧者側のブラウザ翻訳機能に委ねる方針）。フル翻訳の実装は
- * doc/README.md のToDoに記録し、次回以降の課題とする。
+ * 【20260802】7言語翻訳（CONF_HELP_<キー名>、install/language/*.txt）を
+ * 実装。この関数が返す原文は、翻訳が用意されていないキー（今後
+ * conf.phpへ追加される新規キーなど）向けのフォールバックとしてのみ
+ * 使われる。呼び出し側は ksphp_conf_help_text() を経由すること。
  * 罫線（#---...---）・翻訳者向けメモ（## TL note: ...）は表示から除外する。
  */
 function ksphp_conf_entry_comment_text(string $lead_comments): string {
@@ -414,6 +415,90 @@ function ksphp_conf_entry_comment_text(string $lead_comments): string {
 		$out[] = $line;
 	}
 	return implode(' / ', $out);
+}
+
+/**
+ * 【20260802 バグ修正】conf.php内の一部設定（C_A_COLOR〜C_A_HOVER・
+ * C_SUBJ・C_ERROR等）は、値の直後に同一行でコメントを置くスタイル
+ * （例： 'C_A_COLOR' => 'cfe', # 通常 (Normal)）を使っている。
+ * ksphp_scan_array_block() はカンマ単位でエントリを分割するため、
+ * この「同一行の末尾コメント」は次のエントリの生テキストの先頭に
+ * 紛れ込み、ksphp_conf_entry_split_lead_comments() によって「次の
+ * キーの先頭コメント」と誤認識されていた（結果、ヘルプテキストが
+ * 1項目分ズレて表示される）。
+ *
+ * この関数は、次エントリの先頭1行が「コメントのみの行」であれば、
+ * それを現エントリ自身の末尾コメントとして切り出す。
+ */
+function ksphp_conf_entry_trailing_comment(?string $next_entry): string {
+	if ($next_entry === null) {
+		return '';
+	}
+	$nl = strpos($next_entry, "\n");
+	$first_line = ($nl === false) ? $next_entry : substr($next_entry, 0, $nl);
+	$trimmed = ltrim($first_line);
+	if ($trimmed === '') {
+		return '';
+	}
+	$is_comment = ($trimmed[0] === '#') || (substr($trimmed, 0, 2) === '//');
+	return $is_comment ? $trimmed : '';
+}
+
+/**
+ * ksphp_conf_parse_entries()が返すエントリ配列全体から、
+ * キー => ヘルプテキスト（フォールバック用原文）の対応表を作る。
+ * 各エントリの先頭コメントに加え、ksphp_conf_entry_trailing_comment()
+ * で拾った「自分自身の末尾コメント（次エントリ先頭から回収）」も
+ * 合わせて反映する（20260802バグ修正）。
+ *
+ * @return array<string,string> キー => ヘルプテキスト
+ */
+function ksphp_conf_build_help_texts(array $entries): array {
+	$n = count($entries);
+	$stolen = array(); // index => 次エントリの先頭から回収した、このエントリ自身の末尾コメント原文
+	for ($i = 0; $i < $n - 1; $i++) {
+		$raw = ksphp_conf_entry_trailing_comment($entries[$i + 1]);
+		if ($raw !== '') {
+			$stolen[$i] = $raw;
+		}
+	}
+
+	$out = array();
+	foreach ($entries as $i => $entry) {
+		if (isset($stolen[$i - 1])) {
+			// 自エントリの先頭1行は前エントリの末尾コメントなので、
+			// 自エントリ自身の先頭コメントとしては読み飛ばす。
+			$nl = strpos($entry, "\n");
+			$entry = ($nl === false) ? '' : substr($entry, $nl + 1);
+		}
+		$split = ksphp_conf_entry_split_lead_comments($entry);
+		if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/s', $split['code'], $m)) {
+			continue;
+		}
+		$key = $m[2];
+		$lead = ksphp_conf_entry_comment_text($split['lead_comments']);
+		$trailing = isset($stolen[$i]) ? ksphp_conf_entry_comment_text($stolen[$i] . "\n") : '';
+		if ($lead !== '' && $trailing !== '') {
+			$out[$key] = $lead . ' / ' . $trailing;
+		} else {
+			$out[$key] = ($lead !== '') ? $lead : $trailing;
+		}
+	}
+	return $out;
+}
+
+/**
+ * レビュー画面に表示する、1設定項目分のヘルプテキストを返す。
+ * install/language/*.txt に 'CONF_HELP_<キー名>' の翻訳があれば
+ * それを使い、無ければ $fallback（conf.phpコメントの原文、日英混在）
+ * をそのまま表示する（多言語UIが未整備の新規キー等への安全策）。
+ */
+function ksphp_conf_help_text(string $key, string $fallback): string {
+	$translated = $GLOBALS['MSG']['CONF_HELP_' . $key] ?? null;
+	if ($translated !== null && trim($translated) !== '') {
+		return $translated;
+	}
+	return $fallback;
 }
 
 /**
@@ -876,6 +961,8 @@ function ksphp_conf_build_review(string $old_conf_path, string $new_template_pat
 		}
 	}
 
+	$help_texts = ksphp_conf_build_help_texts($parsed['entries']);
+
 	$fields = array();
 	foreach ($parsed['entries'] as $entry) {
 		$entry_split = ksphp_conf_entry_split_lead_comments($entry);
@@ -907,7 +994,7 @@ function ksphp_conf_build_review(string $old_conf_path, string $new_template_pat
 			'required'    => ksphp_conf_is_required_key($key),
 			'is_new'      => !isset($old_by_key[$key]),
 			'options'     => $options,
-			'description' => ksphp_conf_entry_comment_text($entry_split['lead_comments']),
+			'description' => ksphp_conf_help_text($key, $help_texts[$key] ?? ''),
 		);
 	}
 

@@ -81,6 +81,7 @@ FILE_SIZE_OVER_LIMIT=The file size is over %sKB.
 FILE_UPLOAD_FAILED=File upload process failed. Code: %s
 FAILED_TO_LOAD_UPLOAD_ID=Failed to load the uploaded image file.
 IMAGE_WIDTH_EXCEEDED=The width of the image exceeds the limit.
+IMAGE_FILEMSG=Image%s %s %s*%s %sKB
 INVALID_FILE_FORMAT=The file format is incorrect.
 DIRECTORY_OPEN_FAILED=This directory could not be opened.
 TOO_MANY_KEYWORDS=There are too many search keywords.
@@ -359,6 +360,7 @@ LATEX_SETTING_LABEL=Enable LaTeX math rendering (personal setting, this browser 
 
 # 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
 JS_SETTINGS_LEGEND=JS Settings
+JS_GIKO_LABEL=Gikoneko-to-issho (when there are no unread posts)
 JS_IMGTHUMB_LABEL=Image thumbnails
 JS_KAOMOJI_LABEL=Kaomoji palette
 JS_LATEX_LABEL=LaTeX math rendering (loads KaTeX from a CDN)

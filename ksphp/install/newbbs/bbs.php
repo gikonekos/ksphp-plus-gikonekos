@@ -50,7 +50,7 @@ if (file_exists($ksphp_local_secrets_file)) {
 unset($ksphp_local_secrets_file, $ksphp_local_secrets);
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '擬古猫+RC14 [20260801] (Heyuri, ヶ, ＠Links, 擬古猫)';
+$CONF['VERSION'] = '擬古猫+RC15 [20260802] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
@@ -198,6 +198,7 @@ function ksphp_js_setting_defs(): array {
     $linebreaker_default = min(72, $linebreaker_max);
 
     return array(
+        'giko'            => array('type' => 'bool', 'default' => 1),
         'imgthumb'        => array('type' => 'bool', 'default' => 1),
         'kaomoji'         => array('type' => 'bool', 'default' => 1),
         'latex'           => array('type' => 'bool', 'default' => 0),
@@ -1352,11 +1353,21 @@ class Bbs extends Webapp {
 #(1=on/0=off). The old behavior (showing NO_UNREAD_MESSAGES) is kept as
 #the fallback for GIKONEKO_TOISSHO=0.
             if ($this->c['GIKONEKO_TOISSHO']) {
+                // 20260802: also respect the reader's personal setting (cookie
+                // 'ksphp_js' -> 'giko'). The server flag (GIKONEKO_TOISSHO)
+                // is the master; if it is 0 we never reach this branch at all.
+                // If it is 1 but the reader has turned it off locally, fall
+                // back to the plain NO_UNREAD_MESSAGES text instead.
+                $js_current = ksphp_js_settings_load();
+                if ($js_current['giko']) {
 require_once("./gikoneko.php");
 
 ob_start();
 giko_display();
 $msgmore = ob_get_clean();
+                } else {
+                    $msgmore = T('NO_UNREAD_MESSAGES') . ' ';
+                }
             }
             else {
                 $msgmore = T('NO_UNREAD_MESSAGES') . ' ';
@@ -1873,16 +1884,32 @@ $msgmore = ob_get_clean();
         $js_current = ksphp_js_settings_load();
         foreach (ksphp_js_setting_defs() as $js_key => $js_def) {
             $tmpl_key = 'CHK_JS_' . strtoupper($js_key);
+            // 20260802: 'giko' のチェックボックスはネストされたサブ
+            // テンプレート js_giko_row 内にあるため、patTemplateの
+            // addVar()は 'custom' ではなく 'js_giko_row' を対象に
+            // しなければ届かない（addVar()はテンプレート名で厳密に
+            // スコープされる。同じ理由でnextpage/backnaviも個別に
+            // addVarしている。'custom' 側へ入れると{CHK_JS_GIKO}が
+            // 未解決のまま残り、stripUnusedVars()で空文字列に消え、
+            // 常に未チェック表示になってしまう）。
+            $target_tmpl = ($js_key === 'giko') ? 'js_giko_row' : 'custom';
             if ($js_def['type'] === 'bool') {
                 if ($js_current[$js_key]) {
-                    $this->t->addVar('custom', $tmpl_key, ' checked="checked"');
+                    $this->t->addVar($target_tmpl, $tmpl_key, ' checked="checked"');
                 }
             } else { // int
-                $this->t->addVar('custom', 'VAL_JS_' . strtoupper($js_key), (string) $js_current[$js_key]);
+                $this->t->addVar($target_tmpl, 'VAL_JS_' . strtoupper($js_key), (string) $js_current[$js_key]);
                 // 動的にmax値を計算するキー（linebreaker_len等）用に、
                 // フォームのmax属性へも渡しておく。
-                $this->t->addVar('custom', 'VAL_JS_' . strtoupper($js_key) . '_MAX', (string) $js_def['max']);
+                $this->t->addVar($target_tmpl, 'VAL_JS_' . strtoupper($js_key) . '_MAX', (string) $js_def['max']);
             }
+        }
+        // 20260802: 「擬古猫といっしょ」のオフは、サーバー側で
+        // GIKONEKO_TOISSHO=1 の場合のみ個人設定として意味を持つ。
+        // 0 の場合はサーバー設定が優先されるため、チェックボックス自体を
+        // 非表示にして混乱を防ぐ。
+        if ($this->c['GIKONEKO_TOISSHO']) {
+            $this->t->setAttribute('js_giko_row', 'visibility', 'visible');
         }
 
         $this->t->addVar('custom_hide', 'BBSMODE_ADMINONLY', $this->c['BBSMODE_ADMINONLY']);
@@ -3269,7 +3296,12 @@ class Func {
         $d = $tmp_b - 64 * $c;
 
         $basestr = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_';
-        $base64val = $basestr[$a] . $basestr[$b] . $basestr[$c] . $basestr[$d];
+        // 20260802: floor() returns a float, and using a float as a string
+        // offset emits "Warning: String offset cast occurred" on every call
+        // (reachable from setcustom() when a user saves colour settings).
+        // Cast to int explicitly; the values are already whole numbers so
+        // the resulting characters are unchanged.
+        $base64val = $basestr[(int)$a] . $basestr[(int)$b] . $basestr[(int)$c] . $basestr[(int)$d];
         return $base64val;
     }
 
@@ -3335,8 +3367,12 @@ class Func {
         list($netaddr, $cidrmask) = explode("/", $cidraddr);
         $netaddr_long = ip2long($netaddr);
         $cidrmask = pow(2, 32 - $cidrmask) - 1;
-        $bits1 = str_pad(decbin($netaddr_long), 32, "0", "STR_PAD_LEFT");
-        $bits2 = str_pad(decbin($cidrmask), 32, "0", "STR_PAD_LEFT");
+        // 20260802: STR_PAD_LEFT was quoted as a string, which is a fatal
+        // TypeError under PHP 8 (str_pad() argument #4 must be int). This
+        // function currently has no call sites, so it never fired in
+        // production, but it would have crashed immediately if used.
+        $bits1 = str_pad(decbin($netaddr_long), 32, "0", STR_PAD_LEFT);
+        $bits2 = str_pad(decbin($cidrmask), 32, "0", STR_PAD_LEFT);
         $final = '';
         for ($i = 0; $i < 32; $i++) {
             if ($bits1[$i] == $bits2[$i]) {

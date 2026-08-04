@@ -56,6 +56,7 @@ FILE_SIZE_OVER_LIMIT=Dosya boyutu %sKB'yi aşıyor.
 FILE_UPLOAD_FAILED=Dosya yükleme işlemi başarısız oldu. Kod: %s
 FAILED_TO_LOAD_UPLOAD_ID=Yüklenen resim dosyası yüklenemedi.
 IMAGE_WIDTH_EXCEEDED=Resim genişliği sınırı aşıyor.
+IMAGE_FILEMSG=Görsel%s %s %s*%s %sKB
 INVALID_FILE_FORMAT=Dosya biçimi yanlış.
 DIRECTORY_OPEN_FAILED=Bu dizin açılamadı.
 TOO_MANY_KEYWORDS=Çok fazla arama anahtar kelimesi.
@@ -299,6 +300,7 @@ LATEX_SETTING_LABEL=LaTeX matematik gösterimini etkinleştir (kişisel ayar, ya
 
 # 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
 JS_SETTINGS_LEGEND=JS Ayarları
+JS_GIKO_LABEL=Gikoneko-to-issho (okunmamış gönderi olmadığında)
 JS_IMGTHUMB_LABEL=Resim küçük resimleri
 JS_KAOMOJI_LABEL=Kaomoji paleti
 JS_LATEX_LABEL=LaTeX matematik gösterimi (KaTeX'i bir CDN'den yükler)

@@ -209,9 +209,29 @@ class Imagebbs extends Bbs {
 
             $message['FILEID'] = $fileid;
             $message['FILENAME'] = $filename;
-            $message['FILEMSG'] = '画像'.str_pad($fileid, 5, "0", STR_PAD_LEFT)." $filetype {$imageinfo[0]}*{$imageinfo[1]} ".floor(filesize($filename)/1024)."KB";
+            // 20260802: '画像' was hardcoded here, bypassing $MSG/T() entirely.
+            // Moved to the IMAGE_FILEMSG key as a full sprintf template so the
+            // word order can differ per language (same approach as the other
+            // value-embedding keys). Args: padded id, type, width, height, KB.
+            $message['FILEMSG'] = sprintf(
+                T('IMAGE_FILEMSG'),
+                str_pad($fileid, 5, "0", STR_PAD_LEFT),
+                $filetype,
+                $imageinfo[0],
+                $imageinfo[1],
+                floor(filesize($filename) / 1024)
+            );
+            // Apply IMAGE_PREVIEW_RESIZE (%) to the displayed dimensions.
+            // The original pixel dimensions are used for the alt text and stored
+            // in FILEMSG; only the <img> tag's width/height attributes are scaled.
+            $resize_pct = isset($this->c['IMAGE_PREVIEW_RESIZE']) ? (int)$this->c['IMAGE_PREVIEW_RESIZE'] : 100;
+            if ($resize_pct <= 0 || $resize_pct > 100) {
+                $resize_pct = 100;
+            }
+            $disp_w = (int)round($imageinfo[0] * $resize_pct / 100);
+            $disp_h = (int)round($imageinfo[1] * $resize_pct / 100);
             $message['FILETAG'] = "<a href=\"{$filename}\" target=\"link\">"
-            . "<img src=\"{$filename}\" width=\"{$imageinfo[0]}\" height=\"{$imageinfo[1]}\" border=\"0\" alt=\"{$message['FILEMSG']}\" /></a>";
+            . "<img src=\"{$filename}\" width=\"{$disp_w}\" height=\"{$disp_h}\" border=\"0\" alt=\"{$message['FILEMSG']}\" /></a>";
 
             # Embedding tags in messages.
             if (strpos($message['MSG'], $this->c['IMAGETEXT']) !== FALSE) {

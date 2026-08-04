@@ -79,6 +79,7 @@ FILE_SIZE_OVER_LIMIT=檔案大小超過 %sKB。
 FILE_UPLOAD_FAILED=檔案上傳處理失敗。代碼: %s
 FAILED_TO_LOAD_UPLOAD_ID=載入已上傳的圖片檔案失敗。
 IMAGE_WIDTH_EXCEEDED=圖片寬度超過限制。
+IMAGE_FILEMSG=圖片%s %s %s*%s %sKB
 INVALID_FILE_FORMAT=檔案格式不正確。
 DIRECTORY_OPEN_FAILED=無法開啟此目錄。
 TOO_MANY_KEYWORDS=搜尋關鍵字過多。
@@ -351,6 +352,7 @@ LATEX_SETTING_LABEL=啟用 LaTeX 公式渲染（個人設定，僅本瀏覽器�
 
 # 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
 JS_SETTINGS_LEGEND=JS設定
+JS_GIKO_LABEL=Gikoneko-to-issho（無未讀帖時顯示）
 JS_IMGTHUMB_LABEL=圖片縮圖顯示
 JS_KAOMOJI_LABEL=顏文字面板顯示
 JS_LATEX_LABEL=LaTeX公式渲染（從CDN載入KaTeX）
