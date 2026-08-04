@@ -33,6 +33,14 @@ This program has originally been translated to English by [Anonymous-san at Stra
 7. Open your web browser, go to bbs.php, and see if you can post
 8. Access the URL where the log files (bbs.log, files inside log/, etc.) are located using a web browser, and check if you can see it (if you can see it, please hide it with .htaccess, etc.)
 
+## Troubleshooting
+### Upgrading an existing site (admin password migration)
+Starting with RC8, the admin password (ADMINPOST/ADMINKEY) lives outside conf.php, in a fixed-name file called `local.php` that is not part of this template and is never overwritten by install.php. When install.php detects that the site you're upgrading already has a non-empty ADMINPOST in its existing conf.php, it will show a migration form asking for your **old password** (to verify it's really you) and a **new password** to set. The admin-mode keyword (ADMINKEY) is carried over automatically — there's no separate field for it.
+
+- If the old password is verified successfully, `local.php` is written with the new password and installation proceeds normally.
+- If verification fails, **the entire installation is aborted** (no files are installed, nothing is backed up or overwritten) to prevent someone else from hijacking the admin account of a site they don't control.
+- If you genuinely forgot the old password yourself, open the existing conf.php on the server and manually blank out the `ADMINPOST` value (set it to an empty string). This makes install.php treat the site as a fresh install, letting you set a brand-new password through `_setup.php` afterward, the same as a new installation.
+
 ## Recommended permission settings
 Incorrect permissions can cause problems and data leaks (such as a post's IP address or remote host), so please make sure that they are set correctly.
 

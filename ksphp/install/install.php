@@ -561,7 +561,48 @@ function ksphp_install_log_error(string $install_dir, string $message): void {
 	@file_put_contents($path, $line, FILE_APPEND | LOCK_EX);
 }
 
-function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backup_root, string $entry_filename = 'bbs.php'): array {
+/**
+ * 20260720 Gikoneko: バージョンアップ移行時の管理パスワード検証用。
+ * 指定conf.phpをサンドボックス的に読み込み、ADMINPOST/ADMINKEYの
+ * 生値を返す（無ければ空文字）。ksphp_install_read_conf_summary()と
+ * 同じ「クロージャ内include」方式を使う。
+ */
+function ksphp_install_read_admin_secret(string $conf_path): array {
+	if (!@file_exists($conf_path)) {
+		return array('ADMINPOST' => '', 'ADMINKEY' => '');
+	}
+	$loader = function () use ($conf_path) {
+		$CONF = array();
+		include $conf_path;
+		return is_array($CONF) ? $CONF : array();
+	};
+	$conf = $loader();
+	return array(
+		'ADMINPOST' => (string) ($conf['ADMINPOST'] ?? ''),
+		'ADMINKEY'  => (string) ($conf['ADMINKEY'] ?? ''),
+	);
+}
+
+/**
+ * 20260720 Gikoneko: local.php書き込み。newbbs/_setup.phpの
+ * ksphp_setup_write_secrets()と同一フォーマット（bbs.php側の
+ * requireでの読み込み方式に合わせる）。install.php側にも同じ
+ * ロジックを持つ（_setup.phpとは独立したツールのため関数の共有はしない）。
+ */
+function ksphp_install_write_local_secrets(string $path, string $adminpost, string $adminkey): bool {
+	$content = "<?php\n\n"
+		. "// " . gmdate('Y-m-d\TH:i:s\Z') . " install.php: admin password migrated from\n"
+		. "// the previous conf.php-based ADMINPOST during an upgrade. Not part of\n"
+		. "// the newbbs/ template; install.php's file scan never overwrites this file.\n"
+		. "return array(\n"
+		. "    'ADMINPOST' => " . var_export($adminpost, true) . ",\n"
+		. "    'ADMINKEY' => " . var_export($adminkey, true) . ",\n"
+		. ");\n";
+	$result = @file_put_contents($path, $content, LOCK_EX);
+	return $result !== false;
+}
+
+function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backup_root, string $entry_filename = 'bbs.php', string $old_admin_pass = '', string $new_admin_pass = ''): array {
 	$log = array();
 
 	// newbbs_dir は常に {install_dir}/newbbs なので、ここから install_dir を逆算する。
@@ -570,6 +611,31 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 		$log[] = array('ok' => false, 'text' => T('INSTALL_UNSAFE_TARGET'));
 		ksphp_install_log_error($install_dir_check, "unsafe target rejected: $parent_dir");
 		return $log;
+	}
+
+	// 20260720 Gikoneko: 管理パスワード移行チェック（4節仕様）。
+	// ファイル設置・バックアップより前、まだ何も変更していない時点で
+	// 旧conf.php（存在すれば）のADMINPOSTを確認する。非空＝バージョン
+	// アップ移行ケース。ここでの認証失敗は「乗っ取り試行の可能性」として
+	// ファイル設置自体を含めインストール全体を中止する（基さん指示）。
+	$admin_migration = null;
+	$old_secret = ksphp_install_read_admin_secret($parent_dir . '/conf.php');
+	if ($old_secret['ADMINPOST'] !== '') {
+		if ($new_admin_pass === '') {
+			$log[] = array('ok' => false, 'text' => T('ADMIN_MIGRATION_REQUIRED'));
+			ksphp_install_log_error($install_dir_check, "admin migration required but no new password submitted: $parent_dir");
+			return $log;
+		}
+		if (crypt($old_admin_pass, $old_secret['ADMINPOST']) !== $old_secret['ADMINPOST']) {
+			$log[] = array('ok' => false, 'text' => T('ADMIN_MIGRATION_AUTH_FAIL'));
+			ksphp_install_log_error($install_dir_check, "admin migration auth failed, aborting entire install: $parent_dir");
+			return $log;
+		}
+		$admin_migration = array(
+			'hash' => password_hash($new_admin_pass, PASSWORD_BCRYPT),
+			// ADMINKEYは平文のまま旧設定を引き継ぐ（基さん指示、入力欄は設けない）。
+			'key'  => $old_secret['ADMINKEY'],
+		);
 	}
 
 	$files = ksphp_install_list_files($newbbs_dir);
@@ -693,6 +759,20 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 		if (function_exists('ksphp_migrate')) {
 			ksphp_migrate();
 			$log[] = array('ok' => true, 'text' => T('INSTALL_MIGRATE_DONE'));
+		}
+	}
+
+	// 20260720 Gikoneko: 認証済みの管理パスワード移行があれば、ここで
+	// local.phpを書き込む。conf.php側の旧ADMINPOST値はconf-mergeで
+	// そのまま引き継がれた状態を維持し、あえて空文字化しない
+	// （基さん指示：ダミーとして残す。local.phpの有無のみが判定基準）。
+	if ($admin_migration !== null) {
+		$local_path = $parent_dir . '/local.php';
+		if (ksphp_install_write_local_secrets($local_path, $admin_migration['hash'], $admin_migration['key'])) {
+			$log[] = array('ok' => true, 'text' => T('ADMIN_MIGRATION_DONE'));
+		} else {
+			$log[] = array('ok' => false, 'text' => T('ADMIN_MIGRATION_WRITE_FAIL'));
+			ksphp_install_log_error($install_dir_check, "local.php write failed during migration: $local_path");
 		}
 	}
 
@@ -840,10 +920,15 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup_new'
 		echo json_encode(array('log' => array(array('ok' => false, 'text' => T('ERROR_INVALID_PATH')))), JSON_UNESCAPED_UNICODE);
 		exit;
 	}
+	// 20260720 Gikoneko: 管理パスワード移行用の値はGETクエリ文字列
+	// （アクセスログに残る）ではなくPOSTボディで受け取る。新規追加分
+	// （fresh install）では通常不要だが、同名の仕組みを一応通しておく。
+	$old_admin_pass = (string) ($_POST['old_admin_pass'] ?? '');
+	$new_admin_pass = (string) ($_POST['new_admin_pass'] ?? '');
 	$backup_root = $install_dir . '/backup/new_' . substr(md5($new_dir), 0, 12);
 	echo json_encode(
 		array(
-			'log' => ksphp_install_run($newbbs_dir, $new_dir, $backup_root, 'bbs.php'),
+			'log' => ksphp_install_run($newbbs_dir, $new_dir, $backup_root, 'bbs.php', $old_admin_pass, $new_admin_pass),
 			'entry_filename' => 'bbs.php',
 		),
 		JSON_UNESCAPED_UNICODE
@@ -861,10 +946,12 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 	}
 	$target_dir = dirname($targets[$idx]);
 	$entry_filename = basename($targets[$idx]);
+	$old_admin_pass = (string) ($_POST['old_admin_pass'] ?? '');
+	$new_admin_pass = (string) ($_POST['new_admin_pass'] ?? '');
 	$backup_root = $install_dir . '/backup/target' . $idx;
 	echo json_encode(
 		array(
-			'log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root, $entry_filename),
+			'log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root, $entry_filename, $old_admin_pass, $new_admin_pass),
 			'entry_filename' => $entry_filename,
 		),
 		JSON_UNESCAPED_UNICODE
@@ -923,6 +1010,11 @@ function ksphp_install_read_conf_summary(string $conf_path): ?array {
 	return array(
 		'BBSTITLE'      => $conf['BBSTITLE'] ?? T('NOT_SET'),
 		'LANGUAGE_FILE' => $conf['LANGUAGE_FILE'] ?? T('NOT_SET'),
+		// 20260720 Gikoneko: 旧conf.php側にADMINPOSTの実値が残っている
+		// （＝バージョンアップ移行ケース）かどうかをJS側へ伝える。
+		// 実際のcrypt()検証・local.php書き込みはksphp_install_run()側で
+		// 行う（ここではUI表示用の判定のみ）。
+		'ADMIN_MIGRATION_NEEDED' => !empty($conf['ADMINPOST']),
 	);
 }
 
@@ -1153,6 +1245,16 @@ function renderConfSummaries() {
 				+ '<tr><th>BBSTITLE</th><td>' + escapeHtml(summary.BBSTITLE) + '</td></tr>'
 				+ '<tr><th>LANGUAGE_FILE</th><td>' + escapeHtml(summary.LANGUAGE_FILE) + '</td></tr>'
 				+ '</table>';
+			// 20260720 Gikoneko: 旧conf.php側にADMINPOSTの実値が残って
+			// いる（＝バージョンアップ移行ケース）場合、専用フォームを
+			// 表示する。値はrun-setup-btnのクリック時にPOSTボディで
+			// 送信する（GETクエリ文字列に平文パスワードを載せない）。
+			if (summary.ADMIN_MIGRATION_NEEDED) {
+				html += '<p class="ng">' + escapeHtml(L('ADMIN_MIGRATION_LABEL')) + '</p>'
+					+ '<p>' + escapeHtml(L('ADMIN_MIGRATION_NOTE')) + '</p>'
+					+ '<p><label>' + escapeHtml(L('ADMIN_MIGRATION_OLD_LABEL')) + ' <input type="password" class="admin-old-pass" data-for-index="' + escapeHtml(idx) + '" autocomplete="off"></label></p>'
+					+ '<p><label>' + escapeHtml(L('ADMIN_MIGRATION_NEW_LABEL')) + ' <input type="password" class="admin-new-pass" data-for-index="' + escapeHtml(idx) + '" autocomplete="off"></label></p>';
+			}
 		} else {
 			html += '<p>' + escapeHtml(L('JS_NO_CONF_YET')) + '</p>';
 		}
@@ -1187,6 +1289,33 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 		return;
 	}
 
+	// 20260720 Gikoneko: 移行フォームが必要な対象について、送信前に
+	// 入力値が揃っているか確認する（未入力ならAJAXを呼ばずその場で
+	// 中止表示し、他の対象の処理も始めない。サーバー側でも同様の
+	// チェックを行うが、二重防御としてここでも確認する）。
+	var summaries = {};
+	try { summaries = JSON.parse(document.getElementById('conf-summaries-data').textContent || '{}'); } catch (e) { summaries = {}; }
+	for (var t = 0; t < targetsList.length; t++) {
+		var tgt = targetsList[t];
+		if (tgt.kind !== 'index') { continue; }
+		var sum = summaries[tgt.value];
+		if (sum && sum.ADMIN_MIGRATION_NEEDED) {
+			var oldEl = document.querySelector('.admin-old-pass[data-for-index="' + tgt.value + '"]');
+			var newEl = document.querySelector('.admin-new-pass[data-for-index="' + tgt.value + '"]');
+			var oldV = oldEl ? oldEl.value : '';
+			var newV = newEl ? newEl.value : '';
+			if (!oldV || !newV) {
+				var warnLi = document.createElement('li');
+				warnLi.className = 'ng';
+				warnLi.textContent = Lf('JS_ADMIN_MIGRATION_EMPTY', { LABEL: tgt.label });
+				logList.appendChild(warnLi);
+				return;
+			}
+			tgt.oldAdminPass = oldV;
+			tgt.newAdminPass = newV;
+		}
+	}
+
 	btn.disabled = true;
 	btn.textContent = L('JS_RUNNING');
 
@@ -1219,7 +1348,19 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 			? '?ajax=1&action=run_setup_new&dir=' + encodeURIComponent(target.value) + langParam
 			: '?ajax=1&action=run_setup&target=' + encodeURIComponent(target.value) + langParam;
 
-		fetch(url)
+		// 20260720 Gikoneko: 管理パスワード移行が必要な対象のみ、
+		// 平文パスワードをPOSTボディで送信する（GETクエリ文字列に
+		// 載せてアクセスログへ残すのを避けるため）。それ以外は
+		// 従来通りGETのみ（挙動変更なし）。
+		var fetchOptions = undefined;
+		if (target.oldAdminPass !== undefined) {
+			var fd = new FormData();
+			fd.append('old_admin_pass', target.oldAdminPass);
+			fd.append('new_admin_pass', target.newAdminPass);
+			fetchOptions = { method: 'POST', body: fd };
+		}
+
+		fetch(url, fetchOptions)
 			.then(function (res) { return res.json(); })
 			.then(function (data) {
 				var lines = data.log || [];

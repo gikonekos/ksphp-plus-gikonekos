@@ -9,22 +9,58 @@ conf.php・install.phpの外（このスクリプトが書き込む local.php）
 設定・変更するための、独立した単機能ツールです。
 
 【方針（利用者との合意事項）】
-- install.php・conf.phpには一切依存しない（インストール機構とパスワード
-  機構は分離する）。
+- install.php・conf.phpの読み込み・書き込みには一切依存しない（＝conf.php
+  が無くても正常に動作する。ただし乱数の種を強めるため、conf.phpが
+  存在しconf.php ADMINPOSTに値があれば、それをsha256の材料として
+  「読むだけ」利用する。20260720追記・下記参照）。
 - local.php が存在しない間は誰でも新規設定できる（先着一名が設定を
   完了させれば、それ以降は今のパスワードを知る人しか変更できなくなる、
   という簡易な仕組み。設置直後に速やかに設定を済ませることが前提）。
 - local.php が存在する場合、変更には現在のパスワードでのログインが必須。
 - 設定完了後、このツール自身のファイル名を設置者が自由に決めた名前へ
-  変更する（rename）。デフォルト名は date('YmdHi') と下の $SETUP_SEED
-  を元にsha256で生成した推測困難な文字列（$SETUP_SEEDはこのファイルを
-  直接編集することで変更可能）。
+  変更する（rename）。デフォルト名は date('YmdHi') と実行時に生成される
+  $SETUP_SEED を元にsha256で生成した推測困難な文字列（$SETUP_SEEDは
+  固定文字列ではなく、アクセスの都度ksphp_setup_generate_seed()で
+  生成される。詳細は下記コメント参照）。
 */
 
 // 推測困難なデフォルトファイル名を作る際の種文字列。
-// 好みで書き換えて構いません（rename前に変更してから初回アクセスして
-// ください。renameは初回設定完了時に一度だけ行われます）。
-$SETUP_SEED = 'gikonekos';
+// 20260720 Gikoneko: 以前はこのファイル内に固定文字列を直接書いていたが
+// （最初は公開ハンドル名'gikonekos'、次にランダム16進文字列）、配布zipに
+// 同梱される時点で全設置者に同一の値が渡ってしまい、「配布物を持っている
+// 人には種も分かってしまう」という点では強度が上がっていなかった
+// （Σ:)指摘）。そこで、このファイルが実際に実行された時点で種を生成する
+// 方式に変更した：
+//   1. 同じディレクトリのconf.phpが存在し、ADMINPOSTに値があれば
+//      （RC8以前からの移行サイトの場合、crypt()ハッシュ値。設置サイトに
+//      固有かつ外部からは分からない値）それを材料に混ぜる。
+//   2. 加えて必ずrandom_bytes()（無ければuniqid等でのフォールバック）
+//      による実行時乱数も混ぜる。新規インストール（ADMINPOSTが無い/空）
+//      でも、少なくともこの乱数分は設置ごとに異なる値になる。
+// これにより、同じzipを配布しても設置ごとに異なる種になる。
+function ksphp_setup_generate_seed(string $dir): string
+{
+	$material = '';
+	$confPath = $dir . '/conf.php';
+	if (@file_exists($confPath)) {
+		$loader = function () use ($confPath) {
+			$CONF = array();
+			include $confPath;
+			return is_array($CONF) ? $CONF : array();
+		};
+		$conf = $loader();
+		if (!empty($conf['ADMINPOST'])) {
+			$material .= (string) $conf['ADMINPOST'];
+		}
+	}
+	if (function_exists('random_bytes')) {
+		$material .= bin2hex(random_bytes(32));
+	} else {
+		$material .= uniqid('', true) . microtime(true) . $dir;
+	}
+	return hash('sha256', $material);
+}
+$SETUP_SEED = ksphp_setup_generate_seed(__DIR__);
 
 $secretsFile = __DIR__ . '/local.php';
 
