@@ -96,13 +96,17 @@ function ksphp_install_list_files(string $base): array {
 	return $result;
 }
 
-function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backup_root): array {
+function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backup_root, string $entry_filename = 'bbs.php'): array {
 	$log = array();
 	$files = ksphp_install_list_files($newbbs_dir);
 
 	if (empty($files)) {
 		$log[] = array('ok' => false, 'text' => 'install/newbbs/ にファイルが見つかりません。導入対象がありません。');
 		return $log;
+	}
+
+	if ($entry_filename !== 'bbs.php') {
+		$log[] = array('ok' => true, 'text' => "本体ファイル名は {$entry_filename} として検出されたため、bbs.php ではなく {$entry_filename} として導入します。");
 	}
 
 	$date = gmdate('Y-m-d');
@@ -114,7 +118,8 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 
 	$any_existing = false;
 	foreach ($files as $rel) {
-		if (file_exists($parent_dir . '/' . $rel)) {
+		$dst_rel = ($rel === 'bbs.php') ? $entry_filename : $rel;
+		if (file_exists($parent_dir . '/' . $dst_rel)) {
 			$any_existing = true;
 			break;
 		}
@@ -129,8 +134,9 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 	}
 
 	foreach ($files as $rel) {
+		$dst_rel = ($rel === 'bbs.php') ? $entry_filename : $rel;
 		$src = $newbbs_dir . '/' . $rel;
-		$dst = $parent_dir . '/' . $rel;
+		$dst = $parent_dir . '/' . $dst_rel;
 		$dst_dir = dirname($dst);
 
 		if (!is_dir($dst_dir)) {
@@ -138,21 +144,21 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 		}
 
 		if (file_exists($dst)) {
-			$backup_target = $backup_dir . '/' . $rel;
+			$backup_target = $backup_dir . '/' . $dst_rel;
 			$backup_target_dir = dirname($backup_target);
 			if (!is_dir($backup_target_dir)) {
 				@mkdir($backup_target_dir, 0755, true);
 			}
 			if (!@copy($dst, $backup_target)) {
-				$log[] = array('ok' => false, 'text' => "スキップ: {$rel}（既存ファイルのバックアップに失敗したため上書きしていません）");
+				$log[] = array('ok' => false, 'text' => "スキップ: {$dst_rel}（既存ファイルのバックアップに失敗したため上書きしていません）");
 				continue;
 			}
 		}
 
 		if (@copy($src, $dst)) {
-			$log[] = array('ok' => true, 'text' => "導入: {$rel}");
+			$log[] = array('ok' => true, 'text' => "導入: {$dst_rel}");
 		} else {
-			$log[] = array('ok' => false, 'text' => "失敗: {$rel}（コピーできませんでした。権限を確認してください）");
+			$log[] = array('ok' => false, 'text' => "失敗: {$dst_rel}（コピーできませんでした。権限を確認してください）");
 		}
 	}
 
@@ -169,18 +175,57 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 	return $log;
 }
 
+/**
+ * 指定ディレクトリ直下から「本体らしきPHPファイル」を探す。
+ * ファイル名がbbs.phpであればまず採用するが、diary.php等に
+ * リネームされているケースに備え、直下のPHPファイルの中身を
+ * 軽く確認し、$CONF['VERSION']の特徴的な記述があればそれも候補に
+ * 加える（深い再帰走査はしない＝省リソース）。
+ */
+function ksphp_install_scan_dir_for_bbs(string $dir): array {
+	$found = array();
+	if (!is_dir($dir)) {
+		return $found;
+	}
+
+	$bbs_php = $dir . '/bbs.php';
+	if (file_exists($bbs_php)) {
+		$found[] = $bbs_php;
+	}
+
+	$entries = @scandir($dir);
+	if ($entries === false) {
+		return $found;
+	}
+	foreach ($entries as $entry) {
+		if ($entry === '.' || $entry === '..' || $entry === 'bbs.php') {
+			continue;
+		}
+		$path = $dir . '/' . $entry;
+		if (!is_file($path) || substr($entry, -4) !== '.php') {
+			continue;
+		}
+		if (ksphp_install_extract_version($path) !== null) {
+			$found[] = $path;
+		}
+	}
+	return $found;
+}
+
 function ksphp_install_find_candidates(string $parent_dir, string $grandparent_dir): array {
 	$candidates = array();
 
-	$primary = $parent_dir . '/bbs.php';
-	if (file_exists($primary)) {
-		$candidates[] = $primary;
+	foreach (ksphp_install_scan_dir_for_bbs($parent_dir) as $p) {
+		if (!in_array($p, $candidates, true)) {
+			$candidates[] = $p;
+		}
 	}
 
 	if (is_dir($grandparent_dir)) {
-		$sibling_bbs = $grandparent_dir . '/bbs.php';
-		if (file_exists($sibling_bbs) && !in_array($sibling_bbs, $candidates, true)) {
-			$candidates[] = $sibling_bbs;
+		foreach (ksphp_install_scan_dir_for_bbs($grandparent_dir) as $p) {
+			if (!in_array($p, $candidates, true)) {
+				$candidates[] = $p;
+			}
 		}
 		$entries = @scandir($grandparent_dir);
 		if ($entries !== false) {
@@ -188,9 +233,14 @@ function ksphp_install_find_candidates(string $parent_dir, string $grandparent_d
 				if ($entry === '.' || $entry === '..') {
 					continue;
 				}
-				$maybe = $grandparent_dir . '/' . $entry . '/bbs.php';
-				if (is_dir($grandparent_dir . '/' . $entry) && file_exists($maybe) && !in_array($maybe, $candidates, true)) {
-					$candidates[] = $maybe;
+				$sub = $grandparent_dir . '/' . $entry;
+				if (!is_dir($sub)) {
+					continue;
+				}
+				foreach (ksphp_install_scan_dir_for_bbs($sub) as $p) {
+					if (!in_array($p, $candidates, true)) {
+						$candidates[] = $p;
+					}
 				}
 			}
 		}
@@ -208,9 +258,13 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 		exit;
 	}
 	$target_dir = dirname($targets[$idx]);
+	$entry_filename = basename($targets[$idx]);
 	$backup_root = $install_dir . '/backup/target' . $idx;
 	echo json_encode(
-		array('log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root)),
+		array(
+			'log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root, $entry_filename),
+			'entry_filename' => $entry_filename,
+		),
 		JSON_UNESCAPED_UNICODE
 	);
 	exit;
@@ -398,11 +452,12 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 			.then(function (res) { return res.json(); })
 			.then(function (data) {
 				var lines = data.log || [];
+				var entryFilename = data.entry_filename || 'bbs.php';
 				var i = 0;
 				function showNext() {
 					if (i >= lines.length) {
 						var linkLi = document.createElement('li');
-						linkLi.innerHTML = '<a href="?ajax=0" data-bbs-index="' + idx + '" class="bbs-link" target="_blank">→ この導入先のbbs.phpを開く</a>';
+						linkLi.innerHTML = '<a href="?ajax=0" data-bbs-index="' + idx + '" data-entry-filename="' + entryFilename + '" class="bbs-link" target="_blank">→ この導入先の' + entryFilename + 'を開く</a>';
 						logList.appendChild(linkLi);
 						targetIdx++;
 						runNextTarget();
@@ -429,18 +484,20 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 	runNextTarget();
 });
 
-// 「この導入先のbbs.phpを開く」リンクは、対応するテーブル行のパスから
-// 実際のURLを組み立てられないため（ファイルシステムパスのみ保持）、
-// 導入先#0（このinstall.phpに対応する場所）のみ ../bbs.php で開けるように
-// しておく。それ以外の導入先はパスをコピーしてご確認ください。
+// 「開く」リンクは、対応するテーブル行のパスから実際のURLを組み立て
+// られないため（ファイルシステムパスのみ保持）、導入先#0（このinstall.php
+// に対応する場所）のみ ../{検出したファイル名} で開けるようにしておく
+// （bbs.php以外にリネームされている場合もそのファイル名を使う）。
+// それ以外の導入先はパスをコピーしてご確認ください。
 document.addEventListener('click', function (e) {
 	if (e.target.classList && e.target.classList.contains('bbs-link')) {
 		var idx = e.target.getAttribute('data-bbs-index');
+		var entryFilename = e.target.getAttribute('data-entry-filename') || 'bbs.php';
 		if (idx === '0') {
-			e.target.href = '../bbs.php';
+			e.target.href = '../' + entryFilename;
 		} else {
 			e.preventDefault();
-			alert('導入先#' + idx + ' は、このinstall.phpの近隣スキャンで見つかった別のフォルダです。ブラウザで直接URLを開くには、そのフォルダのURLを手動で確認してください。');
+			alert('導入先#' + idx + ' は、このinstall.phpの近隣スキャンで見つかった別のフォルダです。ブラウザで直接URLを開くには、そのフォルダのURLを手動で確認してください（本体ファイル名: ' + entryFilename + '）。');
 		}
 	}
 });
