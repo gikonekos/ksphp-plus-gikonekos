@@ -408,6 +408,24 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
   `newbbs/language/*.txt`.
 
 ## Known Bugs:
+* (Found and fixed 2026-08-01, RC12-02) The RC11 handoff notes claimed
+  a `$was_numeric_expr` check had been added to
+  `ksphp_conf_apply_review()` to keep numeric-expression config values
+  (e.g. `MAXOLDLOGSIZE`'s `4 * 1024 * 1024`) unquoted on save. That
+  check was never actually present in the shipped code (neither RC11
+  nor RC12) -- only the pre-existing bare-number check remained. Found
+  via a live-site `MAXMSGSIZE` value (`'250*120*128*256*128'`, saved
+  as a quoted string by a prior install run) causing a PHP
+  non-numeric-value warning in `procForm()`'s content-length
+  comparison, which in turn corrupted the HTTP response and surfaced
+  in-browser as `ERR_CONTENT_DECODING_FAILED`. The check is now
+  actually implemented. Important limitation: this only prevents the
+  bug on future installs/migrations -- it does NOT auto-repair a
+  conf.php value that's already been saved as a quoted string (the
+  review form would just re-submit the existing quoted value
+  unchanged). Any already-corrupted numeric-expression key needs a
+  manual conf.php edit, or the value re-typed and resubmitted through
+  the review form.
 * Large number of \&nbsp; appearances when searching logs
 * (Found 2026-08-01 during install.php conf-review testing; fixed
   2026-08-01, root cause -- see ToDo) ksphp_conf_parse_entries()'s

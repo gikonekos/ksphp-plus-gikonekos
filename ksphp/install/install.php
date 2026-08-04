@@ -985,6 +985,16 @@ function ksphp_conf_apply_review(string $merged_content, array $overrides): arra
 			continue;
 		}
 		$was_bare_number = (bool) preg_match('/^-?[0-9]+(\.[0-9]+)?$/', $current_raw);
+		// 20260801 Gikoneko: MAXOLDLOGSIZE/MAXMSGSIZE等、conf.php上では
+		// `4 * 1024 * 1024`のような数値のみで構成される演算式として
+		// 書かれているキーへの対応。$was_bare_numberは単純な数値リテラル
+		// のみを対象にしており、演算式はこの判定を素通りしてelse節の
+		// クォート付き文字列化に落ちてしまう（実際にMAXMSGSIZEで発生し、
+		// 保存後に文字列×数値の演算でPHP Warningが発生した）。
+		// 数字・演算子・空白のみで構成される式かどうかを別途判定し、
+		// 該当する場合はクォート無しで出力する。
+		$was_numeric_expr = (bool) preg_match('/^[0-9\s\.\+\-\*\/\(\)]+$/', $current_raw)
+			&& preg_match('/[0-9]/', $current_raw);
 		if ($was_bare_number) {
 			if (trim($submitted_str) !== '' && !is_numeric(trim($submitted_str))) {
 				$errors[] = array('key' => $key, 'text' => sprintf(T('CONF_REVIEW_ERROR_NUMERIC'), $key));
@@ -992,6 +1002,17 @@ function ksphp_conf_apply_review(string $merged_content, array $overrides): arra
 				continue;
 			}
 			$raw = (trim($submitted_str) === '') ? $current_raw : trim($submitted_str);
+			$new_entries[] = ksphp_conf_entry_with_value($entry, $raw);
+		} elseif ($was_numeric_expr) {
+			// フォームは常にtext入力欄なので、編集された場合は送信値
+			// (通常は数値そのもの)を使う。未編集(値が空欄で戻ってきた
+			// 場合等)は元の演算式をそのまま維持する。
+			$submitted_trim = trim($submitted_str);
+			if ($submitted_trim !== '' && preg_match('/^[0-9\s\.\+\-\*\/\(\)]+$/', $submitted_trim)) {
+				$raw = $submitted_trim;
+			} else {
+				$raw = $current_raw;
+			}
 			$new_entries[] = ksphp_conf_entry_with_value($entry, $raw);
 		} else {
 			$raw = "'" . addcslashes($submitted_str, "'\\") . "'";
