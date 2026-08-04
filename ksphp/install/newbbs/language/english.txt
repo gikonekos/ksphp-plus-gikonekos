@@ -336,3 +336,5 @@ GIKO_BACK_TO_BBS=Return to the bulletin board
 GIKO_ADD_PROMPT=Write something for Gikoneko to say (up to %s half-width characters)
 GIKO_ADD_SUBMIT=Teach a word
 GIKO_ADD_RESET=Clear
+
+LANG_SELECT_LABEL=Language:

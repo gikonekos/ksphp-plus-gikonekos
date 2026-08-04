@@ -3,6 +3,7 @@
 <header>
 <span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span>
 <span class="link_upper">
+<select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select>
 <a href="{INFOPAGE}" title="{TITLE_GO_TO_PR_OFFICE}">{NAV_PR_OFFICE}</a>&nbsp;<a href="mailto:{ADMINMAIL}" title="{TITLE_EMAIL_ADMIN}">{NAV_CONTACT}</a> <a href="{DEFURL}&amp;m=g" target="_blank" title="{TITLE_BROWSE_OLD_POSTS}">{NAV_MESSAGE_LOGS}</a> <a href="{CGIURL}?{QUERY}&amp;m=tree" title="{TITLE_DISPLAY_THREADS_BRANCHES}">{TITLE_TREE_VIEW}</a> |&nbsp;<a href="{CGIURL}?m=login" title="{TITLE_ADMIN_LOGIN}">{NAV_MANAGE}</a> |&nbsp;<a href="#bottom" title="{TITLE_BOTTOM}">▼</a>
 </span>
 </header>
@@ -491,7 +492,7 @@
 
 <!-- New post page -->
 <patTemplate:tmpl name="newpost">
-<table><tr><td><span class="pagetitle"><a href="{DEFURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {NEW_POST}　<a href="{DEFURL}" title="{TITLE_RETURN_PREV_PAGE2}">←{RETURN}</a></td></tr></table>
+<table><tr><td><span class="pagetitle"><a href="{DEFURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {NEW_POST}　<select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}" title="{TITLE_RETURN_PREV_PAGE2}">←{RETURN}</a></td></tr></table>
 <patTemplate:link src="form" />
 <div class="small">
     <label for="a3">{AUTO_LINK_URLS_LABEL}</label> <input type="checkbox" name="a" value="checked"{CHK_A} id="a3" />
@@ -536,7 +537,7 @@
 
 <!-- Settings page -->
 <patTemplate:tmpl name="custom">
-<header><span class="pagetitle"><a href="{DEFURL}" style="text-decoration: none;">{BBSTITLE}</a></span></header>
+<header><span class="pagetitle"><a href="{DEFURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select></header>
 <h1>{USER_SETTINGS}</h1>
 <form method="post" action="{CGIURL}">
     <input type="hidden" name="m" value="c" />
@@ -610,6 +611,20 @@
 </patTemplate:tmpl>
 </footer>
 <script type="text/javascript" src="js/vanish.js"></script>
+<script type="text/javascript">
+// 20260720 Gikoneko: 言語切替プルダウン。独立Cookie 'ksphp_lang' に
+// 選択値を保存し、ページをリロードして反映する。有効期限90日。
+(function() {
+    var sel = document.getElementById('ksphp-lang-select');
+    if (sel) {
+        sel.addEventListener('change', function() {
+            document.cookie = 'ksphp_lang=' + encodeURIComponent(this.value)
+                + ';path=/;max-age=' + (90*86400) + ';SameSite=Lax';
+            location.reload();
+        });
+    }
+})();
+</script>
 <script type="text/javascript">(function() 
 {
     $.autopager(

@@ -1,0 +1,108 @@
+# install.php language file (Simplified Chinese / 简体中文)
+# Format: KEY=value (no spaces around "=")
+# Lines starting with "#" or ";" are comments. Empty lines are ignored.
+# Encoding: UTF-8 (no BOM)
+# %s is a placeholder substituted by PHP's sprintf(); {NAME} is a
+# placeholder substituted by simple string replacement on the JS side
+# (keep the placeholder spelling as-is).
+
+WRITABLE_DIR_CREATE_FAIL=无法创建该目录（请检查上级目录的写入权限）。
+WRITABLE_OK=可写入。
+WRITABLE_NG=无法写入（请检查权限设置）。
+WRITABLE_TEST_DIR_CREATED=（此目录为本次检查所新建）
+VERDICT_KSPHP_PLUS=可能为 KSPHP Plus 系列（已确认 conf.php 与 migrate.php 存在；很可能与本工具兼容）
+VERDICT_OLD_KSPHP_PLUS=conf.php 存在但缺少 migrate.php（多个特征键值相符；可能是旧版 KSPHP Plus。本工具不支持此版本）
+VERDICT_UNRELATED_CONF=存在名为 conf.php 的文件，但几乎没有特征设置键相符。这很可能是无关的安装，请在安装前目视确认其内容。
+VERDICT_UNRELATED_NO_CONF=未找到 conf.php；可能是其他来源的无关 bbs.php
+MERGE_TEMPLATE_READ_FAIL=无法读取 newbbs/conf.php。
+MERGE_KEY_PARSE_FAIL=conf.php: %s 无法从旧设置解析，已使用新版默认值（请确认）。
+MERGE_KEY_KEPT=conf.php: %s 已保留现有设置值。
+MERGE_KEY_INHERITED_LEGACY=conf.php: %s 已从旧的 %s 继承设置值。
+MERGE_KEY_ADDED_NEW=conf.php: %s 为新版新增项目，已加入。
+MERGE_KEY_DROPPED=conf.php: %s 在新版中不存在，未被迁移。
+MERGE_KEY_PATH_MANUAL_REQUIRED=conf.php: %s 为新的路径设置项目，已以空值加入。请在安装后手动设置。
+PATH_KEY_MANUAL_NOTE=需要手动设置：此路径不会自动设置。请在安装后自行指定。
+INSTALL_NO_FILES=install/newbbs/ 下未找到任何文件。没有可安装的内容。
+INSTALL_ENTRY_RENAMED=主文件被检测为 %s，因此将以 %s 而非 bbs.php 安装。
+INSTALL_BACKUP_DIR_FAIL=无法创建备份目标文件夹。安装已中止。
+INSTALL_BACKUP_DIR=备份目标: %s
+INSTALL_SKIP_BACKUP_FAIL=已跳过: %s（因将现有文件移至备份失败，未进行覆盖）
+INSTALL_CONF_MERGED=已安装: %s（已合并并保留现有设置）
+INSTALL_CONF_WRITE_FAIL=失败: %s（写入合并结果失败。请检查权限）
+INSTALL_COPIED=已安装: %s
+INSTALL_COPY_FAIL=失败: %s（无法复制。请检查权限）
+INSTALL_MIGRATE_DONE=已执行 Migration Engine（如有旧版布局的数据，已迁移至 data/ 与 logs/）。
+INSTALL_DONE=安装完成。
+ADMIN_MIGRATION_LABEL=检测到现有的管理员密码。迁移需要先以旧密码进行验证。
+ADMIN_MIGRATION_OLD_LABEL=旧密码（验证用）
+ADMIN_MIGRATION_NEW_LABEL=新密码
+ADMIN_MIGRATION_NOTE=此站点已设置 ADMINPOST。从 RC8 起，管理员密码改为在 conf.php 之外（local.php）管理，因此将在验证旧密码后迁移至新密码。管理模式关键字（ADMINKEY）将自动继承。
+ADMIN_MIGRATION_REQUIRED=需要进行管理员密码迁移，但未输入新密码，因此已中止此目标的处理。
+ADMIN_MIGRATION_AUTH_FAIL=旧密码验证失败，为防止账号被劫持，已中止此目标的所有处理（包括文件安装）。如果您忘记了旧密码，可以手动将 conf.php 中的 ADMINPOST 清空，然后通过 _setup.php 设置新密码，如同全新安装。
+ADMIN_MIGRATION_DONE=已将管理员密码迁移至 local.php（管理模式关键字已从现有设置继承）。
+ADMIN_MIGRATION_WRITE_FAIL=写入 local.php 失败（请检查权限）。安装本身已完成，但目前无法以管理员身份登录。
+JS_ADMIN_MIGRATION_EMPTY=目标"{LABEL}"需要进行管理员密码迁移。请同时输入旧密码与新密码。
+ERROR_INVALID_PATH=指定的路径无效（不允许绝对路径和".."）。
+ERROR_TARGET_NOT_FOUND=未找到目标（列表可能已变更。请重新加载页面）。
+NOT_SET=（未设置）
+PAGE_TITLE=KSPHP Plus 设置诊断与安装工具
+LANG_SELECT_LABEL=语言：
+LABEL_TOOL_LOCATION=本工具位置：
+LABEL_INSTALL_TARGET=安装目标（站点根目录）：
+H2_STEP1=1. 检测 bbs.php 主文件
+NO_CANDIDATES_FOUND=附近未找到 bbs.php。可能尚未安装（您可以在下方使用"执行安装"来安装）。
+BTN_SELECT_ALL=全选
+BTN_DESELECT_ALL=全部取消
+TABLE_HEADER_INSTALL=安装
+TABLE_HEADER_PATH=路径
+TABLE_HEADER_VERSION=版本
+TABLE_HEADER_MODIFIED=最后修改
+TABLE_HEADER_VERDICT=判定
+CURRENT_INSTALL_MARK=  ← 对应此 install.php 的安装
+VERSION_UNKNOWN=（无法检测）
+MULTIPLE_CANDIDATES_WARN=在附近找到多个 bbs.php 文件。请使用复选框选择安装目标；允许多选。
+NEW_DIR_INSTRUCTION=若要安装至附近扫描未找到的位置（例如尚未安装任何内容的全新文件夹），请输入相对于 %s 的路径（示例: %s）。
+NEW_DIR_INPUT_PLACEHOLDER=例: z/newboard
+BTN_ADD_NEW_DIR=新增
+H2_STEP2=2. 待安装的文件（install/newbbs/，%d 个文件）
+NO_NEWBBS_FILES=install/newbbs/ 下没有文件。
+FILE_LIST_SEPARATOR=、
+FILES_LIST_MORE= 等另外 %d 个
+H2_STEP3=3. 写入权限（仅显示主要目标: %s）
+TABLE_HEADER_LOCATION=位置
+TABLE_HEADER_STATE=状态
+TABLE_HEADER_NOTE=备注
+LOCATION_SITEROOT=站点根目录
+SITEROOT_NOT_WRITABLE_WARN=无法写入站点根目录。这通常是因为文件所有者（例如 ubuntu）与 Apache/PHP 的执行用户（例如 www-data）不同所致。请参阅 doc/permissions.md。
+H2_STEP4=4. Migration Engine 状态
+MIGRATE_DONE_LABEL=已迁移（%s）。
+MIGRATE_NOT_DONE=尚未迁移。
+H2_STEP5=5. conf.php 设置摘要（若目标处已存在）
+H2_STEP6=6. 执行安装
+STEP6_INTRO=install/newbbs/ 的内容将依次安装至上方勾选的目标。在覆盖现有文件之前，会先将其备份至 <code>install/backup/targetN/</code>。
+BTN_RUN_SETUP=执行安装
+FOOTER_NOTE=诊断部分不会更改任何代码或数据（写入测试所用的临时文件会立即删除）。文件只会在您执行安装时才会复制（含上述备份）。
+JS_ALERT_EMPTY_PATH=请输入相对路径。
+JS_CONFIRM_NEW_DIR=确定要安装至"{PATH}"吗？
+
+如果此文件夹已有现有文件，将进行备份与合并；否则将作为全新安装。
+（实际安装将在您点击下方的"执行安装"时进行。）
+JS_NEW_DIR_TAG=　（新增）
+JS_NO_TARGET_SELECTED=未选择任何目标。
+JS_NO_CONF_YET=尚无 conf.php（全新安装前）。
+JS_TARGET_LABEL_FALLBACK=目标 #{IDX}
+JS_NO_TARGET_SELECTED_RUN=未选择任何目标。请勾选一个或多个复选框。
+JS_RUNNING=执行中…
+JS_DONE_WITH_ERRORS_BTN=已完成（部分有错误）
+JS_DONE_WITH_ERRORS_MSG=所有目标的处理已完成，但部分发生错误（以红色显示）。请仔细检查日志。重新加载页面以查看最新状态。
+JS_DONE_BTN=已完成
+JS_DONE_MSG=所有目标的处理已完成。重新加载页面以查看最新状态。
+JS_TARGET_HEADER=目标 {LABEL}
+JS_COMM_ERROR=目标 {LABEL} 发生通信错误。
+JS_OPEN_NEW_DIR_ALERT="{PATH}"是新增的目标。若要在浏览器中直接打开，请手动确认该文件夹的 URL（主文件名: {ENTRY}）。
+JS_OPEN_SCAN_ALERT=目标 #{IDX} 是由本 install.php 的附近扫描所找到的其他文件夹。若要在浏览器中直接打开其 URL，请手动确认该文件夹的 URL（主文件名: {ENTRY}）。
+JS_OPEN_LINK_TEXT=→ 打开此目标的 {ENTRY}
+INSTALL_UNSAFE_TARGET=已中止，因为目标被判定为不安全（可能靠近文件系统根目录，或为 install 文件夹本身）。
+INSTALL_BACKUP_MKDIR_FAIL=已跳过: %s（因创建备份文件夹失败，未进行覆盖）
+INSTALL_ROLLBACK_OK=已恢复先前移至备份的原始文件: %s
+INSTALL_ROLLBACK_FAIL=原始文件的恢复也失败了。请从备份（%s）手动恢复。

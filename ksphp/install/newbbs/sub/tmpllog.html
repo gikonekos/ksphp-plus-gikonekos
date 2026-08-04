@@ -2,7 +2,7 @@
 <!-- Message logs page -->
 <patTemplate:tmpl name="loglist">
 <a id="top"></a>
-<header><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <a href="{DEFURL}">{RETURN}</a> <a href="#bottom">▼</a></header>
+<header><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}">{RETURN}</a> <a href="#bottom">▼</a></header>
 <h1>{NAV_MESSAGE_LOGS}</h1>
 <form name="form" method="get" action="{CGIURL}">
 	<input type="hidden" name="m" value="g" />
@@ -290,6 +290,9 @@
 			}
 		}
 </script>
+<script type="text/javascript">
+(function(){var s=document.getElementById('ksphp-lang-select');if(s){s.addEventListener('change',function(){document.cookie='ksphp_lang='+encodeURIComponent(this.value)+';path=/;max-age='+(90*86400)+';SameSite=Lax';location.reload();});}})();
+</script>
 <br>
 <a href="{DEFURL}">←{BULLETIN_BOARD_LABEL}</a>
 <hr>
@@ -298,13 +301,13 @@
 <!-- Message log search results -->
 <patTemplate:tmpl name="searchresult">
 <a id="top"></a>
-<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {TITLE_OLDLOG_SEARCH_RESULTS}　　<a href="{DEFURL}&m=g">←{RETURN}</a>　<a href="#bottom">▼</a> <span class="ngset"></span></td></tr></table>
+<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {TITLE_OLDLOG_SEARCH_RESULTS}　　<select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}&m=g">←{RETURN}</a>　<a href="#bottom">▼</a> <span class="ngset"></span></td></tr></table>
 <hr>
 </patTemplate:tmpl>
 
 <!-- Message log download HTML -->
 <patTemplate:tmpl name="htmldownload">
-<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {NAV_MESSAGE_LOGS}　　<a href="{DEFURL}&m=g">←{RETURN}</a>　<a href="#bottom">▼</a> <span class="ngset"></span></td></tr></table>
+<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {NAV_MESSAGE_LOGS}　　<select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}&m=g">←{RETURN}</a>　<a href="#bottom">▼</a> <span class="ngset"></span></td></tr></table>
 <hr>
 </patTemplate:tmpl>
 
@@ -328,7 +331,7 @@
 <!-- Topic list -->
 <patTemplate:tmpl name="topiclist">
 <a id="top"></a>
-<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <a href="#bottom">▼</a></td></tr></table>
+<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="#bottom">▼</a></td></tr></table>
 <h1>{TITLE_TOPIC_LIST} [{FILENAME}]</h1>
 <p class="ngset"></p>
 <div class="medium">{TOPIC_LIST_COLUMN_HEADERS}</div>
@@ -345,7 +348,7 @@
 <!-- ZIP archive list -->
 <patTemplate:tmpl name="archivelist">
 <a id="top"></a>
-<header><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <a href="{DEFURL}&m=g">←{TITLE_OLDLOG_SEARCH}</a>　<a href="{DEFURL}">{BULLETIN_BOARD_LABEL}</a> <a href="#bottom">▼</a></header>
+<header><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}&m=g">←{TITLE_OLDLOG_SEARCH}</a>　<a href="{DEFURL}">{BULLETIN_BOARD_LABEL}</a> <a href="#bottom">▼</a></header>
 <h1>{ZIP_ARCHIVES_HEADING}</h1>
 <span class="medium">{ZIP_ARCHIVE_COLUMN_HEADERS}</span>
 <hr>

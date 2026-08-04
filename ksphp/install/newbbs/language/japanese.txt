@@ -335,3 +335,5 @@ GIKO_BACK_TO_BBS=掲示板に戻る
 GIKO_ADD_PROMPT=擬古猫に喋らせたい言葉を書いてください（半角%s文字まで）
 GIKO_ADD_SUBMIT=ことばを教える
 GIKO_ADD_RESET=消す
+
+LANG_SELECT_LABEL=言語：

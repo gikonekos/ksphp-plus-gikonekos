@@ -56,7 +56,7 @@ function ksphp_install_load_language(string $lang): array {
 	return $result;
 }
 
-$lang_options = array('japanese', 'english');
+$lang_options = array('english', 'japanese', 'korean', 'portuguese', 'turkish', 'zh-hans', 'zh-hant');
 $lang = (string) ($_GET['lang'] ?? 'japanese');
 if (!in_array($lang, $lang_options, true)) {
 	$lang = 'japanese';
@@ -1058,8 +1058,13 @@ function h(string $s): string {
 <p id="lang-select-wrap">
 	<label for="lang-select"><?php echo h(T('LANG_SELECT_LABEL')); ?></label>
 	<select id="lang-select">
-		<option value="japanese" <?php echo $lang === 'japanese' ? 'selected' : ''; ?>>日本語</option>
 		<option value="english" <?php echo $lang === 'english' ? 'selected' : ''; ?>>English</option>
+		<option value="japanese" <?php echo $lang === 'japanese' ? 'selected' : ''; ?>>日本語</option>
+		<option value="korean" <?php echo $lang === 'korean' ? 'selected' : ''; ?>>한국어</option>
+		<option value="portuguese" <?php echo $lang === 'portuguese' ? 'selected' : ''; ?>>Português</option>
+		<option value="turkish" <?php echo $lang === 'turkish' ? 'selected' : ''; ?>>Türkçe</option>
+		<option value="zh-hans" <?php echo $lang === 'zh-hans' ? 'selected' : ''; ?>>简体中文</option>
+		<option value="zh-hant" <?php echo $lang === 'zh-hant' ? 'selected' : ''; ?>>繁體中文</option>
 	</select>
 </p>
 <h1><?php echo h(T('PAGE_TITLE')); ?></h1>

@@ -50,14 +50,14 @@ if (file_exists($ksphp_local_secrets_file)) {
 unset($ksphp_local_secrets_file, $ksphp_local_secrets);
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '擬古猫+RC8 [20260719] (Heyuri, ヶ, ＠Links, 擬古猫)';
+$CONF['VERSION'] = '擬古猫+RC8 [20260720] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
 // display/branding version and does not change on every build; this constant
 // is for precise build-to-build comparison (e.g. future differential-update
 // tooling). Update this value whenever a new package zip is built.
-define('KSPHP_PLUS_BUILD', 'ksphp-rc8-2026-07-20-01');
+define('KSPHP_PLUS_BUILD', 'ksphp-rc8-2026-07-20-04');
 
 /* Launch */
 
@@ -112,17 +112,62 @@ function loadLanguageFile($path) {
 // 2026-07-16：sub/{ja,en}/lang.phpへのフォールバックは、当該サブ
 // フォルダ自体を廃止したため削除した。LANGUAGE_FILE未設定時は
 // 'english'を既定値として扱う。
+// 2026-07-20：独立Cookie 'ksphp_lang' によるユーザー個人の言語切替
+// に対応。Cookie値があり、対応するlanguage/*.txtが存在すればそちらを
+// 優先する。Cookie未設定またはファイルが無ければconf.phpのLANGUAGE_FILE
+// にフォールバック（サイト管理者のデフォルト設定を尊重）。
 //
 // Loads the UI strings ($MSG) from language/{LANGUAGE_FILE}.txt.
 // 2026-07-16: Removed the fallback to sub/{ja,en}/lang.php, since those
 // subfolders no longer exist. Defaults to 'english' if LANGUAGE_FILE is
 // not set.
+// 2026-07-20: Added per-user language switching via the 'ksphp_lang'
+// cookie. If the cookie is set and a matching language/*.txt exists,
+// that language is used; otherwise falls back to LANGUAGE_FILE in
+// conf.php (respecting the site admin's default).
 $language_file_name = $CONF['LANGUAGE_FILE'] ?? 'english';
+if (isset($_COOKIE['ksphp_lang'])) {
+    // Cookieから取得した値は安全にサニタイズ（パストラバーサル防止：
+    // ファイル名として有効な文字のみ許可、スラッシュ・ドット・バックスラッシュ
+    // は除去してからファイル存在チェック）。
+    $cookie_lang = preg_replace('/[^a-zA-Z0-9_\-]/', '', $_COOKIE['ksphp_lang']);
+    if ($cookie_lang !== '' && file_exists('./language/' . $cookie_lang . '.txt')) {
+        $language_file_name = $cookie_lang;
+    }
+}
 $langfile = './language/' . $language_file_name . '.txt';
 if (file_exists($langfile)) {
     $MSG = loadLanguageFile($langfile);
 } else {
     die("Language file not found: $langfile");
+}
+
+// 2026-07-20：language/ディレクトリを動的スキャンし、利用可能な言語
+// ファイル一覧を取得する。プルダウンのoption HTML生成もここで行い、
+// テンプレート変数 LANG_OPTIONS_HTML として全テンプレートに渡す。
+// 表示ラベルは各言語ファイル自体には持たせず（KEY=値形式に「自分の
+// 言語名」を入れると循環するため）、ここにマッピングを持つ。
+// 新規言語を追加した場合はこの配列にも追加する。未登録の言語名は
+// ファイル名そのままを表示する。
+$ksphp_lang_labels = array(
+    'japanese'   => '日本語',
+    'english'    => 'English',
+    'portuguese' => 'Português',
+    'turkish'    => 'Türkçe',
+    'zh-hant'    => '繁體中文',
+    'zh-hans'    => '简体中文',
+    'korean'     => '한국어',
+);
+$ksphp_lang_files = glob('./language/*.txt');
+$ksphp_lang_options_html = '';
+if ($ksphp_lang_files !== false) {
+    sort($ksphp_lang_files);
+    foreach ($ksphp_lang_files as $lf) {
+        $name = basename($lf, '.txt');
+        $label = htmlspecialchars($ksphp_lang_labels[$name] ?? $name, ENT_QUOTES, 'UTF-8');
+        $sel = ($name === $language_file_name) ? ' selected' : '';
+        $ksphp_lang_options_html .= '<option value="' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '"' . $sel . '>' . $label . '</option>';
+    }
 }
 // 2026-07-17：JS側（imgthumb.js等）でも$MSGの文言を参照できるよう、
 // JSONにしておく。window.KSPHP_LANGとしてHTMLヘッダーに埋め込む。
@@ -270,6 +315,7 @@ function script_run() {
 
         $templateValues = removeArrayValues(array_merge($CONF, $GLOBALS['MSG']));
         $templateValues['JS_LANG_JSON'] = $GLOBALS['MSG_JSON'];
+        $templateValues['LANG_OPTIONS_HTML'] = $GLOBALS['ksphp_lang_options_html'];
 
         $t->addGlobalVars($templateValues);
         $t->displayParsedTemplate('login');
@@ -295,6 +341,7 @@ function script_run() {
             // environment vars for template
             $templateValues = removeArrayValues(array_merge($CONF, $GLOBALS['MSG']));
             $templateValues['JS_LANG_JSON'] = $GLOBALS['MSG_JSON'];
+            $templateValues['LANG_OPTIONS_HTML'] = $GLOBALS['ksphp_lang_options_html'];
 
             $t->addGlobalVars($templateValues);
             $t->addVar('login', 'LOGIN_ERROR', T('LOGIN_ERROR'));
@@ -585,6 +632,11 @@ function tripuse($key) {
         $tmp['FORM_CONTENTS_HELP_IMAGE'] = sprintf($GLOBALS['MSG']['FORM_CONTENTS_HELP_IMAGE'], $this->c['MAXMSGCOL'], $this->c['MAXMSGLINE'], $this->c['IMAGETEXT'] ?? '');
         $tmp['IMAGE_UPLOAD_HELP'] = sprintf($GLOBALS['MSG']['IMAGE_UPLOAD_HELP'], $this->c['MAX_IMAGEWIDTH'] ?? '', $this->c['MAX_IMAGEHEIGHT'] ?? '', $this->c['MAX_IMAGESIZE'] ?? '');
         $tmp['JS_LANG_JSON'] = $GLOBALS['MSG_JSON'];
+
+        // 20260720 Gikoneko: 言語切替プルダウンのoption HTMLをテンプレート
+        // 変数として渡す。グローバルスコープで生成済みの$ksphp_lang_options_html
+        // を使う。
+        $tmp['LANG_OPTIONS_HTML'] = $GLOBALS['ksphp_lang_options_html'];
 
         $this->t->addGlobalVars($tmp);
     }
@@ -1745,6 +1797,7 @@ $msgmore = ob_get_clean();
             @$this->f['c'] = '';
             setcookie('c');
             setcookie('undo');
+            setcookie('ksphp_lang', '', 1); // 20260720 Gikoneko: 言語設定もリセット
             $this->s['UNDO_P'] = '';
             $this->s['UNDO_K'] = '';
         }

@@ -123,9 +123,11 @@ $CONF = array(
 
   // UI文言（$MSG）を読み込む言語ファイルを、language/ディレクトリ内の
   // 拡張子無しファイル名で指定します（例：'english' → language/english.txt）。
+  // 同梱: english / japanese / korean / portuguese / turkish / zh-hans / zh-hant
   // Specifies which language file (under language/) to load the UI strings
   // ($MSG) from, by filename without extension (e.g. 'english' loads
   // language/english.txt).
+  // Bundled: english / japanese / korean / portuguese / turkish / zh-hans / zh-hant
   'LANGUAGE_FILE' => 'japanese',
 
   #------------------------------ 動作設定 -------------------------------
