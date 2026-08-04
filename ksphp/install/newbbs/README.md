@@ -259,6 +259,17 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
   no-store` will NOT be added to bbs.php. The occasional stale form
   content after posting then navigating back is accepted as a
   trade-off in favor of bfcache's faster "back" navigation.
+* (Noted 2026-07-19) `ADMINKEY` (admin post mode entry keyword) is
+  stored in conf.php in plaintext and matched via a plain string
+  comparison, unlike `ADMINPOST` which is a crypt hash. Security
+  concern acknowledged; keeping the feature as-is for now, but a
+  future version should consider hashing/comparing it the same way
+  as `ADMINPOST`.
+* (Concept only, 2026-07-19) Externalize admin secrets
+  (`ADMINPOST`/`ADMINKEY`) out of conf.php entirely, so they're
+  never touched by install.php's conf-merge process. See
+  doc/admin-secrets-concept-2026-07-19-01.txt for
+  details; maintainer decision needed before implementation.
 
 ## Known Bugs:
 * Large number of \&nbsp; appearances when searching logs

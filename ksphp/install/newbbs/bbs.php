@@ -19,12 +19,6 @@ The instructions have been moved to readme.md.
 // Configuration file
 require_once("./conf.php");
 
-// Migration Engine: on first run only, auto-migrates legacy root-level
-// data/log files into data/ and logs/. No-op (single file_exists() check)
-// on every request after that. See doc/migration-engine-spec-2026-07-19-01.txt.
-require_once("./migrate.php");
-ksphp_migrate();
-
 // Version (for copyright notice)
 $CONF['VERSION'] = '[20260719] (<span title="Heyuri Applicable Research & Development">Heyuri</span>, <span title="Hiru-ga-take">ヶ</span>, ＠Links, <span title="Giko-neko">擬古猫</span>)';
 
@@ -2368,6 +2362,11 @@ if ($result === 3) {
                 if (@filesize($oldlogfilename) > $this->c['MAXOLDLOGSIZE']) {
                     $this->prterror ( T('OLDLOG_TOO_LARGE') );
                 }
+                #20260719 Gikoneko: auto-create the old-log directory/file on first use
+                #(mirrors the 20260717 LOGFILENAME auto-create pattern in putmessage())
+                if (!file_exists($oldlogfilename) and $this->ensurefile($oldlogfilename)) {
+                    $this->prtfilecreated(array(sprintf(T('FILE_AUTOCREATED'), $oldlogfilename)));
+                }
                 $fh = @fopen($oldlogfilename, "ab");
                 if (!$fh) {
                     $this->prterror( T('FAILED_TO_OUTPUT_LOG') );
@@ -2551,6 +2550,14 @@ if ($result === 3) {
             if ($countlevel < 1) {
                 $countlevel = 1;
             }
+        }
+        #20260719 Gikoneko: auto-create the counter directory on first use
+        #(mirrors the 20260717 LOGFILENAME auto-create pattern in putmessage();
+        #COUNTFILE is a filename prefix, not a single path, so ensurefile()
+        #itself doesn't apply here -- only the directory needs pre-creating)
+        $countdir = dirname($this->c['COUNTFILE']);
+        if ($countdir and $countdir != '.' and !is_dir($countdir)) {
+            @mkdir($countdir, 0755, TRUE);
         }
         $count = array();
         $filenumber = array();

@@ -313,6 +313,41 @@ function ksphp_legacy_module_key_source(string $key): ?array {
 }
 
 /**
+ * 20260719 Gikoneko: 「パス指定は弄らない」方針。
+ * データの保存場所を指すパス系キーは、旧設置に存在しない新規キーで
+ * あっても、旧モジュールファイルからの引き継ぎ・新版テンプレートの
+ * 既定値での穴埋めを行わない。導入者が意図しないパスへ実データが
+ * 書かれる／過去のデータファイルと食い違う事故を避けるため、必ず
+ * 空欄（要手動設定）のまま追加し、本人が明示的に指定するまで動かさない。
+ * （CGIURL・INFOPAGEのような自己参照パスは対象外＝通常通り穴埋めしてよい）
+ */
+function ksphp_is_manual_path_key(string $key): bool {
+	static $keys = array(
+		'LOGFILENAME'          => true,
+		'OLDLOGFILEDIR'        => true,
+		'ZIPDIR'               => true,
+		'COUNTFILE'            => true,
+		'CNTFILENAME'          => true,
+		'GIKONEKO_KOTOBA_FILE' => true,
+		'UPLOADDIR'            => true,
+		'UPLOADIDFILE'         => true,
+	);
+	return isset($keys[$key]);
+}
+
+/**
+ * 1エントリ（'KEY' => 値, ）を、値を空文字列にし、末尾に「要手動設定」
+ * である旨のコメントを付けた形へ差し替える。ksphp_is_manual_path_key()
+ * が対象とするキーの新規追加時に使う。
+ */
+function ksphp_conf_entry_blank_for_manual_setup(string $entry): string {
+	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/s', $entry, $m)) {
+		return $entry;
+	}
+	return $m[1] . "'" . $m[2] . "'" . $m[3] . "''" . ', // ' . T('PATH_KEY_MANUAL_NOTE') . $m[5];
+}
+
+/**
  * 1エントリ（'KEY' => 値, ）の値部分だけを、指定した生の値文字列に
  * 差し替える。リード部・トレイル部（コメント等）はそのまま残す。
  */
@@ -422,6 +457,15 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 				} elseif (!empty($res['changed'])) {
 					$log[] = array('ok' => true, 'text' => sprintf(T('MERGE_KEY_KEPT'), $key));
 				}
+				continue;
+			}
+
+			// 新規キー：パス系キーは「パス指定は弄らない」方針により、
+			// 旧モジュールファイルからの引き継ぎ・新版既定値での穴埋め
+			// のいずれも行わず、必ず空欄（要手動設定）で追加する。
+			if (ksphp_is_manual_path_key($key)) {
+				$merged_entries[] = ksphp_conf_entry_blank_for_manual_setup($entry);
+				$log[] = array('ok' => true, 'text' => sprintf(T('MERGE_KEY_PATH_MANUAL_REQUIRED'), $key));
 				continue;
 			}
 
