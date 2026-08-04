@@ -684,6 +684,19 @@ function ksphp_conf_list_keys(): array {
 	return $keys;
 }
 
+/**
+ * 単純な文字列値だが複数行になり得る（textareaで編集させたい）キー一覧。
+ * list_keys()と異なり配列(array(...))ではなく単一の文字列値であるため、
+ * 保存処理は通常のtext型と同じ（addcslashesしてクォート）で問題ない。
+ * 20260801 Gikoneko: BBSLINKが1行inputになっていた不具合の修正。
+ */
+function ksphp_conf_longtext_keys(): array {
+	static $keys = array(
+		'BBSLINK' => true,
+	);
+	return $keys;
+}
+
 /** 正規表現パターンのリストとして検証すべきキー一覧。 */
 function ksphp_conf_regex_list_keys(): array {
 	static $keys = array(
@@ -767,6 +780,9 @@ function ksphp_conf_field_type(string $key, string $raw_value): array {
 	if (array_key_exists($key, ksphp_conf_list_keys())) {
 		return array('type' => 'list');
 	}
+	if (array_key_exists($key, ksphp_conf_longtext_keys())) {
+		return array('type' => 'longtext');
+	}
 
 	// 単純な文字列の並びだけの配列（入れ子・連想配列でない）はlist扱いに
 	// フォールバックする。HANDLENAMES等の複雑な入れ子配列は、確実性を
@@ -829,6 +845,8 @@ function ksphp_conf_review_display_value(string $raw, string $type): string {
 	if ($type === 'list') {
 		return ksphp_conf_list_raw_to_lines($trimmed);
 	}
+	// longtextはtextと同じ単純クォート解除（type='text'とtype='longtext'は
+	// 表示ウィジェットの違いのみで、値のエンコード規則は共通）。
 	if ($trimmed !== '' && ($trimmed[0] === "'" || $trimmed[0] === '"') && substr($trimmed, -1) === $trimmed[0] && strlen($trimmed) >= 2) {
 		return stripcslashes(substr($trimmed, 1, -1));
 	}
@@ -959,7 +977,7 @@ function ksphp_conf_apply_review(string $merged_content, array $overrides): arra
 			continue;
 		}
 
-		// text
+		// text / longtext（両者とも同じクォート＆保存処理。差はUIのみ）
 		$submitted_str = (string) $submitted;
 		if ($required && trim($submitted_str) === '') {
 			$errors[] = array('key' => $key, 'text' => sprintf(T('CONF_REVIEW_ERROR_REQUIRED'), $key));
@@ -1855,6 +1873,8 @@ function renderConfReviewForm(fields) {
 		} else if (f.type === 'list') {
 			html += '<textarea class="conf-field" data-key="' + escapeHtml(f.key) + '" data-type="list" rows="4" cols="40">' + escapeHtml(f.value) + '</textarea>'
 				+ '<div class="hint">' + escapeHtml(L('CONF_REVIEW_LIST_HINT')) + '</div>';
+		} else if (f.type === 'longtext') {
+			html += '<textarea class="conf-field" data-key="' + escapeHtml(f.key) + '" data-type="text" rows="6" cols="40">' + escapeHtml(f.value) + '</textarea>';
 		} else {
 			html += '<input type="text" class="conf-field" data-key="' + escapeHtml(f.key) + '" data-type="text" value="' + escapeHtml(f.value) + '" size="40">';
 		}

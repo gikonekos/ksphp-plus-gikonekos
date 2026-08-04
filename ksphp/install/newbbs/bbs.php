@@ -50,7 +50,7 @@ if (file_exists($ksphp_local_secrets_file)) {
 unset($ksphp_local_secrets_file, $ksphp_local_secrets);
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '擬古猫+RC11 [20260801] (Heyuri, ヶ, ＠Links, 擬古猫)';
+$CONF['VERSION'] = '擬古猫+RC12 [20260801] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
@@ -3019,7 +3019,12 @@ class Func {
         }
         $value = str_replace("\015\012", "\015", $value);
         $value = str_replace("\012", "\015", $value);
-        $value = str_replace("\015$", "", $value);
+        // 20260801 Gikoneko: 旧コード str_replace("\015$", "", $value) を削除。
+        // これは「行末のCR + 直後の $ を削除する」意図と思われるが、実際は
+        // 文字列中の \015$ という2文字並び（＝前行のCRの直後に$がある箇所）
+        // をすべて削除してしまい、複数行投稿の2行目以降の行頭$が消える
+        // 副作用があった（LaTeX $...$ 記法が2行目以降で機能しない不具合）。
+        // セキュリティ上の除去根拠は調査済みで見当たらないため撤去する。
         $value = str_replace(",", "&#44;", $value);
 
         return $value;

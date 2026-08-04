@@ -364,6 +364,49 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
   doc/admin-secrets-concept-2026-07-19-01.txt for the original design
   discussion.
 
+* (Fixed 2026-08-01, RC11) install.php's conf-review numeric-expression
+  values (e.g. `MAXOLDLOGSIZE`'s `4 * 1024 * 1024`) were written back
+  out as quoted strings (`'1023998976'`) instead of bare numbers,
+  causing string-vs-int comparison bugs at runtime (log-size checks
+  firing incorrectly). Fixed by adding a `$was_numeric_expr` check
+  (digit/operator/whitespace-only) alongside the existing bare-number
+  check in `ksphp_conf_apply_review()`, so such values are written
+  unquoted. Existing conf.php files created before this fix need a
+  one-time manual edit to their affected keys (change the quoted
+  value to a bare integer or expression).
+* (Fixed 2026-08-01, RC11) `Func::html_escape()` in bbs.php stripped
+  the `$` character at the start of any post-body line after the
+  first, via `str_replace("\015$", "", $value)` -- a leftover from
+  before the CR/LF normalization above it, with no discernible
+  security rationale. This broke LaTeX-style `$...$` delimiters
+  (see latexrender.js above) on line 2 and beyond of a post. Line
+  removed.
+* (Implemented 2026-08-01, RC11) conf.php review screen now shows
+  each setting's own conf.php comment as help text (see the
+  `ksphp_conf_entry_comment_text()` entry above for detail).
+* (Fixed 2026-08-01, RC12) `BBSLINK` rendered as a single-line text
+  input in the conf.php review screen despite holding a multi-line
+  HTML/text block as its value. Added a new
+  `ksphp_conf_longtext_keys()` list and `'longtext'` field type
+  (display/save logic identical to the existing `'text'` type; only
+  the form widget differs -- a `<textarea>` instead of
+  `<input type="text">`) and registered `BBSLINK` under it.
+* Not yet started: integrate all per-browser JS feature toggles
+  (existing -- kaomoji.js, ayashiibreaker.js, upthumb.js, imgthumb.js,
+  vidembed.js -- and new -- longpostfilter.js, latexrender.js,
+  treehide.js) into the existing personal-settings panel
+  (個人用環境設定 in sub/template.html), instead of the three newest
+  toggles floating independently at the top of the page as they do
+  now. Design points from maintainer: each JS individually
+  on/off-able via checkbox except ayashiibreaker.js (line breaker,
+  mandatory -- cannot be disabled, but its parameters should stay
+  configurable from the panel); allow overriding the conf.php-level
+  擬古猫といっしょ setting from this panel too (conf.php can enable
+  it, reader can still turn it off client-side); settings continue
+  to live in localStorage, same as the current per-feature toggles;
+  needs full 7-language translation additions to
+  `newbbs/language/*.txt`.
+
 ## Known Bugs:
 * Large number of \&nbsp; appearances when searching logs
 * (Found 2026-08-01 during install.php conf-review testing; fixed
