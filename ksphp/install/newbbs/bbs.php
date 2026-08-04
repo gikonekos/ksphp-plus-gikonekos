@@ -50,14 +50,14 @@ if (file_exists($ksphp_local_secrets_file)) {
 unset($ksphp_local_secrets_file, $ksphp_local_secrets);
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '擬古猫+RC8 [20260719] (Heyuri, ヶ, ＠Links, 擬古猫)';
+$CONF['VERSION'] = '擬古猫+RC9 [20260801] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
 // display/branding version and does not change on every build; this constant
 // is for precise build-to-build comparison (e.g. future differential-update
 // tooling). Update this value whenever a new package zip is built.
-define('KSPHP_PLUS_BUILD', 'ksphp-rc8-2026-07-20-01');
+define('KSPHP_PLUS_BUILD', 'ksphp-rc9-2026-08-01-01');
 
 /* Launch */
 
@@ -2274,6 +2274,50 @@ function protectAdminName($name,$trip,$copy)
      * @access  public
      * @return  Array  Message array
      */
+    /**
+     * Build a getlog (m=g) search link for a #hashtag found in a post.
+     * The file list is anchored on the post's own date ($ndate), not
+     * "today", so the link keeps pointing at the same window even when
+     * viewed later:
+     *   - OLDLOGSAVESW=1 (monthly log files): search the post's own month
+     *   - OLDLOGSAVESW=0 (daily log files): search the 7 days up to and
+     *     including the post's date
+     * @param   String  $tag    Tag text (already html-escaped by procForm())
+     * @param   Integer $ndate  Post's Unix timestamp
+     * @return  String  <a> tag linking to the getlog search
+     * @access  private
+     */
+    function makehashtaglink($tag, $ndate) {
+        $ext = $this->c['OLDLOGFMT'] ? 'dat' : 'html';
+        $files = array();
+        if ($this->c['OLDLOGSAVESW']) {
+            $files[] = date("Ym", $ndate) . ".$ext";
+        }
+        else {
+            for ($i = 0; $i < 7; $i++) {
+                $files[] = date("Ymd", $ndate - $i * 86400) . ".$ext";
+            }
+        }
+        $searchtag = html_entity_decode($tag, ENT_QUOTES);
+        $query = 'm=g&amp;q=' . rawurlencode($searchtag);
+        foreach ($files as $file) {
+            $query .= '&amp;f[]=' . rawurlencode($file);
+        }
+        # getconditions()'s sd/sh/si/ed/eh/ei default to "00" when omitted,
+        # which msgsearch() reads as an *empty* time range (rejects every
+        # message) rather than "no limit" -- the search form only avoids
+        # this because its own <select> defaults happen to submit the
+        # full-range values below. Since this link bypasses that form,
+        # supply the same full-range values explicitly.
+        if ($this->c['OLDLOGSAVESW']) {
+            $query .= '&amp;sd=01&amp;sh=00&amp;ed=31&amp;eh=24';
+        }
+        else {
+            $query .= '&amp;sh=00&amp;si=00&amp;eh=24&amp;ei=00';
+        }
+        return "<a href=\"{$this->s['DEFURL']}&amp;{$query}\" target=\"link\">#{$tag}</a>";
+    }
+
     function getformmessage() {
 
         $message = array();
@@ -2313,6 +2357,16 @@ if ($result === 3) {
 
         # Auto-link URLs
         if ( $this->c['AUTOLINK'] ) {
+            # Hashtags (#tag) -> getlog (m=g) full-text search link, restricted
+            # to a date window anchored on this post's own date. Must run
+            # before the URL regex below, since a "#" is only treated as a
+            # hashtag when preceded by whitespace/line-start -- never right
+            # after non-space text, which avoids catching a URL's own
+            # "#fragment" here.
+            $message['MSG'] = preg_replace_callback("/(?<=^|\s)#([^\s#<>&]+)/u",
+                function ($matches) {
+                    return $this->makehashtaglink($matches[1], CURRENT_TIME);
+                }, $message['MSG']);
             $message['MSG'] = preg_replace("/((https?|ftp|news):\/\/[-_.,!~*'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)/",
                 "<a href=\"$1\" target=\"link\">$1</a>", $message['MSG']);
         }
@@ -2578,6 +2632,7 @@ if ($result === 3) {
 
                     # File with the latest update time, other than the current log
                     $maxftime = 0;
+                    $checkedfile = '';
                     foreach ($files as $filename) {
                         $fstat = stat ($tmpdir . $filename);
                         if ($fstat[9] > $maxftime) {

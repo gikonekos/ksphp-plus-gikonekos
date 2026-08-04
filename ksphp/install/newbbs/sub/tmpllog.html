@@ -331,7 +331,7 @@
 <!-- Topic list -->
 <patTemplate:tmpl name="topiclist">
 <a id="top"></a>
-<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <a href="#bottom">▼</a></td></tr></table>
+<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="#bottom">▼</a></td></tr></table>
 <h1>{TITLE_TOPIC_LIST} [{FILENAME}]</h1>
 <p class="ngset"></p>
 <div class="medium">{TOPIC_LIST_COLUMN_HEADERS}</div>
@@ -348,7 +348,7 @@
 <!-- ZIP archive list -->
 <patTemplate:tmpl name="archivelist">
 <a id="top"></a>
-<header><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <a href="{DEFURL}&m=g">←{TITLE_OLDLOG_SEARCH}</a>　<a href="{DEFURL}">{BULLETIN_BOARD_LABEL}</a> <a href="#bottom">▼</a></header>
+<header><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}&m=g">←{TITLE_OLDLOG_SEARCH}</a>　<a href="{DEFURL}">{BULLETIN_BOARD_LABEL}</a> <a href="#bottom">▼</a></header>
 <h1>{ZIP_ARCHIVES_HEADING}</h1>
 <span class="medium">{ZIP_ARCHIVE_COLUMN_HEADERS}</span>
 <hr>

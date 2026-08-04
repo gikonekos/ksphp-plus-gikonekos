@@ -509,6 +509,368 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 	return array('content' => $content, 'log' => $log);
 }
 
+/**
+ * ======================================================================
+ * conf.php調整確認画面（2026-08-01 Gikoneko追加）
+ * ======================================================================
+ * 従来のksphp_conf_merge()は全自動でconf.phpを書き換えていたが、
+ * 「元ファイルの値を見ながら選択的に引き継ぎたい」という要望を受け、
+ * 導入実行の前に確認・編集できる画面を挟めるようにする。
+ *
+ * 方針：ksphp_conf_merge()の自動マージ結果を「編集フォームの初期値」
+ * として使い、フォーム未編集ならこれまでと全く同じ結果になる。
+ * ユーザーが編集した項目のみ、送信された値で上書きする。
+ *
+ * フィールド種別の判定について：
+ * 真偽値(0/1)キー・三択(0/1/2)キーは、conf.php内のコメント
+ * （「#   0 : 無効」「#   1 : 有効」等の選択肢説明）を今回一度だけ
+ * 目視で確認し、下記の固定リストへ手動で反映した（保守コストを
+ * 抑えるための一度きりの棚卸し）。
+ *
+ * 当初は「値が厳密に0または1のみなら真偽値スイッチとして自動認識する」
+ * フォールバックも用意していたが、SPTIME/DIFFTIME/DIFFSEC等（秒数など
+ * の数値設定で、既定値がたまたま0なだけ）を誤ってチェックボックス化
+ * することがテストで判明したため撤去した。手動リストに無い新規キーは、
+ * 確実性を優先し安全側のtext入力欄として扱う（今後同種のキーが
+ * conf.phpへ追加された場合は、リストへの追記が必要）。
+ */
+
+/**
+ * 真偽値(0/1)キー一覧。値はnull（汎用ラベルCONF_BOOL_DISABLED/
+ * CONF_BOOL_ENABLEDを使う）、またはarray(offラベルキー, onラベルキー)。
+ */
+function ksphp_conf_checkbox_keys(): array {
+	static $keys = array(
+		'RUNMODE'           => null,
+		'BBSMODE_IMAGE'     => null,
+		'ALLOW_UNDO'        => null,
+		'SHOW_READNEWBTN'   => null,
+		'GIKONEKO_TOISSHO'  => null,
+		'GZIPU'             => null,
+		'AUTOLINK'          => null,
+		'UAREC'             => null,
+		'IPPRINT'           => null,
+		'UAPRINT'           => null,
+		'COOKIE'            => null,
+		'SHOW_SELFFOLLOW'   => null,
+		'MULTIPLESEARCH'    => null,
+		'RESTRICT_MOBILEIP' => null,
+		'FOLLOWWIN'         => array('CONF_FOLLOWWIN_0', 'CONF_FOLLOWWIN_1'),
+		'OLDLOGFMT'         => array('CONF_OLDLOGFMT_0', 'CONF_OLDLOGFMT_1'),
+		'OLDLOGBTN'         => array('CONF_OLDLOGBTN_0', 'CONF_OLDLOGBTN_1'),
+		'OLDLOGSAVESW'      => array('CONF_OLDLOGSAVESW_0', 'CONF_OLDLOGSAVESW_1'),
+	);
+	return $keys;
+}
+
+/** 三択(0/1/2)キー一覧。値は array(選択肢値 => ラベルキー, ...)。 */
+function ksphp_conf_radio_keys(): array {
+	static $keys = array(
+		'BBSMODE_ADMINONLY' => array(
+			'0' => 'CONF_BBSMODE_ADMINONLY_0',
+			'1' => 'CONF_BBSMODE_ADMINONLY_1',
+			'2' => 'CONF_BBSMODE_ADMINONLY_2',
+		),
+		'IPREC' => array(
+			'0' => 'CONF_IPREC_0',
+			'1' => 'CONF_IPREC_1',
+			'2' => 'CONF_IPREC_2',
+		),
+	);
+	return $keys;
+}
+
+/** 単純な文字列の配列（1行1要素として編集させる）キー一覧。 */
+function ksphp_conf_list_keys(): array {
+	static $keys = array(
+		'NGWORD'               => true,
+		'HOSTNAME_POSTDENIED'  => true,
+		'HOSTNAME_BANNED'      => true,
+		'HOSTAGENT_BANNED'     => true,
+	);
+	return $keys;
+}
+
+/** 正規表現パターンのリストとして検証すべきキー一覧。 */
+function ksphp_conf_regex_list_keys(): array {
+	static $keys = array(
+		'HOSTNAME_POSTDENIED' => true,
+		'HOSTNAME_BANNED'     => true,
+		'HOSTAGENT_BANNED'    => true,
+	);
+	return $keys;
+}
+
+/** 確認画面で必須項目として扱うキー（空欄ならエラー）。 */
+function ksphp_conf_is_required_key(string $key): bool {
+	if ($key === 'BBSTITLE') {
+		return true;
+	}
+	return ksphp_is_manual_path_key($key);
+}
+
+/**
+ * エントリの生の値文字列（' => ' の右側、末尾カンマなし）から
+ * フィールド種別を判定する。
+ *
+ * @return array{type:string, options?:array, labels?:?array}
+ */
+function ksphp_conf_field_type(string $key, string $raw_value): array {
+	$trimmed = trim($raw_value);
+
+	// 20260801 Gikoneko: 既存パーサー(ksphp_scan_array_block)の限界により、
+	// コメントアウトされたサンプルコード（例: TMPL_MSGの後にコメントで
+	// 残っているHTML例）の中に 'KEY' => のような見た目のテキストが
+	// あると、その直後の本当のキー（例: HOSTNAME_POSTDENIED）がエントリ
+	// 抽出時に誤って手前のダミーキーの値の一部として取り込まれてしまう
+	// ケースを確認した。この画面での編集は危険（保存時に本来のキーの
+	// 配列を丸ごと消してしまう）なため、値の中にさらに 'IDENT' => の
+	// パターンが見つかった場合は、种別判定より先に編集対象外(raw)として
+	// 弾き、これまで通り自動マージ結果のまま維持する。
+	if (preg_match('/\'[A-Za-z0-9_]+\'\s*=>/', $trimmed)) {
+		return array('type' => 'raw');
+	}
+
+	$checkbox_keys = ksphp_conf_checkbox_keys();
+	if (array_key_exists($key, $checkbox_keys)) {
+		return array('type' => 'checkbox', 'labels' => $checkbox_keys[$key]);
+	}
+	$radio_keys = ksphp_conf_radio_keys();
+	if (array_key_exists($key, $radio_keys)) {
+		return array('type' => 'radio', 'options' => $radio_keys[$key]);
+	}
+	if (array_key_exists($key, ksphp_conf_list_keys())) {
+		return array('type' => 'list');
+	}
+
+	// 単純な文字列の並びだけの配列（入れ子・連想配列でない）はlist扱いに
+	// フォールバックする。HANDLENAMES等の複雑な入れ子配列は、確実性を
+	// 優先しこの画面での編集対象外(raw)として自動マージ結果のまま残す。
+	if ($trimmed !== '' && (strpos($trimmed, 'array') === 0 || $trimmed[0] === '[')) {
+		if (!preg_match('/=>/', $trimmed)
+			&& preg_match('/^(?:array\s*\(|\[)(?:\s*\'(?:[^\'\\\\]|\\\\.)*\'\s*,?)*\s*(?:\)|\])\s*$/s', $trimmed)) {
+			return array('type' => 'list');
+		}
+		return array('type' => 'raw');
+	}
+
+	// 20260801 Gikoneko: 当初「値が厳密に0または1のみなら真偽値スイッチ
+	// として自動認識する」フォールバックを用意していたが、テストで
+	// SPTIME/DIFFTIME/DIFFSEC等（秒数などの数値設定で、たまたま既定値が
+	// 0なだけ）を誤ってチェックボックス化することが判明した。値だけでは
+	// 真偽値かどうか判定できないため、このフォールバックは撤去する。
+	// 手動リストに無い新規キーは、確実性を優先し安全側のtext入力欄
+	// として扱う（誤動作より「編集しづらいだけ」の方が安全なため）。
+	return array('type' => 'text');
+}
+
+/** array(...)の中身（'a','b','c'）を1行1要素のテキストへ変換する。 */
+function ksphp_conf_list_raw_to_lines(string $raw): string {
+	$trimmed = trim($raw);
+	if (preg_match('/^array\s*\((.*)\)\s*$/s', $trimmed, $im)) {
+		$body = $im[1];
+	} elseif (preg_match('/^\[(.*)\]\s*$/s', $trimmed, $im)) {
+		$body = $im[1];
+	} else {
+		$body = '';
+	}
+	preg_match_all('/\'((?:[^\'\\\\]|\\\\.)*)\'/', $body, $items);
+	$lines = array();
+	foreach ($items[1] as $it) {
+		$lines[] = stripcslashes($it);
+	}
+	return implode("\n", $lines);
+}
+
+/** 1行1要素のテキスト（配列）から、conf.php用のarray(...)リテラルを組み立てる。 */
+function ksphp_conf_build_list_value(array $lines): string {
+	$lines = array_values(array_filter(array_map('trim', $lines), function ($l) { return $l !== ''; }));
+	if (empty($lines)) {
+		return "array(\n  )";
+	}
+	$body = '';
+	foreach ($lines as $l) {
+		$body .= "    '" . addcslashes($l, "'\\") . "',\n";
+	}
+	return "array(\n" . $body . "  )";
+}
+
+/** 確認画面のフォームへ表示する初期値文字列（表示用に整形済み）を返す。 */
+function ksphp_conf_review_display_value(string $raw, string $type): string {
+	$trimmed = trim($raw);
+	if ($type === 'checkbox' || $type === 'radio') {
+		return trim($trimmed, "'\" \t");
+	}
+	if ($type === 'list') {
+		return ksphp_conf_list_raw_to_lines($trimmed);
+	}
+	if ($trimmed !== '' && ($trimmed[0] === "'" || $trimmed[0] === '"') && substr($trimmed, -1) === $trimmed[0] && strlen($trimmed) >= 2) {
+		return stripcslashes(substr($trimmed, 1, -1));
+	}
+	return $trimmed;
+}
+
+/**
+ * conf.php調整確認画面用に、自動マージ結果をベースにした編集可能な
+ * フィールド一覧を組み立てる。ADMINPOST/ADMINKEYは管理パスワード
+ * 移行の専用フロー（4節既存仕様）で扱うため、この画面には出さない。
+ *
+ * @return array{fields:array, merged_content:string, log:array}
+ */
+function ksphp_conf_build_review(string $old_conf_path, string $new_template_path, ?string $legacy_base_dir = null): array {
+	$merged = ksphp_conf_merge($old_conf_path, $new_template_path, $legacy_base_dir);
+	$parsed = ksphp_conf_parse_entries($merged['content']);
+
+	$old_by_key = array();
+	$old_content = @file_get_contents($old_conf_path);
+	if ($old_content !== false) {
+		$old_parsed = ksphp_conf_parse_entries($old_content);
+		foreach ($old_parsed['entries'] as $oe) {
+			if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/s', $oe, $om)) {
+				$old_by_key[$om[2]] = true;
+			}
+		}
+	}
+
+	$fields = array();
+	foreach ($parsed['entries'] as $entry) {
+		if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $entry, $m)) {
+			continue;
+		}
+		$key = $m[2];
+		if ($key === 'ADMINPOST' || $key === 'ADMINKEY') {
+			continue;
+		}
+		$raw = trim($m[3]);
+		$type_info = ksphp_conf_field_type($key, $raw);
+		if ($type_info['type'] === 'raw') {
+			continue;
+		}
+
+		$labels = array('off' => T('CONF_BOOL_DISABLED'), 'on' => T('CONF_BOOL_ENABLED'));
+		if (isset($type_info['labels']) && $type_info['labels'] !== null) {
+			$labels = array('off' => T($type_info['labels'][0]), 'on' => T($type_info['labels'][1]));
+		}
+		$options = null;
+		if (isset($type_info['options'])) {
+			$options = array();
+			foreach ($type_info['options'] as $value => $label_key) {
+				$options[] = array('value' => $value, 'label' => T($label_key));
+			}
+		}
+
+		$fields[] = array(
+			'key'      => $key,
+			'type'     => $type_info['type'],
+			'value'    => ksphp_conf_review_display_value($raw, $type_info['type']),
+			'required' => ksphp_conf_is_required_key($key),
+			'is_new'   => !isset($old_by_key[$key]),
+			'options'  => $options,
+			'labels'   => $labels,
+		);
+	}
+
+	return array('fields' => $fields, 'merged_content' => $merged['content'], 'log' => $merged['log']);
+}
+
+/**
+ * 確認画面でユーザーが編集した値から、実際に書き込むconf.php本文を
+ * 組み立てる。$merged_content は ksphp_conf_build_review() が返した
+ * 自動マージ後の内容（フォームの初期値の元）。$overrides はPOSTから
+ * 受け取った「キー => 送信値」の連想配列。
+ *
+ * @return array{content:?string, errors:array<int,array{key:string,text:string}>}
+ */
+function ksphp_conf_apply_review(string $merged_content, array $overrides): array {
+	$parsed = ksphp_conf_parse_entries($merged_content);
+	$errors = array();
+	$new_entries = array();
+	$regex_list_keys = ksphp_conf_regex_list_keys();
+
+	foreach ($parsed['entries'] as $entry) {
+		if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $entry, $m)) {
+			$new_entries[] = $entry;
+			continue;
+		}
+		$key = $m[2];
+		$current_raw = trim($m[3]);
+
+		if ($key === 'ADMINPOST' || $key === 'ADMINKEY' || !array_key_exists($key, $overrides)) {
+			$new_entries[] = $entry;
+			continue;
+		}
+
+		$field = ksphp_conf_field_type($key, $current_raw);
+		$submitted = $overrides[$key];
+		$required = ksphp_conf_is_required_key($key);
+
+		if ($field['type'] === 'checkbox') {
+			$raw = ($submitted === '1' || $submitted === 1 || $submitted === true) ? '1' : '0';
+			$new_entries[] = ksphp_conf_entry_with_value($entry, $raw);
+			continue;
+		}
+
+		if ($field['type'] === 'radio') {
+			// PHPは連想配列の'0'/'1'/'2'のような数値文字列キーを自動的に
+			// 整数キーへ変換するため、array_keys()の結果は文字列ではなく
+			// 整数になる。strict比較のため文字列へ揃えてから照合する。
+			$options = array_map('strval', array_keys($field['options']));
+			if (!in_array((string) $submitted, $options, true)) {
+				$errors[] = array('key' => $key, 'text' => sprintf(T('CONF_REVIEW_ERROR_RADIO'), $key));
+				$new_entries[] = $entry;
+				continue;
+			}
+			$new_entries[] = ksphp_conf_entry_with_value($entry, (string) $submitted);
+			continue;
+		}
+
+		if ($field['type'] === 'list') {
+			$lines = preg_split('/\r\n|\r|\n/', (string) $submitted);
+			$lines = array_values(array_filter(array_map('trim', $lines), function ($l) { return $l !== ''; }));
+			if (isset($regex_list_keys[$key])) {
+				foreach ($lines as $li => $pattern) {
+					if (@preg_match('#' . str_replace('#', '\#', $pattern) . '#', '') === false) {
+						$errors[] = array('key' => $key, 'text' => sprintf(T('CONF_REVIEW_ERROR_INVALID_REGEX'), $key, $li + 1));
+					}
+				}
+			}
+			if ($required && empty($lines)) {
+				$errors[] = array('key' => $key, 'text' => sprintf(T('CONF_REVIEW_ERROR_REQUIRED'), $key));
+			}
+			$new_entries[] = ksphp_conf_entry_with_value($entry, ksphp_conf_build_list_value($lines));
+			continue;
+		}
+
+		// text
+		$submitted_str = (string) $submitted;
+		if ($required && trim($submitted_str) === '') {
+			$errors[] = array('key' => $key, 'text' => sprintf(T('CONF_REVIEW_ERROR_REQUIRED'), $key));
+			$new_entries[] = $entry;
+			continue;
+		}
+		$was_bare_number = (bool) preg_match('/^-?[0-9]+(\.[0-9]+)?$/', $current_raw);
+		if ($was_bare_number) {
+			if (trim($submitted_str) !== '' && !is_numeric(trim($submitted_str))) {
+				$errors[] = array('key' => $key, 'text' => sprintf(T('CONF_REVIEW_ERROR_NUMERIC'), $key));
+				$new_entries[] = $entry;
+				continue;
+			}
+			$raw = (trim($submitted_str) === '') ? $current_raw : trim($submitted_str);
+			$new_entries[] = ksphp_conf_entry_with_value($entry, $raw);
+		} else {
+			$raw = "'" . addcslashes($submitted_str, "'\\") . "'";
+			$new_entries[] = ksphp_conf_entry_with_value($entry, $raw);
+		}
+	}
+
+	if (!empty($errors)) {
+		return array('content' => null, 'errors' => $errors);
+	}
+
+	$content = $parsed['prefix'] . implode('', $new_entries) . $parsed['suffix'];
+	return array('content' => $content, 'errors' => array());
+}
+
 
 /**
  * 20260719 Gikoneko: 導入先パスの安全ガード（最終防衛線）。
@@ -602,7 +964,7 @@ function ksphp_install_write_local_secrets(string $path, string $adminpost, stri
 	return $result !== false;
 }
 
-function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backup_root, string $entry_filename = 'bbs.php', string $old_admin_pass = '', string $new_admin_pass = ''): array {
+function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backup_root, string $entry_filename = 'bbs.php', string $old_admin_pass = '', string $new_admin_pass = '', ?array $conf_overrides = null): array {
 	$log = array();
 
 	// newbbs_dir は常に {install_dir}/newbbs なので、ここから install_dir を逆算する。
@@ -715,7 +1077,31 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 		// この時点ではまだ上書きされていない）から実際の設定値があれば引き継ぐ。
 		if ($rel === 'conf.php' && $existed && $backup_target !== null) {
 			$merged = ksphp_conf_merge($backup_target, $src, $parent_dir);
-			if (@file_put_contents($dst, $merged['content']) !== false) {
+			$final_content = $merged['content'];
+
+			// 20260801 Gikoneko: 確認画面で編集された値があれば、自動マージ
+			// 結果の上にユーザーの入力を適用する。バリデーションエラーが
+			// あれば、conf.php単体の失敗として扱い（他ファイルの導入は
+			// 継続）、退避済みの旧conf.phpをその場に戻す。
+			if ($conf_overrides !== null) {
+				$applied = ksphp_conf_apply_review($merged['content'], $conf_overrides);
+				if (!empty($applied['errors'])) {
+					foreach ($applied['errors'] as $err) {
+						$log[] = array('ok' => false, 'text' => $err['text']);
+					}
+					ksphp_install_log_error($install_dir_check, "conf review validation failed: $dst");
+					if (@rename($backup_target, $dst)) {
+						$log[] = array('ok' => true, 'text' => sprintf(T('INSTALL_ROLLBACK_OK'), $dst_rel));
+					} else {
+						$log[] = array('ok' => false, 'text' => sprintf(T('INSTALL_ROLLBACK_FAIL'), $backup_target));
+						ksphp_install_log_error($install_dir_check, "rollback rename failed: $backup_target -> $dst");
+					}
+					continue;
+				}
+				$final_content = $applied['content'];
+			}
+
+			if (@file_put_contents($dst, $final_content) !== false) {
 				$log[] = array('ok' => true, 'text' => sprintf(T('INSTALL_CONF_MERGED'), $dst_rel));
 				foreach ($merged['log'] as $entry) {
 					$log[] = $entry;
@@ -913,6 +1299,45 @@ function ksphp_install_validate_new_dir(string $grandparent_dir, string $relativ
 	return $resolved;
 }
 
+// 20260801 Gikoneko: conf.php調整確認画面用。実際のファイル書き込みは
+// 一切行わず、自動マージ結果を編集可能なフィールド一覧として返すだけ。
+/** POSTで受け取ったconf_overrides（JSON文字列）を安全にデコードする。 */
+function ksphp_install_decode_conf_overrides(string $raw): ?array {
+	if ($raw === '') {
+		return null;
+	}
+	$decoded = json_decode($raw, true);
+	return is_array($decoded) ? $decoded : null;
+}
+
+if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'conf_review') {
+	header('Content-Type: application/json; charset=UTF-8');
+	$kind = (string) ($_GET['kind'] ?? 'index');
+	if ($kind === 'new') {
+		$new_dir = ksphp_install_validate_new_dir($grandparent_dir, (string) ($_GET['dir'] ?? ''), $install_dir);
+		if ($new_dir === null) {
+			echo json_encode(array('needed' => false), JSON_UNESCAPED_UNICODE);
+			exit;
+		}
+		$old_conf = $new_dir . '/conf.php';
+	} else {
+		$targets = ksphp_install_find_candidates($parent_dir, $grandparent_dir);
+		$idx = (int) ($_GET['target'] ?? -1);
+		if (!isset($targets[$idx])) {
+			echo json_encode(array('needed' => false), JSON_UNESCAPED_UNICODE);
+			exit;
+		}
+		$old_conf = dirname($targets[$idx]) . '/conf.php';
+	}
+	if (!@file_exists($old_conf)) {
+		echo json_encode(array('needed' => false), JSON_UNESCAPED_UNICODE);
+		exit;
+	}
+	$review = ksphp_conf_build_review($old_conf, $newbbs_dir . '/conf.php', dirname($old_conf));
+	echo json_encode(array('needed' => true, 'fields' => $review['fields']), JSON_UNESCAPED_UNICODE);
+	exit;
+}
+
 if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup_new') {
 	header('Content-Type: application/json; charset=UTF-8');
 	$new_dir = ksphp_install_validate_new_dir($grandparent_dir, (string) ($_GET['dir'] ?? ''), $install_dir);
@@ -925,10 +1350,11 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup_new'
 	// （fresh install）では通常不要だが、同名の仕組みを一応通しておく。
 	$old_admin_pass = (string) ($_POST['old_admin_pass'] ?? '');
 	$new_admin_pass = (string) ($_POST['new_admin_pass'] ?? '');
+	$conf_overrides = ksphp_install_decode_conf_overrides((string) ($_POST['conf_overrides'] ?? ''));
 	$backup_root = $install_dir . '/backup/new_' . substr(md5($new_dir), 0, 12);
 	echo json_encode(
 		array(
-			'log' => ksphp_install_run($newbbs_dir, $new_dir, $backup_root, 'bbs.php', $old_admin_pass, $new_admin_pass),
+			'log' => ksphp_install_run($newbbs_dir, $new_dir, $backup_root, 'bbs.php', $old_admin_pass, $new_admin_pass, $conf_overrides),
 			'entry_filename' => 'bbs.php',
 		),
 		JSON_UNESCAPED_UNICODE
@@ -948,10 +1374,11 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 	$entry_filename = basename($targets[$idx]);
 	$old_admin_pass = (string) ($_POST['old_admin_pass'] ?? '');
 	$new_admin_pass = (string) ($_POST['new_admin_pass'] ?? '');
+	$conf_overrides = ksphp_install_decode_conf_overrides((string) ($_POST['conf_overrides'] ?? ''));
 	$backup_root = $install_dir . '/backup/target' . $idx;
 	echo json_encode(
 		array(
-			'log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root, $entry_filename, $old_admin_pass, $new_admin_pass),
+			'log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root, $entry_filename, $old_admin_pass, $new_admin_pass, $conf_overrides),
 			'entry_filename' => $entry_filename,
 		),
 		JSON_UNESCAPED_UNICODE
@@ -1052,6 +1479,14 @@ function h(string $s): string {
 	#setup-log { list-style:none; margin:0.5em 0; padding:0; font-size:0.9em; }
 	#setup-log li { padding:0.15em 0; }
 	#lang-select-wrap { float:right; }
+	#conf-review-panel { border:2px solid #ffcf5c; background:#003030; padding:0.75em 1em; margin:0.75em 0; }
+	.conf-review-table th { vertical-align:top; white-space:nowrap; }
+	.conf-review-table td textarea, .conf-review-table td input[type="text"] { background:#002828; color:#efefef; border:1px solid #007f7f; font-family:inherit; }
+	tr.conf-required th { background:#3a2a00; }
+	.req-star { color:#ffcf5c; font-weight:bold; }
+	.new-tag { color:#8cff8c; font-size:0.85em; }
+	.hint { font-size:0.8em; color:#9fc; }
+	#conf-review-confirm-btn { margin-top:0.5em; }
 </style>
 </head>
 <body>
@@ -1134,6 +1569,8 @@ function h(string $s): string {
 
 <h2><?php echo h(T('H2_STEP6')); ?></h2>
 <p><?php echo T('STEP6_INTRO'); ?></p>
+<p><label><input type="checkbox" id="conf-review-toggle" checked> <?php echo h(T('CONF_REVIEW_TOGGLE_LABEL')); ?></label></p>
+<div id="conf-review-panel" style="display:none"></div>
 <button id="run-setup-btn"><?php echo h(T('BTN_RUN_SETUP')); ?></button>
 <ul id="setup-log"></ul>
 
@@ -1269,6 +1706,82 @@ function renderConfSummaries() {
 
 renderConfSummaries();
 
+// 20260801 Gikoneko: conf.php調整確認画面。
+function fetchConfReview(target) {
+	var langParam = '&lang=' + encodeURIComponent(<?php echo json_encode($lang); ?>);
+	var url = (target.kind === 'new')
+		? '?ajax=1&action=conf_review&kind=new&dir=' + encodeURIComponent(target.value) + langParam
+		: '?ajax=1&action=conf_review&kind=index&target=' + encodeURIComponent(target.value) + langParam;
+	return fetch(url)
+		.then(function (res) { return res.json(); })
+		.catch(function () { return { needed: false }; });
+}
+
+function renderConfReviewForm(fields) {
+	var panel = document.getElementById('conf-review-panel');
+	var html = '<h3>' + escapeHtml(L('H2_CONF_REVIEW')) + '</h3>';
+	html += '<p>' + escapeHtml(L('CONF_REVIEW_INTRO')) + '</p>';
+	html += '<p class="req-legend"><span class="req-star">*</span> ' + escapeHtml(L('CONF_REVIEW_REQUIRED_MARK')) + '</p>';
+	html += '<table class="conf-review-table">';
+	fields.forEach(function (f) {
+		var reqMark = f.required ? ' <span class="req-star">*</span>' : '';
+		var newTag = f.is_new ? ' <span class="new-tag">' + escapeHtml(L('CONF_REVIEW_NEW_KEY_TAG')) + '</span>' : '';
+		html += '<tr class="' + (f.required ? 'conf-required' : '') + '"><th>' + escapeHtml(f.key) + reqMark + newTag + '</th><td>';
+		if (f.type === 'checkbox') {
+			var checked = (String(f.value) === '1') ? ' checked' : '';
+			html += '<label><input type="checkbox" class="conf-field" data-key="' + escapeHtml(f.key) + '" data-type="checkbox"' + checked + '> '
+				+ escapeHtml(f.labels.on) + ' / ' + escapeHtml(f.labels.off) + '</label>';
+		} else if (f.type === 'radio') {
+			(f.options || []).forEach(function (opt) {
+				var checked = (String(f.value) === String(opt.value)) ? ' checked' : '';
+				html += '<label style="display:block"><input type="radio" class="conf-field" name="conf-radio-' + escapeHtml(f.key) + '" data-key="' + escapeHtml(f.key) + '" data-type="radio" value="' + escapeHtml(opt.value) + '"' + checked + '> ' + escapeHtml(opt.label) + '</label>';
+			});
+		} else if (f.type === 'list') {
+			html += '<textarea class="conf-field" data-key="' + escapeHtml(f.key) + '" data-type="list" rows="4" cols="40">' + escapeHtml(f.value) + '</textarea>'
+				+ '<div class="hint">' + escapeHtml(L('CONF_REVIEW_LIST_HINT')) + '</div>';
+		} else {
+			html += '<input type="text" class="conf-field" data-key="' + escapeHtml(f.key) + '" data-type="text" value="' + escapeHtml(f.value) + '" size="40">';
+		}
+		html += '</td></tr>';
+	});
+	html += '</table>';
+	html += '<button type="button" id="conf-review-confirm-btn">' + escapeHtml(L('CONF_REVIEW_CONFIRM_BTN')) + '</button>';
+	panel.innerHTML = html;
+	panel.style.display = '';
+	panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function collectConfOverrides(fields) {
+	var overrides = {};
+	fields.forEach(function (f) {
+		if (f.type === 'checkbox') {
+			var el = document.querySelector('.conf-field[data-key="' + f.key + '"][data-type="checkbox"]');
+			overrides[f.key] = (el && el.checked) ? '1' : '0';
+		} else if (f.type === 'radio') {
+			var el = document.querySelector('.conf-field[data-key="' + f.key + '"][data-type="radio"]:checked');
+			overrides[f.key] = el ? el.value : String(f.value || '0');
+		} else {
+			var el = document.querySelector('.conf-field[data-key="' + f.key + '"]');
+			overrides[f.key] = el ? el.value : '';
+		}
+	});
+	return overrides;
+}
+
+function showConfReviewAndWait(fields) {
+	return new Promise(function (resolve) {
+		renderConfReviewForm(fields);
+		var btn = document.getElementById('conf-review-confirm-btn');
+		btn.addEventListener('click', function onClick() {
+			btn.removeEventListener('click', onClick);
+			var overrides = collectConfOverrides(fields);
+			document.getElementById('conf-review-panel').style.display = 'none';
+			document.getElementById('conf-review-panel').innerHTML = '';
+			resolve(overrides);
+		});
+	});
+}
+
 document.getElementById('run-setup-btn').addEventListener('click', function () {
 	var btn = this;
 	var logList = document.getElementById('setup-log');
@@ -1348,60 +1861,82 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 		header.innerHTML = '<strong>--- ' + Lf('JS_TARGET_HEADER', { LABEL: escapeHtml(target.label) }) + ' ---</strong>';
 		logList.appendChild(header);
 
-		var langParam = '&lang=' + encodeURIComponent(<?php echo json_encode($lang); ?>);
-		var url = (target.kind === 'new')
-			? '?ajax=1&action=run_setup_new&dir=' + encodeURIComponent(target.value) + langParam
-			: '?ajax=1&action=run_setup&target=' + encodeURIComponent(target.value) + langParam;
+		// 20260801 Gikoneko: ファイル設置の前に、既存conf.phpがあれば
+		// 調整確認画面を挟む。無ければ（新規導入等）従来通り即座に進む。
+		// #conf-review-toggle が未チェックなら、この画面自体をスキップし
+		// 従来の全自動マージ動作に戻す（個人設定でオン/オフ可能）。
+		var reviewToggle = document.getElementById('conf-review-toggle');
+		var reviewEnabled = !reviewToggle || reviewToggle.checked;
+		var reviewFetchPromise = reviewEnabled ? fetchConfReview(target) : Promise.resolve({ needed: false });
 
-		// 20260720 Gikoneko: 管理パスワード移行が必要な対象のみ、
-		// 平文パスワードをPOSTボディで送信する（GETクエリ文字列に
-		// 載せてアクセスログへ残すのを避けるため）。それ以外は
-		// 従来通りGETのみ（挙動変更なし）。
-		var fetchOptions = undefined;
-		if (target.oldAdminPass !== undefined) {
-			var fd = new FormData();
-			fd.append('old_admin_pass', target.oldAdminPass);
-			fd.append('new_admin_pass', target.newAdminPass);
-			fetchOptions = { method: 'POST', body: fd };
-		}
+		reviewFetchPromise.then(function (reviewData) {
+			var overridesPromise = (reviewData && reviewData.needed && reviewData.fields && reviewData.fields.length)
+				? showConfReviewAndWait(reviewData.fields)
+				: Promise.resolve(null);
 
-		fetch(url, fetchOptions)
-			.then(function (res) { return res.json(); })
-			.then(function (data) {
-				var lines = data.log || [];
-				var entryFilename = data.entry_filename || 'bbs.php';
-				var i = 0;
-				function showNext() {
-					if (i >= lines.length) {
-						var linkLi = document.createElement('li');
-						var bbsIndexAttr = (target.kind === 'new') ? ('new:' + idx) : idx;
-						linkLi.innerHTML = '<a href="?ajax=0" data-bbs-index="' + escapeHtml(bbsIndexAttr) + '" data-entry-filename="' + entryFilename + '" class="bbs-link" target="_blank">' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + '</a>';
-						logList.appendChild(linkLi);
+			overridesPromise.then(function (overrides) {
+				var langParam = '&lang=' + encodeURIComponent(<?php echo json_encode($lang); ?>);
+				var url = (target.kind === 'new')
+					? '?ajax=1&action=run_setup_new&dir=' + encodeURIComponent(target.value) + langParam
+					: '?ajax=1&action=run_setup&target=' + encodeURIComponent(target.value) + langParam;
+
+				// 20260720 Gikoneko: 管理パスワード移行が必要な対象のみ、
+				// 平文パスワードをPOSTボディで送信する（GETクエリ文字列に
+				// 載せてアクセスログへ残すのを避けるため）。conf.php調整
+				// 内容がある場合も同様にPOSTボディで送る。いずれも無ければ
+				// 従来通りGETのみ（挙動変更なし）。
+				var fetchOptions = undefined;
+				if (target.oldAdminPass !== undefined || overrides !== null) {
+					var fd = new FormData();
+					if (target.oldAdminPass !== undefined) {
+						fd.append('old_admin_pass', target.oldAdminPass);
+						fd.append('new_admin_pass', target.newAdminPass);
+					}
+					if (overrides !== null) {
+						fd.append('conf_overrides', JSON.stringify(overrides));
+					}
+					fetchOptions = { method: 'POST', body: fd };
+				}
+
+				fetch(url, fetchOptions)
+					.then(function (res) { return res.json(); })
+					.then(function (data) {
+						var lines = data.log || [];
+						var entryFilename = data.entry_filename || 'bbs.php';
+						var i = 0;
+						function showNext() {
+							if (i >= lines.length) {
+								var linkLi = document.createElement('li');
+								var bbsIndexAttr = (target.kind === 'new') ? ('new:' + idx) : idx;
+								linkLi.innerHTML = '<a href="?ajax=0" data-bbs-index="' + escapeHtml(bbsIndexAttr) + '" data-entry-filename="' + entryFilename + '" class="bbs-link" target="_blank">' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + '</a>';
+								logList.appendChild(linkLi);
+								targetIdx++;
+								runNextTarget();
+								return;
+							}
+							var li = document.createElement('li');
+							li.className = lines[i].ok ? 'ok' : 'ng';
+							if (!lines[i].ok) {
+								hadFailure = true;
+							}
+							li.textContent = lines[i].text;
+							logList.appendChild(li);
+							i++;
+							setTimeout(showNext, 60);
+						}
+						showNext();
+					})
+					.catch(function () {
+						var li = document.createElement('li');
+						li.className = 'ng';
+						li.textContent = Lf('JS_COMM_ERROR', { LABEL: target.label });
+						logList.appendChild(li);
+						hadFailure = true;
 						targetIdx++;
 						runNextTarget();
-						return;
-					}
-					var li = document.createElement('li');
-					li.className = lines[i].ok ? 'ok' : 'ng';
-					if (!lines[i].ok) {
-						hadFailure = true;
-					}
-					li.textContent = lines[i].text;
-					logList.appendChild(li);
-					i++;
-					setTimeout(showNext, 60);
-				}
-				showNext();
-			})
-			.catch(function () {
-				var li = document.createElement('li');
-				li.className = 'ng';
-				li.textContent = Lf('JS_COMM_ERROR', { LABEL: target.label });
-				logList.appendChild(li);
-				hadFailure = true;
-				targetIdx++;
-				runNextTarget();
+					});
 			});
+		});
 	}
 	runNextTarget();
 });

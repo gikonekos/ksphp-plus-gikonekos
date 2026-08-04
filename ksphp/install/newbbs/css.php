@@ -98,7 +98,9 @@ $css = <<<'CSS'
     body { max-height: 100%; -webkit-text-size-adjust: 100%; background: #{C_BACKGROUND}; color: #{C_TEXT};font-family: "BIZ UDゴシック", "Noto Sans Mono CJK JP", "Noto Sans Mono", "IPAゴシック", "HGゴシックM", "ＭＳ ゴシック", "MS Gothic", monospace; font-size: 14px; }
     
     .postlists {
+        display: block;
         max-width: 100%;
+        overflow-x: auto;
         margin: 0 auto;
         border-spacing: 1px;
     }
@@ -147,7 +149,7 @@ $css = <<<'CSS'
     /* Mobile compatibility */
     @media screen and (min-width: 0px){
         .msgnormal { font-size: 0.9rem; font-size: 14px; line-height:1; /* white-space: pre-wrap; */ word-wrap: break-word; }
-        .msgtree { font-size: 0.9rem; font-size: 14px; line-height:1; white-space: pre; }
+        .msgtree { font-size: 0.9rem; font-size: 14px; line-height:1; white-space: pre; overflow-x: auto; }
         div.contents { margin-left: 18px; }
     }
     @media screen and (min-width: 640px){
@@ -222,7 +224,7 @@ $css = <<<'CSS'
     input[type="number"] { max-width: 4em; }
     /* Plugins */
     /* Custom */
-    @media screen and (min-width: 1020px) {  div.contents, .msgtree {   overflow-x: auto;  } } 
+    @media screen and (min-width: 1020px) {  div.contents {   overflow-x: auto;  } } 
 
 CSS;
 

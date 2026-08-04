@@ -492,7 +492,7 @@
 
 <!-- New post page -->
 <patTemplate:tmpl name="newpost">
-<table><tr><td><span class="pagetitle"><a href="{DEFURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {NEW_POST}　<a href="{DEFURL}" title="{TITLE_RETURN_PREV_PAGE2}">←{RETURN}</a></td></tr></table>
+<table><tr><td><span class="pagetitle"><a href="{DEFURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {NEW_POST}　<select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}" title="{TITLE_RETURN_PREV_PAGE2}">←{RETURN}</a></td></tr></table>
 <patTemplate:link src="form" />
 <div class="small">
     <label for="a3">{AUTO_LINK_URLS_LABEL}</label> <input type="checkbox" name="a" value="checked"{CHK_A} id="a3" />
@@ -537,7 +537,7 @@
 
 <!-- Settings page -->
 <patTemplate:tmpl name="custom">
-<header><span class="pagetitle"><a href="{DEFURL}" style="text-decoration: none;">{BBSTITLE}</a></span></header>
+<header><span class="pagetitle"><a href="{DEFURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select></header>
 <h1>{USER_SETTINGS}</h1>
 <form method="post" action="{CGIURL}">
     <input type="hidden" name="m" value="c" />

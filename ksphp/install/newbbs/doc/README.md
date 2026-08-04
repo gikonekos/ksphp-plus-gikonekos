@@ -253,11 +253,41 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
   `install/backup/install-errors-YYYY-MM-DD.txt` for later review
 
 ## ToDo:
-* View posts by thread
-* Setting for whether or not to use the mobile module
+* (Not yet implemented; requested 2026-07-31) install.php: a conf.php
+  "adjustment" step during migration -- read the existing conf.php's
+  own syntax/values and let the operator selectively carry settings
+  forward, rather than the current all-or-nothing conf-merge. Scope
+  and UI not yet designed.
+* (Reviewed 2026-07-31, maintainer decision) Community feature
+  requests raised on the board -- LaTeX math rendering (`$E=mc^2$`
+  style), a "collapse/delete unread thread" control -- decided to
+  handle client-side via JavaScript, not in ksphp-plus itself, to
+  avoid mixing concerns into bbs.php. A separate request to port the
+  NG-word matcher to WebAssembly for speed was deferred: maintainer
+  will prototype and benchmark it first, and only implement if it
+  turns out to meaningfully help (suspects the real bottleneck is
+  NG-word list size, not the matching algorithm).
+* (Reviewed 2026-07-25, maintainer decision) Old "mobile module" setting:
+  confirmed the `RESTRICT_MOBILEIP` config key is dead/unused (no code
+  references it anywhere) -- it's a leftover from a discontinued
+  separate mobile-device output module. Current mobile support is
+  CSS-only (viewport meta + media query breakpoints), no server-side
+  UA detection. Maintainer decided: keep the "not-PC" UA-detection
+  approach in mind for a future need, but for now just fix concrete
+  CSS gaps found during review -- `.msgtree` (AA/thread view) was
+  missing `overflow-x: auto` on narrow screens (present only at
+  desktop widths, so long AA lines pushed the whole page sideways
+  instead of scrolling within the block) and `.postlists` (admin
+  post-list table) had no horizontal-scroll handling at all. Both
+  fixed.
+* (Implemented 2026-07-25) `#hashtag` in a post body is now
+  auto-converted (governed by the existing `AUTOLINK` setting) into a
+  getlog (`m=g`) full-text search link, scoped to a date window
+  anchored on the post's own date: the post's own month when
+  `OLDLOGSAVESW=1` (monthly log files), or the 7 days up to and
+  including the post date when `OLDLOGSAVESW=0` (daily log files).
 * Form does not appear on the new post screen
 * Proper use of multi-byte functions and jcode
-* Setting for UNDO expiration date
 * Have uploader thumbnailing javascript to easily support other instances of Uploader softwares
 * (Decided 2026-07-18, maintainer judgment call) Top-page post form
   intentionally does NOT show the "Post complete" confirmation screen

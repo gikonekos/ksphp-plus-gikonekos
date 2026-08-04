@@ -1,6 +1,21 @@
 <?PHP
 
 /**
+* patTemplate - powerful template engine
+* Copyright (c) 2001 by Stephan Schmidt <schst@php-tools.de>
+* Originally distributed at http://www.php-tools.de
+*
+* Released under the GNU Lesser General Public License (LGPL).
+* Full license text: sub/patTemplate-license/lgpl.txt
+*
+* This is the PHP 8.3-compatible fork used by this project (each(),
+* the old-style patTemplate() constructor, and other removed/deprecated
+* constructs have been updated). The unmodified upstream distribution
+* (including its own copy of the license and original readme) is kept
+* alongside this file in sub/patTemplate-license/ for attribution.
+*/
+
+/**
 * Variable prefix
 * @access	public
 * @const patTEMPLATE_TAG_START
