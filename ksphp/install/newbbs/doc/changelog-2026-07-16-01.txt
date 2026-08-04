@@ -1,0 +1,703 @@
+くずはすくりぷとPHP+ (ksphp-plus) 言語ファイル一本化作業 changelog
+記録形式：ISO 8601（分単位）、タイムゾーンはUTC
+（本ファイルは ksphp-plus-handoff-2026-07-17-01.zip からの引き継ぎ以降の
+  作業記録。以前の経緯は CHANGELOG_HANDOFF.txt を参照）
+
+============================================================
+2026-07-16T23:30 UTC
+------------------------------------------------------------
+【段階1：ja版固有の改善点をen版（正本）へ移植】
+対象：sub/en/bbstree.php, sub/en/template.html
+
+これまでja/en両サブフォルダに分かれていたロジック／テンプレートを、
+将来的に英語版を正本として一本化する方針に基づき、まずja版側にしか
+無かった改善点をen版に移植した。
+
+  [1] sub/en/bbstree.php：indexthreads()最適化（2026-07-16T17:13、
+      ja版のみに適用済みだったもの）を移植。ログ全体を毎スレッド毎に
+      再走査していた旧O(n^2)実装を、1パスでスレッド別バケット化する
+      方式に置き換え。未読判定・ページング判定のロジックもja版に
+      合わせて修正。コメント・エラーメッセージは英語表記に統一。
+      php -lで構文確認済み。
+  [2] sub/en/template.html：{CUSTOMHEAD}プレースホルダ（ja版のみに
+      存在）を、スクリプトタグ群の直後・<style>直前に追加。bbs.php
+      側は既にCUSTOMHEAD変数を汎用的にセットしているため、テンプレート
+      側への追加のみで動作する。patTemplate:tmplタグの開閉数（40対40）
+      が一致することを確認。
+
+  ※調査の過程で、ハニーポット（スパムボット対策の隠し入力欄）の設置
+    箇所がja版とen版で異なっており（ja版はadminlogin側、en版は一般
+    投稿フォーム側）、擬古猫さんに確認したところ「ハニーポット機能は
+    うまく動作しないと確認済み。en側の配置を残す」との回答を得た。
+    ja版側の配置は移植せず、en版の配置（一般投稿フォーム側）をそのまま
+    採用した。
+
+
+============================================================
+2026-07-16T23:32 UTC
+------------------------------------------------------------
+【段階2：言語ファイル機構の実装】
+対象：language/english.txt（新規）, language/japanese.txt（新規）,
+      conf.php, bbs.php
+
+sub/ja・sub/enサブフォルダ丸ごとの重複を解消するための第一歩として、
+UI文言（$MSG）を専用の言語ファイルとして外出しする機構を実装した。
+
+  [1] language/english.txt, language/japanese.txt を新規作成。
+      内容はsub/en/lang.php・sub/ja/lang.phpの$MSG配列をPHP経由で
+      機械的にダンプし、新パーサーで読み戻した結果が元の配列と
+      完全一致すること（キー数55件、値の差異ゼロ）を確認した上で
+      採用した。
+      書式：KEY=値（「=」前後にスペースを入れない。「=」より後ろは
+      行末まで値としてそのまま保持）、「#」「;」始まりの行はコメント、
+      空行は無視、UTF-8（BOM無し）。
+  [2] conf.php：新規キー'LANGUAGE_FILE'を追加（デフォルト'japanese'）。
+      既存の'TEMPLATE_LANGUAGE'（サブフォルダ選択用）とは役割を分離。
+      日英併記コメント付き。
+  [3] bbs.php：自前パーサー関数loadLanguageFile()を追加。
+      $CONF['LANGUAGE_FILE']が設定されていればlanguage/*.txtを読み込む
+      新方式、未設定の場合は旧方式（sub/{TEMPLATE_LANGUAGE}/lang.php の
+      require_once）に自動フォールバックする形にした。T()関数（翻訳
+      ヘルパー）は変更なし。
+      動作確認：日本語ファイル読み込み・英語ファイル読み込み・旧方式
+      フォールバックの3パターンを個別実行し、いずれも件数55件、値も
+      一致することを確認。php -lで構文エラー無しを確認。
+
+  ※既存のsub/ja/lang.php・sub/en/lang.phpはまだ削除・変更せず、
+    フォールバック用として温存している（ロジックファイル一本化が
+    完了するまでの経過措置）。
+
+
+============================================================
+2026-07-16T23:33 UTC
+------------------------------------------------------------
+【バグ修正：FRAUDSTER_TAGの閉じ括弧欠落】
+対象：sub/en/lang.php, language/english.txt
+
+段階2の言語ファイル移植作業中に発見した既存不具合。sub/en/lang.phpの
+'FRAUDSTER_TAG'の値が ' (fraudster'（閉じ括弧無し）になっていた
+（ja版は'（騙り）'で正しく閉じている）。' (fraudster)' に修正。
+移植元・移植先の両方（sub/en/lang.php, language/english.txt）に
+同一の修正を適用し、今後どちらの読み込み経路（新方式／旧フォール
+バック）を通っても同じ値になることを確認した。
+
+
+============================================================
+2026-07-16T23:40 UTC
+------------------------------------------------------------
+【バグ修正：$MSGを経由しないハードコード文字列（既存キーとの重複／未外部化）】
+対象：sub/{ja,en}/bbsadmin.php, sub/{ja,en}/bbsimage.php,
+      sub/{ja,en}/bbslog.php, sub/{ja,en}/bbstree.php,
+      sub/{ja,en}/lang.php, language/english.txt, language/japanese.txt
+
+FRAUDSTER_TAGの調査中、$MSG（T()関数）を経由せず各言語ファイルに
+それぞれ独立にハードコードされていた文言が他にも見つかったため、
+まとめて洗い出し・修正した。ja/en間で将来内容が食い違う潜在リスクと
+なるため、優先度の高いバグ修正として対応した。
+
+  [1] 既存キーとの重複（新規キー不要、T()呼び出しへの置き換えのみ）：
+      - bbsadmin.php 2箇所：'Failed to load message'（ja:'メッセージ
+        読み込みに失敗しました'）→ T('FAILED_TO_READ_MESSAGE')
+        （既存キー。文言はFAILED_TO_READ_MESSAGE側の英語表記
+        'Failed to read message'に統一）
+      - bbslog.php 1箇所：'$filename was unable to be opened.'
+        （ja:'$filenameを開けませんでした。'）
+        → sprintf(T('FAILED_TO_OPEN_LOG'), $filename)（既存キー）
+      - bbstree.php 1箇所：'There are no parameters.'
+        （ja:'パラメータがありません。'）→ T('NO_PARAMETERS')（既存キー）
+
+  [2] 新規キー追加（$MSGに存在しなかったため、language/*.txt・
+      sub/{ja,en}/lang.php双方に追加）：
+      NO_PASSWORD_SET, FILE_SIZE_OVER_LIMIT, FILE_UPLOAD_FAILED,
+      FAILED_TO_LOAD_UPLOAD_ID, IMAGE_WIDTH_EXCEEDED,
+      INVALID_FILE_FORMAT, DIRECTORY_OPEN_FAILED, TOO_MANY_KEYWORDS
+      （bbsadmin.php, bbsimage.php, bbslog.phpの計8箇所を対応する
+      T()呼び出しに置き換え。%sプレースホルダを使う2件はsprintf()
+      でラップ）
+
+php -lで全対象ファイルの構文エラー無しを確認。language/*.txtと
+sub/{ja,en}/lang.phpの内容が新パーサー経由で完全一致することを
+再確認した（キー数63件）。
+
+  ※sub/en/bbsadmin.php内、327行目付近のコメントアウト済みprterror
+    呼び出し（#$this->prterror(...)）は無効なコード（実行されない）
+    のため、今回の対応範囲からは除外した。
+
+
+============================================================
+2026-07-17T00:05 UTC
+------------------------------------------------------------
+【段階3：sub/ja・sub/enの物理統合（ロジック／テンプレート一本化）】
+対象：sub/ 以下全体（削除・移動）, bbs.php, conf.php, docs/permissions.md,
+      language/english.txt, language/japanese.txt
+
+段階1・2でen版（正本）にja版の改善点を移植し、UI文言を言語ファイルへ
+外部化した上で、sub/ja・sub/enサブフォルダの重複を解消する物理統合を
+実施した。
+
+  [1] sub/en/{bbsadmin.php, bbsimage.php, bbslog.php, bbstree.php,
+      template.html, tmpladmin.html, tmpllog.html, tmpltree.html,
+      login.html, index.html} を sub/ 直下へ移動。
+  [2] sub/ja/ ・ sub/en/ ディレクトリを削除（lang.php含む。言語文言は
+      language/*.txt に完全移行済みのため）。
+  [3] bbs.php：$tmpl_lang/$SUBDIR分岐（'./sub/' . TEMPLATE_LANGUAGE . '/'）
+      を廃止し、$SUBDIRを'./sub/'固定に変更。LANGUAGE_FILE未設定時の
+      sub/{lang}/lang.phpへのフォールバックも、当該フォルダ自体が
+      無くなったため削除（LANGUAGE_FILE未設定時は既定で'english'を
+      使用する形に変更）。
+  [4] conf.php：'TEMPLATE_LANGUAGE'キーを廃止（日英併記の説明コメントに
+      置き換え）。言語切り替えは'LANGUAGE_FILE'キーのみで行う。
+  [5] docs/permissions.md：sub/ja・sub/enのlang.phpを参照していた
+      切り分け手順の記述を、language/*.txtを参照する形に更新。
+
+  【移動作業中に発見・修正した不具合（優先対応）】
+  ファイル移動に伴い、以下の不具合を発見し、その場で修正した。
+    - sub/{bbsadmin,bbsimage,bbslog,bbstree}.php・sub/index.html内の
+      INCLUDED_FROM_BBSガード等が参照する相対パス「../../bbs.php」が、
+      旧構成（sub/en/等、階層が1段深い）を前提にしていたため、新構成
+      （sub/直下）では階層が合わなくなっていた。「../bbs.php」に修正。
+    - 【重大】sub/ja/{bbsadmin,bbslog,bbstree}.php・bbs.phpには、
+      $MSG（T()関数）を経由しない日本語タイトル文字列（管理メニュー、
+      パスワード設定画面、過去ログ検索、ツリービュー、エラー、
+      お知らせ　等、計11箇所）がハードコードされていた。sub/ja削除に
+      伴いこれらがそのまま失われ、日本語設定（LANGUAGE_FILE=japanese）
+      でもタイトルが英語表示になってしまうところだった。該当11箇所を
+      すべてT()呼び出しに置き換え、対応する新規キー11件を
+      language/english.txt・language/japanese.txtに追加した。
+
+  【動作確認】
+    - 変更対象全ファイルをphp -lで構文確認（エラー無し）。
+    - PHP内蔵サーバー（php -S）でbbs.phpを実際に起動し、HTTP 200での
+      応答、および初回起動時パスワード設定画面のタイトルが
+      LANGUAGE_FILE=japaneseで「パスワード設定画面」、
+      LANGUAGE_FILE=englishで「Password settings page」と、
+      それぞれ正しく切り替わることを確認した。
+    - 「../../bbs.php」等の残存参照が無いことを全ファイル横断で
+      grep確認済み。
+
+  【現在の構成】
+  sub/ 直下に bbsadmin.php, bbsimage.php, bbslog.php, bbstree.php,
+  template.html, tmpladmin.html, tmpllog.html, tmpltree.html,
+  login.html, index.html, patTemplate.php, patTemplate/, phpzip.inc.php
+  が一本化されている。sub/ja・sub/enは存在しない。UI文言は
+  language/english.txt・language/japanese.txtの2ファイルのみで管理。
+
+
+============================================================
+2026-07-17T00:10 UTC
+------------------------------------------------------------
+【全体バグ精査：PHPStan（Level 5）による静的解析＋手動grep調査】
+対象：bbs.php, conf.php, sub/{bbsadmin,bbsimage,bbslog,bbstree,
+      patTemplate,phpzip.inc}.php
+
+擬古猫さんの指示により、typo・括弧/波括弧の閉じ忘れ・構文的に機能
+しないコードの洗い出しを実施。PHPStan Level 5を全PHPファイルに対して
+実行し、検出された全項目を1件ずつ精査した。
+
+  【実際のバグとして修正した項目】
+  [1] conf.php：'HANDLENAMES'設定例に、キー'騙り'の重複があった
+      （'騙り' => '管理人' と '騙り' => '管理入'）。後者は「管理人」の
+      誤字（人→入）で、PHP配列では後勝ちのため誤字入りの値で上書き
+      されていた。誤字の行を削除し、正しい'騙り' => '管理人'のみを
+      残した。
+  [2] bbs.php：Func::getdatestr()内、曜日配列$wdaysをキャッシュする
+      意図と思われるisset()チェックがあったが、'static'宣言が
+      抜けていたため、実際には毎回配列を再構築しており、キャッシュが
+      一度も機能していなかった（動作結果自体は正しいが、意図した
+      最適化が無効化されていた）。static宣言を追加。
+  [3] コメント内の英語スペルミス3件を修正（機能への影響なし）：
+      conf.php・sub/patTemplate.php内の'seperated'→'separated'
+      （2箇所）、sub/patTemplate.php内の'teh'→'the'（1箇所）。
+
+  【調査したが「バグではない」と判断し、変更しなかった項目】
+  PHPStanはLevel 5で多数の警告を出したが、大半は以下のいずれかに
+  分類される、機能に影響しない既存のPHPDoc精度の問題だった：
+    - 関数のPHPDoc（@return等）が実際の戻り値の型と一致していない
+      （例：Func::fgetline()は実際にはFALSEを返しうるが、PHPDocには
+      Stringとしか書かれていない）ことに起因する「常にtrue/false」
+      「到達不能コード」という誤検出。実際の制御フロー（EOF判定の
+      while ($x !== FALSE)ループ等）は正しく機能しており、動作
+      確認でも問題は再現しなかった。同様のパターンがbbs.php・
+      sub/bbsadmin.php・sub/bbslog.php・sub/bbstree.php全体で
+      多数該当。
+    - patTemplate.php全体：PHP4/5時代の動的プロパティ宣言スタイルに
+      よる「未定義プロパティへのアクセス」警告多数。既存の設計方針
+      であり、今回の指示（typo・括弧忘れ等）の範囲外と判断。
+    - $this->fの動的キーアクセスに起因する型不整合の警告多数
+      （元々全ての値が文字列として扱われる$_GET/$_POST由来のため）。
+
+  ※PHPDoc自体の精度向上（@return型の是正など）は、機能面のバグでは
+    ないため今回は対象外としたが、まとまった量があるため、ご希望が
+    あれば別途対応可能。
+
+  【動作確認】
+  修正対象全ファイルをphp -lで構文確認（エラー無し）。PHP内蔵サーバー
+  でbbs.phpを再度起動し、HTTP 200・タイトル正常表示を確認した。
+
+
+============================================================
+2026-07-17T01:58 UTC
+------------------------------------------------------------
+【重大バグ修正：テンプレートHTML内のハードコード文言をLANGUAGE_FILEに接続】
+対象：sub/template.html, sub/tmpladmin.html, sub/tmpllog.html,
+      sub/tmpltree.html, sub/login.html, bbs.php,
+      language/english.txt, language/japanese.txt
+
+擬古猫さんより、LANGUAGE_FILE=japaneseに設定しているにも関わらず、
+実機（qptns.com/test/bbs.php）でボタンラベル等が英語表示のままである
+との報告を受け調査。原因は、$MSG（T()関数）経由の文言は正しく言語
+切り替えされる一方、5つのHTMLテンプレートファイル内のボタン・ラベル・
+見出し等が直接ハードコードされており、$MSGを一切経由していなかった
+ことによる（段階1の時点ではテンプレートの構造差分のみ解消し、文言の
+外部化は未着手だった）。
+
+  【対応方式】
+  patTemplateライブラリのaddGlobalVars()を利用し、$MSGの全キーを
+  リクエスト単位で全テンプレートに自動的にグローバル変数として注入する
+  方式を採用。個々のテンプレート描画箇所ごとにaddVar()を書く必要が
+  無くなり、以後$MSGに追加されたキーは自動的に{KEY}としてどの
+  テンプレートからも参照可能になる。
+
+  [1] bbs.php: Webapp::refcustom()内の`$tmp = array_merge($this->c, $this->s)`
+      に`$GLOBALS['MSG']`を追加。メイン処理経路（Bbs/Bbsadmin/Bbslog/
+      Bbstree/Imagebbs全クラス共通）で有効。
+  [2] bbs.php: script_run()内の管理者ログイン画面表示処理（GET/POST
+      それぞれ）でも同様に$MSGをテンプレート変数に合流。実装時、
+      script_run()が関数スコープであることを見落とし、初回は
+      `$MSG`を裸で参照してしまい「Undefined variable」からの
+      Fatal error（array_merge(): Argument #2 must be of type array,
+      null given）を引き起こしたため、`$GLOBALS['MSG']`に修正して
+      解消（動作確認で発見・即修正）。
+  [3] sub/template.html: ボタン・ラベル・見出し・案内文等、約73箇所の
+      ハードコード文言を{PLACEHOLDER}化。
+  [4] sub/tmpladmin.html: 管理メニュー・削除モード・パスワード設定
+      画面等、約25箇所を{PLACEHOLDER}化。
+  [5] sub/tmpllog.html: 過去ログ検索・トピック一覧・ZIPアーカイブ
+      画面等、約35箇所を{PLACEHOLDER}化。日付範囲検索フォームの
+      日/時ラベル（sd/sh/ed/eh各select要素）はja/en間で語順が
+      異なる構造だったため、FROM_DAY_LABEL/HOUR_LABEL/TO_DAY_LABEL/
+      MINUTE_LABELとして整理し直した。
+  [6] sub/tmpltree.html: ナビゲーション・ボタン類、約10箇所を
+      {PLACEHOLDER}化。
+  [7] sub/login.html: タイトル・ラベル・ボタン、3箇所を{PLACEHOLDER}化。
+      あわせてbbs.php内でハードコードされていたログインエラー文言
+      （'Invalid username or password.'）もT('LOGIN_ERROR')に変更。
+  [8] {OG_LOCALE}を新設し、<meta property="og:locale">がLANGUAGE_FILEに
+      連動するよう修正（従来はen_US固定だった）。
+
+  新規追加キー：204件（既存キーからの再利用7件を含む、実質約150件が
+  今回の新規追加）。language/english.txt・language/japanese.txtの
+  キー数が一致すること、重複キーが無いことをスクリプトで確認済み。
+
+  【動作確認】
+  変更対象全ファイルをphp -lで構文確認（エラー無し）。PHP内蔵サーバーで
+  以下の全経路をLANGUAGE_FILE=japanese／englishの両方で実行し、HTTP
+  200・{PLACEHOLDER}の描画残り無し・該当言語での正しい文言表示を確認：
+  掲示板メイン（m省略）、過去ログ検索（m=g）、ツリー表示（m=tree）、
+  管理者ログイン（m=login、GET/POST両方、パスワード誤り時のエラー
+  文言含む）、個人設定画面（setup=1）、管理メニュー（m=ad）。
+
+
+============================================================
+2026-07-17T02:17 UTC
+------------------------------------------------------------
+【重大バグ修正：$MSG内のプレースホルダのネスト置換が機能しない問題】
+対象：bbs.php, sub/bbslog.php, language/english.txt, language/japanese.txt
+
+擬古猫さんの実機確認（qptns.com/test/bbs.php）により、カウンター表示
+行「{COUNTDATE} から {COUNTER} (こわれにくさレベル : {COUNTLEVEL})」等が
+すべて空欄で表示される不具合が発覚。原因を調査したところ、patTemplate
+ライブラリのstripUnusedVars()が、変数置換後の出力バッファに対して
+「未解決の{……}パターンを一括除去する」処理を行っており、$MSGの値の
+中に{COUNTDATE}のような別プレースホルダを埋め込んでも、patTemplateは
+一度置換した文字列を再走査しない（＝ネストした置換は行われない）ため、
+埋め込んだトークンがすべて空文字列に消されていたことが判明した。
+
+  【対象範囲の再調査】
+  同じパターンで$MSGの値に{……}が埋め込まれている箇所を全キーに対して
+  機械的に検索し、以下11件を特定した（今回のテンプレート作業で追加した
+  8件に加え、それより前の段階2で追加していた3件も同様の不具合を抱えて
+  いたことが判明。後者は今回のテンプレート作業で初めて実際にレンダリング
+  され、発覚した）：
+    COUNTER_TEXT, MBRCOUNT_TEXT, LOGSAVE_TEXT, FORM_CONTENTS_HELP_SIMPLE,
+    FORM_CONTENTS_HELP_IMAGE, IMAGE_UPLOAD_HELP, PAGE_GEN_TIME_TEXT,
+    UNABLE_TO_OPEN_FILE_TEXT, NAME_TOO_LONG, EMAIL_TOO_LONG, TITLE_TOO_LONG
+  （POSTS_RANGE_NEWEST_TO_OLDEST は元々str_replace()でPHP側解決済みの
+  ため対象外。既存の対応済みパターン（FILE_AUTOCREATED, FAILED_TO_OPEN_LOG
+  等）は元から%sベースのsprintf()方式だったため無事だった。）
+
+  【対応方針】
+  上記11キーの言語ファイル側の値を{BRACE}形式からsprintf()の%s形式に
+  変更し、対応するPHP側の呼び出し箇所で、実際の値が確定した時点で
+  sprintf(T('KEY'), ...)により文字列を完成させてからaddVar()/prterror()
+  に渡す方式に統一した。
+
+  [1] bbs.php: COUNTER/MBRCOUNT算出直後（`counter()`/`mbrcount()`呼び出し
+      箇所）でCOUNTER_TEXT/MBRCOUNT_TEXTをsprintf()で解決。
+  [2] bbs.php: Webapp::refcustom()内でLOGSAVE_TEXT・
+      FORM_CONTENTS_HELP_SIMPLE・FORM_CONTENTS_HELP_IMAGE・
+      IMAGE_UPLOAD_HELPを、リクエスト開始時点で判明している$CONF値から
+      sprintf()で解決し、$MSGマージ後の値を上書き。MAX_IMAGE*系は
+      BBSMODE_IMAGE=1の時のみ存在するため??で安全にフォールバック。
+  [3] bbs.php: prthtmlfoot()内のDURATION算出直後でPAGE_GEN_TIME_TEXTを
+      sprintf()で解決。
+  [4] sub/bbslog.php: 過去ログファイルのfopen失敗検知箇所で
+      UNABLE_TO_OPEN_FILE_TEXTをsprintf()で解決。
+  [5] bbs.php: chkmessage()内のNAME_TOO_LONG/EMAIL_TOO_LONG/
+      TITLE_TOO_LONGの各prterror()呼び出しをsprintf()経由に変更
+      （これは段階2からの既存不具合で、対応する文字数上限が常に
+      空欄表示になっていた）。
+
+  【動作確認】
+  language/*.txt全体を機械的に走査し、{……}を含む$MSG値が上記の
+  意図的なもの（POSTS_RANGE_NEWEST_TO_OLDEST、PHP側でstr_replace
+  済み）以外に残っていないことを確認。実機相当のテスト環境で
+  カウンター行・投稿フォーム説明文・実行時間表示を実際にレンダリング
+  し、すべて実際の数値が正しく埋め込まれること、{PLACEHOLDER}の
+  描画残りが無いことを確認した。NAME_TOO_LONG等はsprintf()の出力を
+  直接検証（PHP CLIでの単体確認）。全経路（メイン・過去ログ検索・
+  ツリー表示・管理者ログイン・個人設定・管理メニュー）をHTTP 200・
+  プレースホルダ残り無しで再確認済み。
+
+
+============================================================
+2026-07-17T02:35 UTC
+------------------------------------------------------------
+【バグ修正：完了メッセージのCSSクラス名不一致】
+対象：sub/template.html
+
+擬古猫さんより、書き込み・消去完了画面の文字サイズが（ja版と比べて）
+小さいとの指摘を受け調査。CSSは`.msg-completed`（末尾d）というクラス名
+でxx-large・太字を定義しているが、該当の<div>要素側は`class="msg-complete"`
+（dが無い）となっており、名前不一致でスタイルが適用されていなかった。
+これは元々のen版template.htmlに存在した綴りミスで、ja版は元々
+`msg-completed`で一致していた（今回の作業以前からの既存バグ）。
+`msg-completed`に統一して修正。
+
+
+============================================================
+2026-07-17T04:44 UTC
+------------------------------------------------------------
+【新機能：投稿内URLの画像サムネイル表示（js/imgthumb.js）】
+対象：js/imgthumb.js（新規）, sub/template.html
+
+擬古猫さんのご要望により、投稿本文中のURLリンクが実在する画像ファイル
+（拡張子判定）を指している場合、該当URLの右側にサムネイル表示する
+機能を新規JavaScriptファイルとして実装した。既存のjs/upthumb.js
+（特定アップローダーの既知ディレクトリ構造に対して別途生成済みの
+サムネイルファイルを探す仕組み）とは別物として、独立ファイルで追加。
+
+  【仕様】
+  - 対応拡張子はJavaScript側に既定リスト（jpg, jpeg, png, gif, webp,
+    bmp, avif, svg）を保持。サーバー側（conf.php）の設定は使わない。
+  - 表示前にfetch()のHEADリクエストでURLが実在し、かつContent-Typeが
+    image/*であることを確認してから埋め込む（拡張子だけでの判定を
+    避け、壊れた画像が表示されるのを防止）。
+  - 有効／無効の切り替えは、投稿フォーム脇（.small内、既存の
+    「Uploader thumbnails」チェックボックスと同じ行）に
+    「Link thumbnails」チェックボックスを追加。状態はlocalStorage
+    （imgThumbEnabled）に保存し、サーバーには送信しない。
+  - 対象拡張子の絞り込みは、個人用環境設定画面（?setup=1）に
+    JavaScriptで動的にフィールドセットを追加する形で提供。既定は
+    全選択。この選択もlocalStorage（imgThumbExtensions）に保存する
+    のみで、サーバー側の設定フォーム（<form>）には一切送信しない
+    （name属性を持たないinput要素として実装し、誤送信を防止）。
+  - 掲示板メイン・ツリー表示の両方に対応（既存のupthumb.jsと同じ
+    セレクタ `.contents pre.msgnormal, .msgtree .ngline` を使用）。
+
+  【動作確認】
+  掲示板メイン・個人設定画面（?setup=1）の両方で、スクリプトタグの
+  読み込み・想定するDOM要素（.small内submitボタン、name="cr"の
+  設定リセットボタン）の存在をHTTP応答から確認。JS構文はnode --check
+  で確認済み。php -lで全PHPファイルの構文エラー無しを確認。
+
+  ※JS内の文言（"Link thumbnails"等）は、既存のupthumb.jsの
+    "Uploader thumbnails"チェックボックスと同様、英語ハードコードの
+    まま（JSファイルは$MSG言語ファイルの対象外という既知の制約に
+    準拠。「Make line breaks」ボタンと同じカテゴリの既存の未対応
+    事項）。
+
+  ※パッケージング（zip化）は別途「go」待ち。導入ガイダンス.txtを
+    同梱予定。
+
+
+============================================================
+2026-07-17T04:53 UTC
+------------------------------------------------------------
+【JS全体の多言語対応：window.KSPHP_LANGの導入】
+対象：bbs.php, sub/template.html, js/ayashiibreaker.js, js/upthumb.js,
+      js/imgthumb.js, js/vanish.js, js/admin.js,
+      language/english.txt, language/japanese.txt
+
+擬古猫さんのご提案により、$MSG（言語ファイル）の内容をJavaScript側
+からも参照できる仕組みを整備し、js/以下の全ファイルのハードコード
+文言を解消した。
+
+  【仕組み】
+  bbs.php側で$MSGを`json_encode()`（JSON_UNESCAPED_UNICODE,
+  JSON_HEX_TAG, JSON_HEX_AMP付き。<script>タグ内への直接埋め込みでも
+  安全なようエスケープ）した`$MSG_JSON`を生成し、既存の3箇所の
+  テンプレート変数マージ処理（Webapp::refcustom()、ログイン画面
+  GET/POST）全てに`JS_LANG_JSON`として追加。sub/template.htmlの
+  <head>内、他のJSファイルより前の位置に
+  `<script>window.KSPHP_LANG = {JS_LANG_JSON};</script>`を追加した。
+  これにより、$MSGに追加したキーは自動的にJS側からも
+  `window.KSPHP_LANG.KEY`として参照可能になる。
+
+  【対応した既存ファイル】
+  [1] js/ayashiibreaker.js：「Make line breaks」ボタン
+      （MAKE_LINE_BREAKS_BTN、擬古猫さんが最初に発見した件）
+  [2] js/upthumb.js：「Uploader thumbnails」チェックボックスラベル
+      （UPLOADER_THUMBNAILS_LABEL）
+  [3] js/imgthumb.js：「Link thumbnails」「Link thumbnail extensions」
+      （LINK_THUMBNAILS_LABEL, LINK_THUMBNAIL_EXTENSIONS_LEGEND。
+      直前に実装した新機能の文言も同じ仕組みに乗せた）
+  [4] js/vanish.js：NGワード関連の3文言（NGWORD_LINK_START,
+      NGWORD_LINK_HITS, NGWORD_UPDATE_BTN）。
+      ※このファイルは元々navigator.language（ブラウザの言語設定）で
+      判定していたが、これは掲示板側のLANGUAGE_FILE設定と食い違う
+      ことがあるため（例：サイトは日本語設定なのに閲覧者のブラウザは
+      英語）、window.KSPHP_LANGを優先参照する形に修正した。実質的な
+      不具合修正を兼ねる。
+  [5] js/admin.js：削除モード画面の絞り込みUI文言5件
+      （ADMIN_FILTER_BY_LABEL等）。こちらも元々<thead>内の文言を
+      正規表現で走査してja/enを判定する自前の仕組みだったが、
+      window.KSPHP_LANGを直接参照する形に置き換えた。あわせて、
+      列見出しの照合（find()関数）も、ハードコードされたja/en
+      文字列ペアだけでなく、実際に描画されているKSPHP_LANGの値を
+      優先的に照合するよう変更（将来的な他言語対応にも自動追従する）。
+      未定義値でのTypeErrorを防ぐガードも追加。
+
+  新規追加キー：12件（既存の翻訳データと重複無し）。
+
+  【動作確認】
+  全JSファイルをnode --checkで構文確認。全PHPファイルをphp -lで
+  構文確認。掲示板メイン・過去ログ検索・ツリー表示・管理者ログイン
+  ・個人設定・管理メニューの全経路で、window.KSPHP_LANGの埋め込みと
+  有効なJSONとしてのパース可否（204キー→今回12件追加で216キー）を
+  確認。日本語・英語両方のLANGUAGE_FILE設定で全経路HTTP 200・
+  {PLACEHOLDER}残り無しを再確認。
+
+  ※パッケージング（zip化）は別途「go」待ち。
+
+
+============================================================
+2026-07-17T22:04 UTC
+------------------------------------------------------------
+【バグ修正：投稿フォームの投稿者・メール・題名欄の位置ズレ】
+対象：sub/template.html
+
+かぐやさんの実機テスト報告（スクリーンショット提供）により発覚。
+「投稿者」「メール」「題名」の各入力欄の左端が、ラベル文字列の
+文字数に応じてバラバラの位置にズレて表示されていた。
+
+  【原因】
+  オリジナルのja版・en版template.htmlは、いずれもCSSではなく、
+  ラベルと入力欄の間に手動で全角スペース（U+3000）や半角スペースを
+  個別に挿入することで、見た目上の位置揃えを実現していた。この
+  パディング量は、ja版なら「投稿者」「メール」「題名」の文字幅に、
+  en版なら「Name」「Email」「Title」の文字幅に、それぞれ個別に
+  調整されたものだった。
+
+  今回の言語ファイル統合で、テンプレートはen版を正本として一本化
+  したため、手動スペースはen版の英語文字幅用のまま残った。一方、
+  ラベルの中身は{FORM_NAME_LABEL}等のプレースホルダに置き換わり、
+  LANGUAGE_FILE=japaneseの場合は日本語文字列（投稿者／メール／題名）
+  が代入される。英語用に調整された手動スペースと、実際に表示される
+  日本語文字列の幅が一致しないため、位置がズレて見えていた。
+
+  【対応】
+  手動のスペース調整（全角/半角スペースの個別挿入）を廃止し、
+  ラベル側に`postform-label`という共通クラスを付与した上で、
+  CSSで`display: inline-block; min-width: 4.5em;`という言語非依存の
+  固定幅ルールを追加した。どの言語の文字列がラベルに入っても、
+  入力欄の開始位置が揃うようになる。対象は投稿フォーム本体
+  （name1/mail1/title1）と、フォロー投稿等で使う簡易投稿フォーム
+  （name2/mail2/title2）の計6箇所。
+
+  ※チェックボックス行（表示件数・URL自動リンク等）は、入力欄が
+    小さく「列を揃える」必要が無い（各行独立して見える）ため、
+    今回の対象外とした。設定画面の色指定欄（文字色・背景色等）も、
+    元々ラベルの文字数差が大きく（例：マウスオーバーリンク色は
+    11文字）、オリジナル版でも位置揃えの手動調整はされていなかった
+    ため、既存の見た目のまま変更していない。
+
+  【動作確認】
+  php -l・patTemplate:tmplタグの開閉数（40対40）で構造確認。
+  LANGUAGE_FILE=japaneseで実際にレンダリングし、投稿者・メール・
+  題名の3ラベルが`postform-label`クラス付きで正しく出力される
+  ことを確認した。
+
+
+============================================================
+2026-07-17T22:18 UTC
+------------------------------------------------------------
+【新機能：CSSの外部化（css.php）】
+対象：css.php（新規）, sub/template.html
+
+擬古猫さんのご要望により、sub/template.htmlの<head>内にインライン
+記述されていた共通CSS（約130行）を、外部ファイルとして<link>タグ
+経由で読み込む形に変更した。
+
+  【方式選定の経緯】
+  CSS内には、個人用環境設定画面で変更可能な配色8項目
+  （C_BACKGROUND, C_TEXT, C_A_COLOR, C_A_VISITED, C_SUBJ, C_QMSG,
+  C_A_ACTIVE, C_A_HOVER）が{C_TEXT}のようなプレースホルダとして
+  埋め込まれており、リクエストごとに動的に値が変わる。これは静的な
+  .cssファイルには出来ないため、以下2案を提示し、擬古猫さんに
+  「個人用環境設定は重要」との理由で案B（PHP経由で配信）を選んで
+  いただいた。
+    案A：ほぼ静的化＋配色部分のみ小さなインラインstyleとして残す
+    案B：CSS全体をPHP経由で動的に配信し、完全に<link>タグ化する（採用）
+
+  【実装】
+  新規ファイルcss.phpを作成。conf.phpを読み込んで既定の配色値を取得
+  した上で、bbs.php側のWebapp::refcustom()と同じ「?c=」パラメータの
+  デコード方式（4文字ずつのbase64風エンコードを6桁16進数に変換）を
+  再実装し、URLの?cパラメータに応じて配色を動的に決定する。
+  Content-Type: text/css、Cache-Control: public, max-age=3600を出力。
+
+  sub/template.htmlの<style>ブロック（約130行）を
+  `<link rel="stylesheet" href="css.php?c={C}">` に置き換えた。
+  {C}は既存のセッション変数（個人設定の状態を保持するパラメータ）を
+  そのまま利用しており、新規の仕組みは不要だった。
+
+  ※{CUSTOMSTYLE}（bbslog.php・bbstree.php等が個別ページ向けに注入する
+  追加スタイル。検索結果ページの強調表示色など）は今回の対象外とし、
+  従来通り`<style>{CUSTOMSTYLE}</style>`という小さなインライン
+  ブロックとしてtemplate.html内に残した（ページ関数呼び出しごとに
+  内容が変わるページ固有の仕組みのため、css.phpの汎用配色機構とは
+  別物として扱うのが妥当と判断）。
+
+  ※base64デコード処理は、bbs.php側のFunc::base64_threebytehex()と
+  同じロジックをcss.php内に独立実装した（bbs.php自体を直接require
+  すると、ルーティング処理までまとめて実行されてしまうため）。今後
+  エンコード方式を変更する場合は、両方を同時に更新する必要がある
+  旨をコード内コメントに明記した。
+
+  【動作確認】
+  css.phpを直接リクエストし、配色パラメータ無し（既定値）・
+  独自エンコードした配色パラメータあり（往復デコード検証済み）の
+  両方で、正しい16進数カラーコードがCSSに反映されることを確認。
+  php -lで構文確認。掲示板メイン・過去ログ検索・ツリー表示・
+  管理者ログイン・個人設定・管理メニューの全経路でHTTP 200・
+  {PLACEHOLDER}残り無しを確認。<link>タグと{CUSTOMSTYLE}用の
+  小さな<style>タグが正しく出力されることも確認した。
+
+============================================================
+2026-07-18T02:50 UTC
+------------------------------------------------------------
+【仕様判断確定：保留2件（現状維持で決定）】
+対象：readme.md
+
+引き継ぎ後、readme.mdのToDoに記載されていた保留2件について、
+擬古猫さんに判断を仰ぎ、いずれも「現状維持」で確定した。
+
+  [1] トップページ投稿フォームでの「書き込み完了」画面
+      → 現状（フォロー投稿時のみ表示）を維持。修正しない。
+  [2] bfcache起因の投稿内容残存対策（Cache-Control: no-store追加案）
+      → 追加しない。体感速度・スクロール位置保持を優先する
+        トレードオフとして受容。
+
+readme.mdのToDoセクションを「決定済み」の記述に書き換え、コード側の
+変更は行っていない。
+
+============================================================
+2026-07-18T03:05 UTC
+------------------------------------------------------------
+【バグ修正：ツリー表示（sub/bbstree.php）に未翻訳の英語ハードコード
+文字列が残存】
+対象：sub/bbstree.php, language/english.txt, language/japanese.txt
+
+擬古猫さんの実機スクリーンショット（qptns.com/test/bbs.php?m=tree、
+LANGUAGE_FILE=japanese）で、ページの大半は日本語表示なのに以下4箇所
+だけ英語のまま表示される不具合を発見。
+
+  【原因】
+  sub/ja・en統合およびbbs.php/bbslog.php側の$MSGプレースホルダ化は
+  以前のセッションで完了していたが、sub/bbstree.php自体はその作業の
+  対象から漏れており、次の文字列がPHPコード内に直書きされたままに
+  なっていた。
+    - 「Shown above are threads {bindex} through {eindex}, ...」
+      （スレッド範囲表示、m=tree一覧下部）
+    - 「There are no threads below this point.」（同上）
+    - 「[Date updated: ...]」（各スレッドの更新日時表示）
+    - 「User: 」（投稿者名の接頭ラベル）
+  なお「There are no unread messages. 」は既存キー
+  NO_UNREAD_MESSAGESと文言が完全一致していたため、新規キー追加は
+  せずそのまま流用した。
+
+  【対応】
+  language/english.txt・japanese.txtに以下3キーを新規追加
+  （tmpltree.html用セクションの直後に配置）：
+    TREE_RANGE_TEXT, TREE_NO_THREADS_BELOW, TREE_DATE_UPDATED,
+    TREE_USER_LABEL
+  bbs.php側の既存パターン（str_replace(['{BINDEX}','{EINDEX}'], ...,
+  T('POSTS_RANGE_NEWEST_TO_OLDEST'))）に倣い、TREE_RANGE_TEXTは
+  {BINDEX}/{EINDEX}をstr_replace()で解決。TREE_DATE_UPDATEDは%s形式
+  でsprintf()により解決（ネスト置換問題を避けるため、既存の11キー
+  修正と同じ方式）。
+
+  【動作確認】
+  php -l sub/bbstree.phpで構文確認。english.txt/japanese.txtの
+  キー集合が完全一致することをdiffで確認（重複キーも無し）。
+  loadLanguageFile()と同等のロジックを単体で実行し、日本語版で
+  「以上は、更新順（新しい順）3番目から10番目までのスレッドです。」
+  「[更新日時：2026-07-18 10:14:23]」「投稿者： 擬古猫」のように、
+  プレースホルダ残り無く正しくレンダリングされることを確認した。
+
+============================================================
+2026-07-18T03:40 UTC
+------------------------------------------------------------
+【バグ修正：sub/フォルダ全体の未翻訳ハードコード文字列の洗い出しと修正】
+対象：sub/bbslog.php, sub/bbsimage.php, sub/template.html,
+      sub/tmpltree.html, language/english.txt, language/japanese.txt
+
+前回のsub/bbstree.php修正を受け、擬古猫さんの指示によりsub/フォルダ
+配下の既存ファイル全体（bbsadmin.php, bbsimage.php, bbslog.php,
+template.html, tmpladmin.html, tmpllog.html, tmpltree.html,
+login.html, index.html）を対象に、同種の未翻訳ハードコード文字列が
+無いか機械的に洗い出した。
+
+  【発見1：sub/bbslog.php 過去ログ検索結果サマリー】
+  「For "keyword" there were N results found.」「no results found.」
+  が、LANGUAGE_FILE設定に関わらず常に英語で表示される状態だった。
+  新規キー SEARCH_RESULT_FOR_QUERY, SEARCH_RESULTS_COUNT,
+  SEARCH_NO_RESULTS を追加し、sprintf()経由でT()から解決するよう修正。
+
+  【発見2：sub/bbsimage.php エラーメッセージ2件】
+  file_uploads無効時／GetImageSize関数が存在しない場合にそれぞれ表示
+  される「Error: The file upload feature is not allowed.」
+  「Error: The image processing feature is not supported.」が未翻訳
+  だった（通常環境では発生しないエッジケースだが、念のため対応）。
+  新規キー UPLOAD_DISABLED_ERROR, IMAGE_PROCESSING_UNSUPPORTED_ERROR
+  を追加。
+
+  【発見3：sub/template.html・sub/tmpltree.html のtitle属性（ツール
+  チップ）多数】
+  ラベル本体のテキストは以前のテンプレート作業で$MSGプレースホルダ化
+  済みだったが、各種リンク・ボタンのtitle属性（マウスオーバー時の
+  説明文）はその対象から漏れており、25種類の英文がLANGUAGE_FILE設定
+  に関わらず常時英語表示のままだった（例：「Admin/Mod login」
+  「Browse and search through old posts.」「Save your settings and
+  return to the bulletin board.」等）。
+  $MSGは既にbbs.php側でarray_merge()によりテンプレートのグローバル
+  変数として一括登録される仕組みが存在していたため（2026-07-17の
+  {CUSTOMHEAD}対応時に導入済み）、PHP側の追加実装は不要で、
+  language/english.txt・japanese.txtに25キー（TITLE_プレフィックス）
+  を追加し、該当するtitle="..."をtitle="{KEY}"に置換するのみで対応
+  できた。
+  なお、キーボードショートカットの表記のみで構成される
+  title="Alt(+Shift)+X"（説明文を伴わないもの、およびsub/tmpladmin.html
+  内の同種のもの）は、言語に依存しない技術的表記のため翻訳対象外とし、
+  意図的に変更していない。
+
+  【動作確認】
+  bbs.php・sub/以下の全PHPファイルでphp -l実行、エラー無し。
+  english.txt/japanese.txtのキー集合が完全一致（250キー、重複無し）
+  することを確認。sub/template.html・tmpltree.html・tmpladmin.html・
+  tmpllog.htmlのpatTemplate:tmplタグの開閉数が変更前と同数であること
+  を確認（構造は変更していないため）。loadLanguageFile()相当の
+  ロジックで日本語版を実際にレンダリングし、追加した全キーのtitle内
+  プレースホルダが残らず、対応する日本語文言に正しく置換されることを
+  確認した。
