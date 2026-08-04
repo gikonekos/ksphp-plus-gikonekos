@@ -65,13 +65,13 @@ FRAUDSTER_TAG= (冒充者)
 SELF_REPLY_TAG= (自我回覆)
 
 # Weekdays
-SUNDAY=週日
-MONDAY=週一
-TUESDAY=週二
-WEDNESDAY=週三
-THURSDAY=週四
-FRIDAY=週五
-SATURDAY=週六
+SUNDAY=日
+MONDAY=一
+TUESDAY=二
+WEDNESDAY=三
+THURSDAY=四
+FRIDAY=五
+SATURDAY=六
 
 # Admin / image upload errors
 NO_PASSWORD_SET=尚未設定密碼。
