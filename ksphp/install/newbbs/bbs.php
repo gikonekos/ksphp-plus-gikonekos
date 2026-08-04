@@ -28,6 +28,13 @@ ksphp_migrate();
 // Version (for copyright notice)
 $CONF['VERSION'] = '[20260717] (<span title="Heyuri Applicable Research & Development">Heyuri</span>, <span title="Hiru-ga-take">ヶ</span>, ＠Links, <span title="Giko-neko">擬古猫</span>)';
 
+// Internal build identifier (matches the distribution zip filename, minus the
+// .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
+// display/branding version and does not change on every build; this constant
+// is for precise build-to-build comparison (e.g. future differential-update
+// tooling). Update this value whenever a new package zip is built.
+define('KSPHP_PLUS_BUILD', 'ksphp-plus-main-rc4-2026-07-19-01');
+
 /* Launch */
 
 // 2026-07-16：sub/ja・sub/enの重複を解消し、ロジック／テンプレートは

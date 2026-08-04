@@ -44,7 +44,7 @@ $CONF = array(
   // * Bulletin board name
   ## TL note: Ayashii World titles usually take the form of "AyashiiWorld@[web host name]
   ## TL note: StrangeWorld@ is the common English way to start it
-  'BBSTITLE' => 'あやしいわーるど＠暫定(猫)',
+  'BBSTITLE' => 'あやしいわーるど＠しおん',
 
   // * 広報室のURL
   // * URL for the Public Relations Office (home/information page)
@@ -59,21 +59,21 @@ $CONF = array(
 
   // * 管理人のメールアドレス
   // * Administrator email address
-  'ADMINMAIL' => 'admin@motoikenkichi.com',
+  'ADMINMAIL' => 'admin@example.com',
   
   // * 管理用パスワード（暗号化パスワード。最初は空にしておいてください）
   // * Administor password (Encrypted password. Please leave this empty at first)
-  'ADMINPOST' => 'bi7EWLp6PCiMg',
+  'ADMINPOST' => '',
 
   // * 管理モード移行用キーワード（半角英数字、空の場合管理モードを使用できません）
   // * The keyword for entering administrator mode (regular alphanumeric characters are recommended. If empty, administrator mode will be unavailable)
-  'ADMINKEY' => 'gikonuts',
+  'ADMINKEY' => '',
 
   ## TL note: To enter admin mode after the bulletin board is up and running, put the adminkey (and only the adminkey) into the name and contents fields of the post form, then hit send.
   ## TL note: Putting the adminkey (and only the adminkey) into the name field alone will display the admin capcode on your post.
 
 // secret code (cloudflare-turnstile)
-  'SECRETCODE' => '0x4AAAAAADoFBfSQjrXAQoAWLwlD8jnUSxQ',
+  'SECRETCODE' => '',
 
 
 
@@ -82,7 +82,7 @@ $CONF = array(
 
   // 検索エンジンに掲示板の概要を教えます。短い文章にするといいでしょう
   // Gives search engines an overview of the bulletin board. Keep it short and sweet
-  'META_DESCRIPTION' => 'あやしいわーるど＠暫定(猫)',
+  'META_DESCRIPTION' => 'あやしいわーるど＠しおん',
 
   // 掲示板に関連した単語をカンマ区切りで入力します。あまり多すぎるとペナルティを食らう場合もあるようです
   // Enter some words related to the bulletin board, seperated by commas. If there's too many, you may be penalized by search engines
@@ -516,9 +516,6 @@ $CONF = array(
     '騙り' => '管理人',
     '驕り' => '管理入',
     'しば' => 'shiba',
-    '下衆ナッツ' => 'nyakachin',
-    '宇多田レイパー' => 'utada',
-    '擬古猫' => 'gik0nek0',
     'テスト' => 'test'
   ),
 

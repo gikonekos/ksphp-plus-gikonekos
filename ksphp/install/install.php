@@ -96,6 +96,184 @@ function ksphp_install_list_files(string $base): array {
 	return $result;
 }
 
+/**
+ * '$CONF = array( ... );' 形式のPHPソースを、トップレベルの項目
+ * （'KEY' => 値, の各エントリ。値が複数行・入れ子配列にまたがる場合も
+ * 1エントリとして扱う）単位に分割する。
+ *
+ * 括弧の深度と文字列リテラル（'...' / "..."）を追跡することで、
+ * HANDLENAMES のような入れ子配列（値の中にカンマや改行を含む）も
+ * 正しく1エントリとして扱える。
+ *
+ * @return array{prefix:string, entries:string[], suffix:string}
+ */
+function ksphp_conf_parse_entries(string $content): array {
+	if (!preg_match('/\$CONF\s*=\s*array\s*\(/', $content, $m, PREG_OFFSET_CAPTURE)) {
+		return array('prefix' => $content, 'entries' => array(), 'suffix' => '');
+	}
+	$arr_start = $m[0][1] + strlen($m[0][0]);
+	$prefix = substr($content, 0, $arr_start);
+	$len = strlen($content);
+	$depth = 1;
+	$pos = $arr_start;
+	$cur_start = $pos;
+	$entries = array();
+
+	while ($pos < $len && $depth > 0) {
+		$ch = $content[$pos];
+
+		// PHPコメント（// ... 、# ... 、/* ... */）はコード構造に無関係なので、
+		// 中のアポストロフィ等に惑わされないよう丸ごと読み飛ばす。
+		if ($ch === '/' && $pos + 1 < $len && $content[$pos + 1] === '/') {
+			$nl = strpos($content, "\n", $pos);
+			$pos = ($nl === false) ? $len : $nl + 1;
+			continue;
+		}
+		if ($ch === '#') {
+			$nl = strpos($content, "\n", $pos);
+			$pos = ($nl === false) ? $len : $nl + 1;
+			continue;
+		}
+		if ($ch === '/' && $pos + 1 < $len && $content[$pos + 1] === '*') {
+			$end = strpos($content, '*/', $pos + 2);
+			$pos = ($end === false) ? $len : $end + 2;
+			continue;
+		}
+
+		if ($ch === "'" || $ch === '"') {
+			$quote = $ch;
+			$pos++;
+			while ($pos < $len) {
+				if ($content[$pos] === '\\') { $pos += 2; continue; }
+				if ($content[$pos] === $quote) { $pos++; break; }
+				$pos++;
+			}
+			continue;
+		}
+
+		if ($ch === '(') { $depth++; $pos++; continue; }
+
+		if ($ch === ')') {
+			$depth--;
+			if ($depth === 0) {
+				break;
+			}
+			$pos++;
+			continue;
+		}
+
+		if ($ch === ',' && $depth === 1) {
+			$entries[] = substr($content, $cur_start, $pos - $cur_start + 1);
+			$cur_start = $pos + 1;
+			$pos++;
+			continue;
+		}
+
+		$pos++;
+	}
+
+	if ($cur_start < $pos && trim(substr($content, $cur_start, $pos - $cur_start)) !== '') {
+		$entries[] = substr($content, $cur_start, $pos - $cur_start);
+	}
+
+	$suffix = substr($content, $pos);
+	return array('prefix' => $prefix, 'entries' => $entries, 'suffix' => $suffix);
+}
+
+/**
+ * 1エントリ（'KEY' => 値, ）から値部分だけを old 側の値に差し替える。
+ * リード部（キー直前までのコメント等）とトレイル部（末尾コメント等）は
+ * 新版（テンプレート）側のものをそのまま残す。
+ */
+function ksphp_conf_merge_entry(string $new_entry, ?string $old_entry): array {
+	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/su', $new_entry, $m)) {
+		return array('text' => $new_entry, 'key' => null);
+	}
+	$lead = $m[1];
+	$key  = $m[2];
+	$sep  = $m[3];
+	$new_val = $m[4];
+	$tail = $m[5];
+
+	if ($old_entry === null) {
+		return array('text' => $new_entry, 'key' => $key, 'is_new' => true);
+	}
+	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/su', $old_entry, $om)) {
+		return array('text' => $new_entry, 'key' => $key, 'is_new' => true);
+	}
+	$old_val = $om[3];
+	$changed = ($old_val !== $new_val);
+	$text = $lead . "'" . $key . "'" . $sep . $old_val . ',' . $tail;
+	return array('text' => $text, 'key' => $key, 'is_new' => false, 'changed' => $changed);
+}
+
+/**
+ * 新版conf.php（テンプレート）をベースに、既存の旧conf.phpの値で上書きマージする。
+ * ・新版に存在し、旧版にも存在するキー → 旧版の値を採用（値が変わっていればlogに記録）
+ *   値が複数行・入れ子配列（HANDLENAMES等）でも、そのエントリ全体を旧版の内容で置き換える。
+ * ・新版のみに存在するキー（新規項目） → 新版の値のまま採用し、logに「新規追加」と記録
+ * ・旧版のみに存在するキー（新版で廃止された項目） → 引き継がない（logに記録）
+ *
+ * @return array{content:string, log:array}
+ */
+function ksphp_conf_merge(string $old_conf_path, string $new_template_path): array {
+	$new_content = @file_get_contents($new_template_path);
+	$old_content = @file_get_contents($old_conf_path);
+	$log = array();
+
+	if ($new_content === false) {
+		return array('content' => '', 'log' => array(array('ok' => false, 'text' => 'newbbs/conf.php を読み込めませんでした。')));
+	}
+	if ($old_content === false) {
+		return array('content' => $new_content, 'log' => array());
+	}
+
+	$new_parsed = ksphp_conf_parse_entries($new_content);
+	$old_parsed = ksphp_conf_parse_entries($old_content);
+
+	if (empty($new_parsed['entries'])) {
+		return array('content' => $new_content, 'log' => array());
+	}
+
+	$old_by_key = array();
+	foreach ($old_parsed['entries'] as $oe) {
+		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/su', $oe, $om)) {
+			$old_by_key[$om[2]] = $oe;
+		}
+	}
+
+	$seen = array();
+	$merged_entries = array();
+	foreach ($new_parsed['entries'] as $entry) {
+		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/su', $entry, $km)) {
+			$key = $km[2];
+			$seen[$key] = true;
+			$old_entry = isset($old_by_key[$key]) ? $old_by_key[$key] : null;
+			$res = ksphp_conf_merge_entry($entry, $old_entry);
+			$merged_entries[] = $res['text'];
+			if ($old_entry !== null) {
+				if (!empty($res['changed'])) {
+					$log[] = array('ok' => true, 'text' => "conf.php: {$key} は既存の設定値を維持しました。");
+				}
+			} else {
+				$log[] = array('ok' => true, 'text' => "conf.php: {$key} は新版の新規項目のため追加しました。");
+			}
+		} else {
+			$merged_entries[] = $entry;
+		}
+	}
+
+	foreach ($old_by_key as $key => $oe) {
+		if (!isset($seen[$key])) {
+			$log[] = array('ok' => true, 'text' => "conf.php: {$key} は新版に存在しないため引き継ぎませんでした。");
+		}
+	}
+
+	$content = $new_parsed['prefix'] . implode('', $merged_entries) . $new_parsed['suffix'];
+	return array('content' => $content, 'log' => $log);
+}
+
+
 function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backup_root, string $entry_filename = 'bbs.php'): array {
 	$log = array();
 	$files = ksphp_install_list_files($newbbs_dir);
@@ -138,12 +316,14 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 		$src = $newbbs_dir . '/' . $rel;
 		$dst = $parent_dir . '/' . $dst_rel;
 		$dst_dir = dirname($dst);
+		$existed = file_exists($dst);
 
 		if (!is_dir($dst_dir)) {
 			@mkdir($dst_dir, 0755, true);
 		}
 
-		if (file_exists($dst)) {
+		$backup_target = null;
+		if ($existed) {
 			$backup_target = $backup_dir . '/' . $dst_rel;
 			$backup_target_dir = dirname($backup_target);
 			if (!is_dir($backup_target_dir)) {
@@ -153,6 +333,21 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 				$log[] = array('ok' => false, 'text' => "スキップ: {$dst_rel}（既存ファイルのバックアップに失敗したため上書きしていません）");
 				continue;
 			}
+		}
+
+		// conf.phpは設定ファイルのため、既存があれば単純上書きせず、
+		// 項目ごとに旧設定値を維持しつつ新版の新規項目のみ追記するマージを行う。
+		if ($rel === 'conf.php' && $existed && $backup_target !== null) {
+			$merged = ksphp_conf_merge($backup_target, $src);
+			if (@file_put_contents($dst, $merged['content']) !== false) {
+				$log[] = array('ok' => true, 'text' => "導入: {$dst_rel}（既存設定を維持してマージしました）");
+				foreach ($merged['log'] as $entry) {
+					$log[] = $entry;
+				}
+			} else {
+				$log[] = array('ok' => false, 'text' => "失敗: {$dst_rel}（マージ結果の書き込みに失敗しました。権限を確認してください）");
+			}
+			continue;
 		}
 
 		if (@copy($src, $dst)) {
@@ -330,6 +525,9 @@ function h(string $s): string {
 	td, th { padding:0.25em 0.75em; border:1px solid #007f7f; text-align:left; }
 	.ok   { color:#8cff8c; }
 	.ng   { color:#ff8c8c; }
+	a, a:link { color:#8cd9ff; }
+	a:visited { color:#c9a3ff; }
+	a:hover, a:focus { color:#d6f0ff; }
 	code  { background:#003434; padding:0.1em 0.3em; }
 	button { background:#007f7f; color:#fff; border:none; padding:0.5em 1.2em; font-size:1em; cursor:pointer; }
 	button:disabled { background:#555; cursor:default; }
