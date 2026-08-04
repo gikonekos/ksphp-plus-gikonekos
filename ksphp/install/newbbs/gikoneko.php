@@ -13,7 +13,16 @@ error_reporting(E_ALL);
 function giko_fortune(): string {
 
 	$giko_dir = getenv( 'GIKO_DATA_DIR' ) ?: __DIR__;
-	$fortunedata = file( $giko_dir . '/gikoneko_kotoba.dat', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+	$giko_file = $giko_dir . '/gikoneko_kotoba.dat';
+
+	// データファイルが存在しない場合は空ファイルを自動生成する。
+	// file_exists()での事前チェックにより、file()の生のPHP警告が
+	// ページ出力に混入するのを防ぐ（ここで処理を止まらせない）。
+	if ( ! file_exists( $giko_file ) ) {
+		@file_put_contents( $giko_file, '', LOCK_EX );
+	}
+
+	$fortunedata = @file( $giko_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
 
 	if ( $fortunedata === false || count( $fortunedata ) === 0 ) {
 		return '';
@@ -33,34 +42,34 @@ function giko_display(): void {
 	$points = random_int( 0, count( $mark ) - 1 );
 		echo "<BLOCKQUOTE><PRE>
 
-擬古猫といっしょ　[<A HREF=\"./gikonekoadd.php\" target=\"link\">擬古猫にことばを教える</A>]
+" . T('GIKO_TOGETHER') . "　[<A HREF=\"./gikonekoadd.php\" target=\"link\">" . T('GIKO_TEACH_LINK_TEXT') . "</A>]
 
 ";
 
 	if ( $points < 1 ) {
 		echo "
-【小吉】
+【" . T('GIKO_FORTUNE_SHOKICHI') . "】
 　　　 ∧ ∧
 ～′￣(´Д`)＜" . giko_fortune() . "
   UU￣ U  U
 ";
 	} elseif ( $points < 2 ) {
 		echo "
-【中吉】
+【" . T('GIKO_FORTUNE_CHUKICHI') . "】
 　　　 ∧ ∧
 ～′￣(`Д´)＜ﾊｯﾊｰﾝ!  " . giko_fortune() . "
   UU￣ U  U
 ";
 	} elseif ( $points < 3 ) {
 		echo "
-【凶】
+【" . T('GIKO_FORTUNE_KYOU') . "】
 　　　 ∧ ∧
 ～′￣(;´Д`)＜" . giko_fortune() . "
   UU￣ U  U
 ";
 	} elseif ( $points < 4 ) {
 		echo "
-【大吉】
+【" . T('GIKO_FORTUNE_DAIKICHI') . "】
           ヽ(`ー´)ノ＜" . giko_fortune() . "
        ∧ ∧｜_ ｜
       (`ー´)  < ) ～
@@ -68,7 +77,7 @@ function giko_display(): void {
 ";
 	} elseif ( $points < 5 ) {
 		echo "
-【幼吉】
+【" . T('GIKO_FORTUNE_YOUKICHI') . "】
    ∧  ∧    
    ﾉ  ﾊ  ＼  
   ﾉ ∂.∂)＜" . giko_fortune() . "
@@ -78,7 +87,7 @@ function giko_display(): void {
 ";
 	} elseif ( $points < 6 ) {
 		echo "
-【轟吉】
+【" . T('GIKO_FORTUNE_GOUKICHI') . "】
                           *  . .  * (ﾟДﾟ)＜" . giko_fortune() . "
 ＼猫ビィィィィム！／    *  .     .    *  (ﾟДﾟ)＜" . giko_fortune() . "
        ∧ ∧       ＿＿＿＿＿※   .              *  
@@ -87,7 +96,7 @@ function giko_display(): void {
 ";
 	} elseif ( $points < 7 ) {
 		echo "
-【猫吉】
+【" . T('GIKO_FORTUNE_NEKOKICHI') . "】
        ∧ ∧
        ■●■
       (´ー`)＜" . giko_fortune() . "
@@ -97,7 +106,7 @@ function giko_display(): void {
 ";
 	} elseif ( $points < 8 ) {
 		echo "
-【怒吉】
+【" . T('GIKO_FORTUNE_DOKICHI') . "】
   |
   |
   |    ∧ ∧
@@ -108,7 +117,7 @@ function giko_display(): void {
 ";
 	} elseif ( $points < 9 ) {
 		echo "
-【愛吉】
+【" . T('GIKO_FORTUNE_AIKICHI') . "】
        ＿∧ ∧
      ／（´ー`)＜" . giko_fortune() . "
    ／  ／U  U∧ ∧
@@ -117,7 +126,7 @@ function giko_display(): void {
 ";
 	} elseif ( $points < 10 ) {
 		echo "
-【引吉】
+【" . T('GIKO_FORTUNE_INKICHI') . "】
        ∧ ∧
     ／(´ー`)＜" . giko_fortune() . "
 乙／  ) ⊃ ⊃
@@ -125,14 +134,14 @@ function giko_display(): void {
 ";
 	} elseif ( $points < 11 ) {
 		echo "
-【吉】
+【" . T('GIKO_FORTUNE_KICHI') . "】
    ∧ ∧
 ／(´ー`)＜" . giko_fortune() . "
 ￣￣￣￣￣|
 ";
 	} elseif ( $points < 12 ) {
 		echo "
-【楽吉】
+【" . T('GIKO_FORTUNE_RAKUKICHI') . "】
        ∧ ∧
     ヽ(´ー`)ノ＜" . giko_fortune() . "
       ｜   ｜
@@ -141,14 +150,14 @@ function giko_display(): void {
 ";
 	} elseif ( $points < 13 ) {
 		echo "
-【凶】
+【" . T('GIKO_FORTUNE_KYOU') . "】
 　 ∧∧
 　/⌒ヽ)＜" . giko_fortune() . "
 ～(_＿)
 ";
 	} elseif ( $points < 14 ) {
 		echo "
-【吉】
+【" . T('GIKO_FORTUNE_KICHI') . "】
 (" . giko_fortune() . ")
 　　 。
 　　。
@@ -158,7 +167,7 @@ function giko_display(): void {
 ";
 	} else {
 		echo "
-【吉】
+【" . T('GIKO_FORTUNE_KICHI') . "】
 　　　 ∧ ∧
 ～′￣(´ー`)＜" . giko_fortune() . "
   UU￣ U  U

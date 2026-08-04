@@ -787,3 +787,108 @@ ksphp-plus-mainルート直下に配置。あわせて、gikoneko.php側の
   php -lで構文確認。実際にgikoneko_kotoba.datを配置した状態で
   giko_display()を呼び出し、PHP警告が出ないこと、AA＋ことばが
   正しく表示されることを確認した。
+
+============================================================
+2026-07-18T05:40 UTC
+------------------------------------------------------------
+【機能追加：gikoneko.php / gikonekoadd.phpの多言語化】
+対象：gikoneko.php, gikonekoadd.php, language/japanese.txt,
+      language/english.txt
+
+保留事項1「gikoneko.php / gikonekoadd.phpの多言語化」に対応。
+本体（bbs.php）の$MSG機構に統合し、新規キー22個を追加
+（language/japanese.txt・english.txt、日英とも272キーで完全一致
+確認済み）。
+
+  【gikoneko.php】
+  giko_display()内、見出し部（GIKO_TOGETHER・GIKO_TEACH_LINK_TEXT）
+  と、おみくじ結果ラベル12種（小吉〜楽吉。凶と吉は複数箇所で
+  同一キーを再利用）をT()呼び出しに置換。本ファイルはbbs.php内
+  から$MSG確立後にrequire_once されるため、追加の読み込み処理は
+  不要（T()はグローバル関数のためそのまま呼び出し可能）。
+
+  【gikonekoadd.php】
+  単体で直接呼び出される独立スクリプトのため、bbs.php本体は
+  requireせず、conf.php（$CONF['LANGUAGE_FILE']取得用）のみを
+  読み込み、bbs.php内のloadLanguageFile()と同等の軽量な言語
+  ファイル読み込み処理・T()関数をローカルに実装（既存のsub/配下の
+  スタンドアロンスクリプトが独自にエラー表示関数等を持つのと
+  同じ設計方針）。タイトル・エラーメッセージ・投稿完了画面・
+  入力フォームの文言をすべてT()経由に置換。
+
+  【動作確認】
+  php -lで両ファイルの構文確認。日本語・英語それぞれの言語
+  ファイルを読み込ませ、giko_display()の出力（見出し・おみくじ
+  ラベル）が正しく翻訳されることを確認。gikonekoadd.phpは
+  投稿・重複投稿・フォーム表示の3パターンをスタンドアロン実行で
+  確認し、いずれも正常に動作。
+
+------------------------------------------------------------
+【バグ修正：gikonekoadd.phpのデータファイル参照パスの不整合】
+対象：gikonekoadd.php
+
+$dataの参照先が`$giko_dir . '/../cgi-bin/gikoneko_kotoba.dat'`の
+ままとなっており、gikoneko.php側（giko_fortune()）が参照する
+`$giko_dir . '/gikoneko_kotoba.dat'`（ルート直下）と一致していな
+かった。2026-07-18T04:35 UTCの記録にある通り、実機ではルート直下
+配置に統一されているため、gikonekoadd.php側もgikoneko.phpと同じ
+パス（`$giko_dir . '/gikoneko_kotoba.dat'`）に修正した。この不一致
+により、gikonekoadd.phpで教えた言葉がgikoneko.php側の占いに反映
+されない状態になっていた（機能しないコードのため、確認を取らずに
+修正）。
+
+  【動作確認】
+  gikonekoadd.phpでの投稿がgikoneko_kotoba.datに追記され、
+  同ファイルをgikoneko.php側のgiko_fortune()が正しく読み込める
+  ことをスタンドアロン実行で確認した。
+
+------------------------------------------------------------
+【機能追加：giko_fortune()のデータファイル自動生成】
+対象：gikoneko.php
+
+保留事項2「giko_fortune()：データファイル不在時、file()の生の
+PHP警告がページ出力に混入する問題」に対応。file_exists()による
+事前チェックを追加し、データファイルが存在しない場合は空ファイル
+を自動生成（file_put_contents）した上でfile()を呼び出すよう変更。
+これにより、データファイル不在時にも生の警告が出力に混入せず、
+処理がそこで止まらない（giko_fortune()は空文字列を返し、以降の
+呼び出しでは自動生成済みのファイルがそのまま使われる）。
+
+  【動作確認】
+  php -lで構文確認。GIKO_DATA_DIRを一時ディレクトリに向けて
+  データファイルが存在しない状態でgiko_display()を呼び出し、
+  PHP警告が出力されないこと、および呼び出し後にファイルが
+  自動生成されていることを確認した。
+
+============================================================
+2026-07-18T06:10 UTC
+------------------------------------------------------------
+【機能追加：ayashiibreaker.js 日本語向け改行アルゴリズム（禁則処理）】
+対象：js/ayashiibreaker.js
+
+保留事項3「日本語（スペース区切りが無い言語）向け改行アルゴリズム
+調整」に対応。別スレッドで完成した ayashiibreaker.js v0.4.0
+（ayashiibreaker.zip添付）を反映。
+
+  【変更内容（v0.3.1→v0.4.0）】
+  日本語文字を含む行は、スペース区切りではなく文字数ベースで改行
+  し、禁則処理（行頭禁則・行末禁則）を適用するよう変更。行ごとに
+  日本語判定（isJapanese()）を行うため、多言語混在の投稿にも
+  自動対応。checkLineLengths()側も、日本語行には「単語1つが
+  MAX_LENGTHを超える場合はアラート抑制」という非日本語向けの
+  救済ロジックを適用しないよう調整済み（日本語行は文字単位で常に
+  改行可能なため）。
+
+  【マージ時の対応】
+  別スレッド側のv0.4.0では、addButton()内のボタンラベルが
+  window.KSPHP_LANG参照（2026-07-17に導入した多言語対応）を
+  経由せず、"Make line breaks"のハードコード に戻ってしまって
+  いた。既存の多言語対応を退行させないよう、
+  `(window.KSPHP_LANG && window.KSPHP_LANG.MAKE_LINE_BREAKS_BTN) || "Make line breaks"`
+  の参照を復元してマージした（挙動を変える仕様判断ではなく、
+  既存機能の退行防止のため確認を取らずに復元）。
+
+  【動作確認】
+  node --checkで構文確認。isJapanese()・breakJapaneseLine()を
+  単体で実行し、禁則処理（行頭・行末とも）が正しく機能することを
+  確認した。

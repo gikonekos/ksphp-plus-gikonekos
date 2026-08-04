@@ -204,20 +204,24 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
 ### 2026/06/27
 * Added filtering and mass-selection helpers to the post deletion admin screen
 
+### 2026/07/18
+* gikoneko.php / gikonekoadd.php UI text is now localized through the
+  standard `$MSG` mechanism (22 new keys added to language/*.txt)
+* gikoneko.php: the fortune data file is now auto-created when missing,
+  so `file()` no longer emits a raw PHP warning into the page output
+* gikonekoadd.php: fixed a data-file path mismatch (`../cgi-bin/...`)
+  that caused newly taught words to never reach gikoneko.php's fortune
+  pool; both scripts now reference the same root-level data file
+* ayashiibreaker.js updated to v0.4.0: Japanese lines are now
+  line-broken by character count with kinsoku shori (禁則処理) rules,
+  instead of relying on space-delimited word wrapping
+
 ## ToDo:
 * View posts by thread
 * Setting for whether or not to use the mobile module
 * Form does not appear on the new post screen
 * Proper use of multi-byte functions and jcode
 * Setting for UNDO expiration date
-* gikoneko.php / gikonekoadd.php localization (currently hardcoded
-  Japanese-only UI text: page titles, form labels, error messages).
-  Deferred for now (2026-07-18).
-* gikoneko.php: graceful handling when the fortune data file
-  (`../cgi-bin/gikoneko_kotoba.dat` relative to gikoneko.php, or
-  `GIKO_DATA_DIR` env var) is missing. Currently `file()` emits a raw
-  PHP warning into the page output instead of failing silently.
-  Deferred for now (2026-07-18).
 * Have uploader thumbnailing javascript to easily support other instances of Uploader softwares
 * (Decided 2026-07-18, maintainer judgment call) Top-page post form
   intentionally does NOT show the "Post complete" confirmation screen
