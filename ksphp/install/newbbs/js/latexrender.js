@@ -26,6 +26,14 @@
 	var KATEX_AUTORENDER_JS = 'https://cdn.jsdelivr.net/npm/katex@' + KATEX_VERSION + '/dist/contrib/auto-render.min.js';
 
 	function isEnabled() {
+		// 2026-08-02 Gikoneko: 管理者ロック（conf.phpのJS_DEFAULT_*=0、
+		// window.KSPHP_SETTINGS_LOCKED経由）はlegacy localStorageより
+		// 優先する。これがないとRC10-12からの残存値でロックを
+		// 貫通できてしまう。
+		var locked = window.KSPHP_SETTINGS_LOCKED;
+		if (Array.isArray(locked) && locked.indexOf('latex') !== -1) {
+			return false;
+		}
 		try {
 			var legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
 			if (legacy !== null) {

@@ -2574,3 +2574,80 @@ needed no changes since the existing loop logic already handles it.
   This addresses the README ToDo item: "Not yet started: allow the
   personal settings panel to override the conf.php-level
   'Gikoneko-to-issho' setting on the client side."
+
+----------------------------------------------------------------------
+2026-08-03T12:00 UTC  擬古猫+RC16 [20260803]
+----------------------------------------------------------------------
+
+■ Admin-configurable JS feature defaults via conf.php
+
+  Added JS_DEFAULT_* keys (8 bool, 2 int) to conf.php so site admins
+  can set server-side defaults for all JS personal settings.
+
+  [Bool keys — tri-state]
+    JS_DEFAULT_GIKO / IMGTHUMB / KAOMOJI / LATEX /
+    LONGPOST / TREEHIDE / UPTHUMB / VIDEMBED
+      0 : Locked off (hidden from personal settings, feature disabled)
+      1 : Default on  (users can turn it off in personal settings)
+      2 : Default off (users can turn it on  in personal settings)
+      Unset / non-numeric: falls back to hard-coded default (backward compat)
+
+  [Int keys]
+    JS_DEFAULT_LINEBREAKER_LEN (integer, min 10)
+    JS_DEFAULT_LONGPOST_TH     (integer, min 1)
+      Clamped to the valid range; falls back to hard-coded default if unset.
+
+  [Shipped defaults]
+    LATEX / LONGPOST / TREEHIDE = 2 (default off, user-enableable)
+    → preserves RC15 behavior. All others = 1 (default on).
+
+  [Single-source lock flag]
+    The 'locked' flag is computed once inside ksphp_js_setting_defs()
+    (via $js_bool / $js_int helpers) and consumed by all three sites:
+    ksphp_js_settings_load(), prtcustom(), and setcustom(). The
+    GIKONEKO_TOISSHO=0 case is folded into giko's locked flag,
+    eliminating the scattered special-case checks from RC15.
+
+  [Admin lock vs. legacy localStorage — fix]
+    Browsers upgrading from RC10–RC12 may still have legacy localStorage
+    keys (ksphp_latex_enabled etc.). Under the old implementation those
+    were checked before window.KSPHP_SETTINGS, meaning a JS_DEFAULT_*=0
+    lock could be bypassed by a stale '1' in localStorage.
+    Fix: the locked-key list is now exported as
+    window.KSPHP_SETTINGS_LOCKED (JSON array) into every page's <head>
+    via {JS_LOCKED_JSON}. Each JS file's isEnabled() now checks the
+    locked array BEFORE the legacy localStorage fallback. Safe under
+    undefined KSPHP_SETTINGS_LOCKED (old templates) via Array.isArray.
+
+  [Personal-settings UI and save path]
+    Each bool checkbox is now wrapped in its own js_<key>_row
+    subtemplate (visibility="hidden"). prtcustom() sets only unlocked
+    rows to visible. setcustom() forces locked keys to 0 regardless of
+    POST content.
+
+  [Bugs found and fixed during implementation]
+  [1] VAL_JS_LONGPOST_TH addVar scope error (same class as the RC15
+      giko fix, re-introduced): the longpost_th number input moved
+      inside js_longpost_row, but addVar still targeted 'custom',
+      so the field always rendered empty (value=""). Fixed by targeting
+      'js_longpost_row' for longpost_th; linebreaker_len stays 'custom'
+      as it is outside any subtemplate.
+  [2] Three-way lock-check inconsistency: the 2-state prototype used
+      different disable-check code in load(), prtcustom(), and
+      setcustom(), producing divergent behavior on edge cases like an
+      empty-string conf value. Unified through the defs['locked'] flag.
+  [3] Unused use($linebreaker_max) closure capture removed (PHPStan).
+      Redundant array_values() call removed (PHPStan).
+
+  [Verification]
+  PHP unit test: 13 cases all PASS (tri-state, TOISSHO fold, clamp,
+  empty-string edge). Node.js test: 6 cases all PASS (lock guard,
+  legacy compat, undefined KSPHP_SETTINGS_LOCKED). Real patTemplate
+  render test: VAL_JS_LONGPOST_TH resolves correctly inside
+  js_longpost_row; locked rows stay hidden. PHPStan Level 5: same 64
+  pre-existing errors as RC15 baseline — zero new errors.
+  All PHP and JS files pass syntax checks.
+
+  CONF_HELP_JS_DEFAULT_* added to install/language for all 7 languages
+  (98 → 108 CONF_HELP entries; 232-key equality verified across files).
+

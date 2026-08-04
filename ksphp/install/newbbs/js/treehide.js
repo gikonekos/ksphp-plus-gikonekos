@@ -28,6 +28,14 @@
 	// （非表示にしたツリーIDの一覧＝STORAGE_HIDDENは今後もlocalStorage
 	// のまま。これはON/OFF設定ではなくブラウザ固有の作業データのため）。
 	function isEnabled() {
+		// 2026-08-02 Gikoneko: 管理者ロック（conf.phpのJS_DEFAULT_*=0、
+		// window.KSPHP_SETTINGS_LOCKED経由）はlegacy localStorageより
+		// 優先する。これがないとRC10-12からの残存値でロックを
+		// 貫通できてしまう。
+		var locked = window.KSPHP_SETTINGS_LOCKED;
+		if (Array.isArray(locked) && locked.indexOf('treehide') !== -1) {
+			return false;
+		}
 		try {
 			var legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
 			if (legacy !== null) {

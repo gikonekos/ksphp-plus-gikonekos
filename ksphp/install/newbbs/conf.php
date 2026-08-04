@@ -177,6 +177,40 @@ $CONF = array(
   #   1 : 表示する (Enabled)
   'GIKONEKO_TOISSHO' => 1,
 
+  // JavaScript機能の初期値（個人設定のデフォルト）
+  // JS default settings for individual features.
+  #   0 : 完全無効。個人設定画面に表示されず、機能がロックされます
+  #       (Locked off: hidden from personal settings, feature disabled entirely)
+  #   1 : デフォルトON。ユーザーが個人設定でOFFにできます
+  #       (Default on: users can turn it off in personal settings)
+  #   2 : デフォルトOFF。ユーザーが個人設定でONにできます
+  #       (Default off: users can turn it on in personal settings)
+  //
+  // 「擬古猫といっしょ」（0はGIKONEKO_TOISSHOより優先）
+  // "Gikoneko-to-issho" (0 here overrides GIKONEKO_TOISSHO above)
+  'JS_DEFAULT_GIKO'          => 1,
+  // 画像サムネイル表示 / Image thumbnails
+  'JS_DEFAULT_IMGTHUMB'      => 1,
+  // 顔文字補完 / Kaomoji completion
+  'JS_DEFAULT_KAOMOJI'       => 1,
+  // LaTeX数式表示 / LaTeX math rendering
+  'JS_DEFAULT_LATEX'         => 2,
+  // 長文折りたたみ / Long-post folding
+  'JS_DEFAULT_LONGPOST'      => 2,
+  // ツリー折りたたみ / Tree collapse
+  'JS_DEFAULT_TREEHIDE'      => 2,
+  // アップロードサムネイル / Upload thumbnails
+  'JS_DEFAULT_UPTHUMB'       => 1,
+  // 動画埋め込み / Video embedding
+  'JS_DEFAULT_VIDEMBED'      => 1,
+
+  // 以下2つは数値設定（0/1/2の3値ではありません）
+  // The two below are numeric settings (not the 0/1/2 tri-state)
+  // 自動行折り返し デフォルト文字数（整数、10以上）/ Line-breaker default length (int, min 10)
+  'JS_DEFAULT_LINEBREAKER_LEN' => 72,
+  // 長文折りたたみ しきい値（行数、1以上）/ Long-post threshold in lines (int, min 1)
+  'JS_DEFAULT_LONGPOST_TH'   => 10,
+
   // gzip圧縮の初期値
   // （表示が高速化されます）
   // Default value for gzip compression

@@ -2214,3 +2214,83 @@ PHPStan Level 5を自作コード全12ファイルに対して実行し、検出
   README ToDoに記載されていた「未着手：個人設定パネルから、conf.php
   レベルの『擬古猫といっしょ』設定をクライアント側で上書きできる
   ようにする」に対応完了。
+
+----------------------------------------------------------------------
+2026-08-03T12:00 UTC  擬古猫+RC16 [20260803]
+----------------------------------------------------------------------
+
+■ conf.phpによるJavaScript機能デフォルト値の管理者制御
+
+  conf.phpに JS_DEFAULT_* キー群（bool 8個・int 2個）を追加した。
+  管理者がサーバー設定として各JS機能のデフォルト値を設定できる。
+
+  【bool系 8キー（3値）】
+    JS_DEFAULT_GIKO / IMGTHUMB / KAOMOJI / LATEX /
+    LONGPOST / TREEHIDE / UPTHUMB / VIDEMBED
+      0 : 完全無効（個人設定画面に非表示・機能ロック）
+      1 : デフォルトON（ユーザーが個人設定でOFF可）
+      2 : デフォルトOFF（ユーザーが個人設定でON可）
+      未設定・非数値: 従来のハードコードデフォルトを維持（後方互換）
+
+  【int系 2キー】
+    JS_DEFAULT_LINEBREAKER_LEN（整数、10以上）
+    JS_DEFAULT_LONGPOST_TH（整数、1以上）
+      conf.php値をmin/maxにclampして使用。未設定ならハードコードデフォルト。
+
+  【出荷デフォルト値】
+    LATEX/LONGPOST/TREEHIDE = 2（デフォルトOFF・ユーザーON可）
+    → RC15以前の挙動を維持。他は 1（デフォルトON）。
+
+  【実装の核心：lockedフラグの一元化】
+    ksphp_js_setting_defs()内で $js_bool/$js_int ヘルパーが
+    'locked' フラグを計算し、ksphp_js_settings_load()・
+    prtcustom()・setcustom() の3箇所がすべてこれを参照する。
+    GIKONEKO_TOISSHO=0 も giko の locked に畳み込むことで、
+    gikoに関する判定ロジックを一本化した。
+
+  【管理者ロックとlegacy localStorageの貫通問題の修正】
+    RC10〜RC12から移行したブラウザには、latexrender.js・
+    longpostfilter.js・treehide.jsのlegacy localStorageキー
+    （ksphp_latex_enabled等）が残存している場合がある。
+    これらがKSPHP_SETTINGSより先に参照される旧来の実装では、
+    conf.phpでJS_DEFAULT_*=0（完全無効）に設定しても
+    localStorageに '1' が残ったままのブラウザで機能が動き続ける
+    問題があった。
+    対策：ロック済みキー一覧を window.KSPHP_SETTINGS_LOCKED
+    （配列）として全ページのHEADに出力（{JS_LOCKED_JSON}経由）、
+    各JSファイルのisEnabled()でlegacy参照より先にロックを判定する
+    ようにした。KSPHP_SETTINGS_LOCKED未定義のブラウザ環境（旧
+    テンプレート混在等）でも Array.isArray チェックで安全に動作。
+
+  【個人設定画面・保存処理の対応】
+    boolキーの各チェックボックスをそれぞれ独立したサブテンプレート
+    js_<key>_row（visibility="hidden"）で囲み、ロックされていない
+    キーのみprtcustom()がvisible化する。
+    setcustom()でもロック済みキーはPOST値を無視して強制 0 を保存。
+
+  【実装時に発見・修正したバグ】
+  [1] VAL_JS_LONGPOST_TH のaddVarスコープ切れ（RC15のgiko修正と
+      同じパターンの再導入）：longpost_th の数値入力欄は
+      js_longpost_row サブテンプレート内に移動したため、addVar の
+      対象テンプレート名も 'custom' から 'js_longpost_row' に
+      変更する必要があったが、当初のコードでは 'custom' のままに
+      なっており、数値欄が常に空（value=""）で表示されていた。
+  [2] 判定ロジックの三所不一致：2値実装では load()・prtcustom()・
+      setcustom()の無効化判定が異なるコードで行われており、空文字列
+      conf値等のエッジケースで食い違いが生じていた。lockedフラグを
+      ksphp_js_setting_defs()に一元化して解消した。
+  [3] 未使用の use($linebreaker_max)（PHPStanで検出）を削除。
+      冗長な array_values()（PHPStan指摘）を削除。
+
+  【動作確認】
+  PHP単体テスト13ケース（3値全パターン・TOISSHO畳み込み・clamp・
+  空文字エッジ）全PASS。Node.jsテスト6ケース（ロックガード・
+  legacy互換・LOCKED未定義環境）全PASS。patTemplate実レンダリング
+  テストで VAL_JS_LONGPOST_TH が js_longpost_row 内で正しく解決
+  されること、ロック行が非表示のままであることを確認。
+  PHPStan Level 5：RC15ベースの64件と完全一致（新規エラーゼロ）。
+  全PHPファイル・全JSファイル構文エラー無し。
+
+  CONF_HELP_JS_DEFAULT_* を install/language 全7言語ファイルに
+  追加（98→108エントリ、232キー一致を確認）。
+

@@ -50,7 +50,7 @@ if (file_exists($ksphp_local_secrets_file)) {
 unset($ksphp_local_secrets_file, $ksphp_local_secrets);
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '擬古猫+RC15 [20260802] (Heyuri, ヶ, ＠Links, 擬古猫)';
+$CONF['VERSION'] = '擬古猫+RC16 [20260803] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
@@ -197,18 +197,55 @@ function ksphp_js_setting_defs(): array {
     // 極端に小さい設置ではそちらに合わせて縮める。
     $linebreaker_default = min(72, $linebreaker_max);
 
-    return array(
-        'giko'            => array('type' => 'bool', 'default' => 1),
-        'imgthumb'        => array('type' => 'bool', 'default' => 1),
-        'kaomoji'         => array('type' => 'bool', 'default' => 1),
-        'latex'           => array('type' => 'bool', 'default' => 0),
-        'linebreaker_len' => array('type' => 'int',  'default' => $linebreaker_default, 'min' => 10, 'max' => $linebreaker_max),
-        'longpost'        => array('type' => 'bool', 'default' => 0),
-        'longpost_th'     => array('type' => 'int',  'default' => 10, 'min' => 1, 'max' => 9999),
-        'treehide'        => array('type' => 'bool', 'default' => 0),
-        'upthumb'         => array('type' => 'bool', 'default' => 1),
-        'vidembed'        => array('type' => 'bool', 'default' => 1),
+    // JS_DEFAULT_* conf.php キー（3値）からbool設定のデフォルト値と
+    // ロック状態を決めるヘルパー。
+    //   0 : 完全無効（個人設定に非表示・機能ロック。cookieも無視）
+    //   1 : デフォルトON（ユーザーが個人設定で切替可）
+    //   2 : デフォルトOFF（ユーザーが個人設定で切替可）
+    // キー未設定・非数値の場合は従来のハードコードデフォルト（ロックなし）。
+    $js_bool = function(string $conf_key, int $hardcoded_default): array {
+        if (!isset($GLOBALS['CONF'][$conf_key]) || !is_numeric($GLOBALS['CONF'][$conf_key])) {
+            return array('default' => $hardcoded_default, 'locked' => false);
+        }
+        $n = (int) $GLOBALS['CONF'][$conf_key];
+        if ($n === 0) {
+            return array('default' => 0, 'locked' => true);
+        }
+        if ($n === 2) {
+            return array('default' => 0, 'locked' => false);
+        }
+        return array('default' => 1, 'locked' => false);
+    };
+    // int設定のデフォルト値。conf値があれば min..max に clamp して使う。
+    $js_int = function(string $conf_key, int $hardcoded_default, int $min, int $max): int {
+        if (!isset($GLOBALS['CONF'][$conf_key]) || !is_numeric($GLOBALS['CONF'][$conf_key])) {
+            return $hardcoded_default;
+        }
+        $n = (int) $GLOBALS['CONF'][$conf_key];
+        if ($n < $min) { $n = $min; }
+        if ($n > $max) { $n = $max; }
+        return $n;
+    };
+
+    $defs = array(
+        'giko'            => array_merge(array('type' => 'bool', 'conf_key' => 'JS_DEFAULT_GIKO'),     $js_bool('JS_DEFAULT_GIKO',     1)),
+        'imgthumb'        => array_merge(array('type' => 'bool', 'conf_key' => 'JS_DEFAULT_IMGTHUMB'), $js_bool('JS_DEFAULT_IMGTHUMB', 1)),
+        'kaomoji'         => array_merge(array('type' => 'bool', 'conf_key' => 'JS_DEFAULT_KAOMOJI'),  $js_bool('JS_DEFAULT_KAOMOJI',  1)),
+        'latex'           => array_merge(array('type' => 'bool', 'conf_key' => 'JS_DEFAULT_LATEX'),    $js_bool('JS_DEFAULT_LATEX',    0)),
+        'linebreaker_len' => array('type' => 'int', 'conf_key' => 'JS_DEFAULT_LINEBREAKER_LEN', 'default' => $js_int('JS_DEFAULT_LINEBREAKER_LEN', $linebreaker_default, 10, $linebreaker_max), 'min' => 10, 'max' => $linebreaker_max),
+        'longpost'        => array_merge(array('type' => 'bool', 'conf_key' => 'JS_DEFAULT_LONGPOST'), $js_bool('JS_DEFAULT_LONGPOST', 0)),
+        'longpost_th'     => array('type' => 'int', 'conf_key' => 'JS_DEFAULT_LONGPOST_TH', 'default' => $js_int('JS_DEFAULT_LONGPOST_TH', 10, 1, 9999), 'min' => 1, 'max' => 9999),
+        'treehide'        => array_merge(array('type' => 'bool', 'conf_key' => 'JS_DEFAULT_TREEHIDE'), $js_bool('JS_DEFAULT_TREEHIDE', 0)),
+        'upthumb'         => array_merge(array('type' => 'bool', 'conf_key' => 'JS_DEFAULT_UPTHUMB'),  $js_bool('JS_DEFAULT_UPTHUMB',  1)),
+        'vidembed'        => array_merge(array('type' => 'bool', 'conf_key' => 'JS_DEFAULT_VIDEMBED'), $js_bool('JS_DEFAULT_VIDEMBED', 1)),
     );
+    // GIKONEKO_TOISSHO（サーバー側マスター）が0のときは giko も
+    // ロック扱いに畳み込む（個人設定非表示・保存も0・JSON上も0）。
+    if (empty($GLOBALS['CONF']['GIKONEKO_TOISSHO'])) {
+        $defs['giko']['default'] = 0;
+        $defs['giko']['locked'] = true;
+    }
+    return $defs;
 }
 
 // cookie 'ksphp_js'（JSON文字列）から現在値を読み込む。壊れている／
@@ -227,7 +264,14 @@ function ksphp_js_settings_load(): array {
     foreach ($defs as $key => $def) {
         $val = $decoded[$key] ?? null;
         if ($def['type'] === 'bool') {
-            $result[$key] = ($val === 1 || $val === '1' || $val === true) ? 1 : 0;
+            // ロック済み（conf.phpで0＝完全無効、またはgikoで
+            // GIKONEKO_TOISSHO=0）のキーはcookieを無視して常に 0。
+            if (!empty($def['locked'])) {
+                $result[$key] = 0;
+            } else {
+                $result[$key] = ($val === null) ? $def['default']
+                    : (($val === 1 || $val === '1' || $val === true) ? 1 : 0);
+            }
         } else { // int
             $n = is_numeric($val) ? (int) $val : $def['default'];
             if ($n < $def['min'] || $n > $def['max']) {
@@ -235,15 +279,22 @@ function ksphp_js_settings_load(): array {
             }
             $result[$key] = $n;
         }
-        if ($val === null) {
-            $result[$key] = $def['default'];
-        }
     }
     return $result;
 }
 
 $ksphp_js_settings = ksphp_js_settings_load();
 $KSPHP_JS_SETTINGS_JSON = json_encode($ksphp_js_settings, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP);
+// 管理者ロック済み（conf.phpのJS_DEFAULT_*=0）のboolキー一覧。JS側で
+// RC10-12互換のlegacy localStorageフォールバックより優先して参照させ、
+// ロックがlocalStorage残存値に貫通されないようにする。
+$ksphp_js_locked = array();
+foreach (ksphp_js_setting_defs() as $ksphp_lk => $ksphp_ld) {
+    if ($ksphp_ld['type'] === 'bool' && !empty($ksphp_ld['locked'])) {
+        $ksphp_js_locked[] = $ksphp_lk;
+    }
+}
+$KSPHP_JS_LOCKED_JSON = json_encode($ksphp_js_locked, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP);
 
 // Translation helper
 function T($key) {
@@ -386,6 +437,7 @@ function script_run() {
         $templateValues = removeArrayValues(array_merge($CONF, $GLOBALS['MSG']));
         $templateValues['JS_LANG_JSON'] = $GLOBALS['MSG_JSON'];
         $templateValues['JS_SETTINGS_JSON'] = $GLOBALS['KSPHP_JS_SETTINGS_JSON'];
+        $templateValues['JS_LOCKED_JSON'] = $GLOBALS['KSPHP_JS_LOCKED_JSON'];
         $templateValues['LANG_OPTIONS_HTML'] = $GLOBALS['ksphp_lang_options_html'];
 
         $t->addGlobalVars($templateValues);
@@ -413,6 +465,7 @@ function script_run() {
             $templateValues = removeArrayValues(array_merge($CONF, $GLOBALS['MSG']));
             $templateValues['JS_LANG_JSON'] = $GLOBALS['MSG_JSON'];
             $templateValues['JS_SETTINGS_JSON'] = $GLOBALS['KSPHP_JS_SETTINGS_JSON'];
+            $templateValues['JS_LOCKED_JSON'] = $GLOBALS['KSPHP_JS_LOCKED_JSON'];
             $templateValues['LANG_OPTIONS_HTML'] = $GLOBALS['ksphp_lang_options_html'];
 
             $t->addGlobalVars($templateValues);
@@ -705,6 +758,7 @@ function tripuse($key) {
         $tmp['IMAGE_UPLOAD_HELP'] = sprintf($GLOBALS['MSG']['IMAGE_UPLOAD_HELP'], $this->c['MAX_IMAGEWIDTH'] ?? '', $this->c['MAX_IMAGEHEIGHT'] ?? '', $this->c['MAX_IMAGESIZE'] ?? '');
         $tmp['JS_LANG_JSON'] = $GLOBALS['MSG_JSON'];
         $tmp['JS_SETTINGS_JSON'] = $GLOBALS['KSPHP_JS_SETTINGS_JSON'];
+        $tmp['JS_LOCKED_JSON'] = $GLOBALS['KSPHP_JS_LOCKED_JSON'];
 
         // 20260720 Gikoneko: 言語切替プルダウンのoption HTMLをテンプレート
         // 変数として渡す。グローバルスコープで生成済みの$ksphp_lang_options_html
@@ -1142,7 +1196,11 @@ function tripuse($key) {
                 $js_settings = array();
                 foreach ($js_defs as $js_key => $js_def) {
                     if ($js_def['type'] === 'bool') {
-                        $js_settings[$js_key] = @$this->f['js_' . $js_key] ? 1 : 0;
+                        // ロック済み（判定はksphp_js_setting_defs()で一元
+                        // 計算）のキーはフォーム値を無視して強制 0 を保存。
+                        // チェックボックス自体が非表示なのでフォームから
+                        // 来ることはないが、念のため POST 改ざん対策も兼ねる。
+                        $js_settings[$js_key] = !empty($js_def['locked']) ? 0 : (@$this->f['js_' . $js_key] ? 1 : 0);
                     } else { // int
                         $submitted = @$this->f['js_' . $js_key];
                         $n = is_numeric($submitted) ? (int) $submitted : $js_def['default'];
@@ -1883,33 +1941,35 @@ $msgmore = ob_get_clean();
         // ここは変更不要。
         $js_current = ksphp_js_settings_load();
         foreach (ksphp_js_setting_defs() as $js_key => $js_def) {
-            $tmpl_key = 'CHK_JS_' . strtoupper($js_key);
-            // 20260802: 'giko' のチェックボックスはネストされたサブ
-            // テンプレート js_giko_row 内にあるため、patTemplateの
-            // addVar()は 'custom' ではなく 'js_giko_row' を対象に
-            // しなければ届かない（addVar()はテンプレート名で厳密に
-            // スコープされる。同じ理由でnextpage/backnaviも個別に
-            // addVarしている。'custom' 側へ入れると{CHK_JS_GIKO}が
-            // 未解決のまま残り、stripUnusedVars()で空文字列に消え、
-            // 常に未チェック表示になってしまう）。
-            $target_tmpl = ($js_key === 'giko') ? 'js_giko_row' : 'custom';
+            // bool キーは各自のサブテンプレート（js_<key>_row）で囲まれて
+            // いる。conf.php で管理者がデフォルト=0（無効化）に設定した
+            // キーはサブテンプレートを hidden のまま残す（visibility を
+            // 'visible' にしない）。有効なキーのみ visible 化する。
+            // addVar()はテンプレート名で厳密にスコープされるため、
+            // 各チェックボックスはそれぞれ自分のサブテンプレート名を
+            // 対象として addVar する（nextpage/backnavi と同じ慣例）。
             if ($js_def['type'] === 'bool') {
-                if ($js_current[$js_key]) {
-                    $this->t->addVar($target_tmpl, $tmpl_key, ' checked="checked"');
+                $row_tmpl = 'js_' . $js_key . '_row';
+                // ロック済み（conf.phpで0、またはgikoでGIKONEKO_TOISSHO=0。
+                // 判定はksphp_js_setting_defs()で一元計算）のキーは
+                // サブテンプレートを非表示のまま残してスキップ。
+                if (empty($js_def['locked'])) {
+                    $this->t->setAttribute($row_tmpl, 'visibility', 'visible');
+                    if ($js_current[$js_key]) {
+                        $this->t->addVar($row_tmpl, 'CHK_JS_' . strtoupper($js_key), ' checked="checked"');
+                    }
                 }
             } else { // int
-                $this->t->addVar($target_tmpl, 'VAL_JS_' . strtoupper($js_key), (string) $js_current[$js_key]);
+                // longpost_th の入力欄は js_longpost_row サブテンプレート
+                // 内にあるため、addVar の対象もそのサブテンプレート名を
+                // 指定する必要がある（addVar厳密スコープ）。
+                // linebreaker_len は custom 直下なので 'custom' でよい。
+                $int_target = ($js_key === 'longpost_th') ? 'js_longpost_row' : 'custom';
+                $this->t->addVar($int_target, 'VAL_JS_' . strtoupper($js_key), (string) $js_current[$js_key]);
                 // 動的にmax値を計算するキー（linebreaker_len等）用に、
                 // フォームのmax属性へも渡しておく。
-                $this->t->addVar($target_tmpl, 'VAL_JS_' . strtoupper($js_key) . '_MAX', (string) $js_def['max']);
+                $this->t->addVar($int_target, 'VAL_JS_' . strtoupper($js_key) . '_MAX', (string) $js_def['max']);
             }
-        }
-        // 20260802: 「擬古猫といっしょ」のオフは、サーバー側で
-        // GIKONEKO_TOISSHO=1 の場合のみ個人設定として意味を持つ。
-        // 0 の場合はサーバー設定が優先されるため、チェックボックス自体を
-        // 非表示にして混乱を防ぐ。
-        if ($this->c['GIKONEKO_TOISSHO']) {
-            $this->t->setAttribute('js_giko_row', 'visibility', 'visible');
         }
 
         $this->t->addVar('custom_hide', 'BBSMODE_ADMINONLY', $this->c['BBSMODE_ADMINONLY']);
