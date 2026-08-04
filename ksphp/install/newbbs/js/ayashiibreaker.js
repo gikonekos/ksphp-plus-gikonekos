@@ -60,13 +60,16 @@ Have you ever seen mighty skills to treat pile heads, rough clenched fists to su
 	// を超えないようサーバー側で上限が絞られている。
 	// 日本語を含む行は禁則処理（行頭・行末に置けない文字の追い込み／
 	// 追い出し）で数文字ぶん行が伸び縮みするため、その分の余裕を
-	// 見込んで2文字短くした値を目標値とする（従来のハードコード値
-	// 72文字の挙動をほぼそのまま維持する）。
+	// 見込んで12文字短くした値を目標値とする（2026-08-01実機検証で
+	// 8文字では日本語行がまだ崩せなかったが、16は多すぎるとの判断
+	// で間を取って12文字に調整）。
+	// ASCII側は根本原因（長い単語を強制分割していなかった不具合）
+	// を修正済みだが、念のため同じ12文字マージンを適用する。
 	var configuredLen = (window.KSPHP_SETTINGS && Number.isFinite(window.KSPHP_SETTINGS.linebreaker_len))
 		? window.KSPHP_SETTINGS.linebreaker_len
 		: 72;
-	var MAX_LENGTH_ASCII = configuredLen;
-	var MAX_LENGTH_JAPANESE = Math.max(10, configuredLen - 2);
+	var MAX_LENGTH_ASCII = Math.max(10, configuredLen - 12);
+	var MAX_LENGTH_JAPANESE = Math.max(10, configuredLen - 12);
 
 	// 行頭禁則: characters that must not start a line (get pulled back
 	// onto the tail of the previous line instead).
@@ -123,18 +126,29 @@ Have you ever seen mighty skills to treat pile heads, rough clenched fists to su
 				}
 				continue;
 			}
-			let idx = 0;
 			let words = lines[i].split(' ').filter(w => w.trim() != "");
-			let newline = "";
+			let rows = [];
+			let current = "";
 			for (let word of words) {
-				if (idx+word.length > MAX_LENGTH_ASCII) {
-					newline += '\n';
-					idx = 0;
+				// 単語自体がMAX_LENGTH_ASCIIを超える場合は強制的に文字単位で分割する
+				while (word.length > MAX_LENGTH_ASCII) {
+					if (current.length > 0) {
+						rows.push(current);
+						current = "";
+					}
+					rows.push(word.slice(0, MAX_LENGTH_ASCII));
+					word = word.slice(MAX_LENGTH_ASCII);
 				}
-				newline += word + ' ';
-				idx += word.length + 1;
+				const candidateLen = current.length + (current.length > 0 ? 1 : 0) + word.length;
+				if (candidateLen > MAX_LENGTH_ASCII && current.length > 0) {
+					rows.push(current);
+					current = word;
+				} else {
+					current = current.length > 0 ? current + ' ' + word : word;
+				}
 			}
-			newlines.push(newline.trim());
+			if (current.length > 0) rows.push(current);
+			for (const row of rows) newlines.push(row);
 		}
 		document.getElementById('contents1').value = newlines.join('\n');
 		checkLineLengths();

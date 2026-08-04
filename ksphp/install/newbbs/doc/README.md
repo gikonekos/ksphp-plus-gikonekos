@@ -486,6 +486,19 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
   Deliberately scoped light: a directory-listing check (does any
   other old-log file already exist) rather than a calendar/date
   calculation of "is this the first post of the period".
+* (Found and fixed 2026-08-01, RC14-02, via live testing on
+  qptns.com/test/) ayashiibreaker.js's line-break target was still
+  too tight after RC14's initial fix (configuredLen-2 for Japanese
+  lines): raised to configuredLen-12 for both Japanese and ASCII
+  lines after live verification against a specific long test line.
+  Separately, ASCII (English) word-boundary wrapping had its own bug:
+  it checked the overflow threshold only after already committing to
+  append a word, and never split a single word longer than the
+  target length at all, so long tokens (e.g. "ayashiibreaker.js",
+  "word-boundary") could leave a line uncut regardless of margin.
+  Rewrote as a row-accumulator that force-splits over-length words
+  and checks candidate length before appending, so ASCII rows are now
+  guaranteed to respect the configured limit.
 
 
 
