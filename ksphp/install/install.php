@@ -348,6 +348,9 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 				if (i >= lines.length) {
 					btn.textContent = '完了しました';
 					refreshStatus();
+					var linkLi = document.createElement('li');
+					linkLi.innerHTML = '<a href="../bbs.php" target="_blank">→ bbs.php を開く</a>';
+					logList.appendChild(linkLi);
 					return;
 				}
 				var li = document.createElement('li');
