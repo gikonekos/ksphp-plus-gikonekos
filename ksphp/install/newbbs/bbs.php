@@ -19,15 +19,45 @@ The instructions have been moved to readme.md.
 // Configuration file
 require_once("./conf.php");
 
+// 20260720 Gikoneko: Admin secrets (ADMINPOST/ADMINKEY) live outside
+// conf.php, in a fixed-name file (local.php) that is not part of the
+// newbbs/ distribution template and is therefore invisible to
+// install.php's file scan (ksphp_install_list_files()). This keeps the
+// admin password/keyword out of install.php's merge/backup/overwrite
+// logic entirely. See _setup.php (initial name; the operator renames it
+// after first use) for how local.php is created and updated.
+//
+// The existence of local.php is the ONLY source of truth for whether
+// the admin password is configured. If local.php does not exist yet,
+// ADMINPOST/ADMINKEY are treated as unset (even if conf.php happens to
+// still carry an old hash forward from a pre-RC8 install via
+// install.php's conf-merge) so that upgraders are routed through
+// _setup.php and asked to set a brand-new password there, rather than
+// silently continuing to rely on the old conf.php-based value forever
+// (which would defeat the point of moving secrets out of conf.php).
+// _setup.php itself handles the upgrade case specially: if conf.php
+// still has a non-empty legacy ADMINPOST, it requires authenticating
+// with that old password before a new one can be set.
+$ksphp_local_secrets_file = __DIR__ . '/local.php';
+if (file_exists($ksphp_local_secrets_file)) {
+    $ksphp_local_secrets = require $ksphp_local_secrets_file;
+    $CONF['ADMINPOST'] = $ksphp_local_secrets['ADMINPOST'] ?? '';
+    $CONF['ADMINKEY']  = $ksphp_local_secrets['ADMINKEY']  ?? '';
+} else {
+    $CONF['ADMINPOST'] = '';
+    $CONF['ADMINKEY']  = '';
+}
+unset($ksphp_local_secrets_file, $ksphp_local_secrets);
+
 // Version (for copyright notice)
-$CONF['VERSION'] = '[20260719] (<span title="Heyuri Applicable Research & Development">Heyuri</span>, <span title="Hiru-ga-take">ヶ</span>, ＠Links, <span title="Giko-neko">擬古猫</span>)';
+$CONF['VERSION'] = '擬古猫+RC8 [20260719] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
 // display/branding version and does not change on every build; this constant
 // is for precise build-to-build comparison (e.g. future differential-update
 // tooling). Update this value whenever a new package zip is built.
-define('KSPHP_PLUS_BUILD', 'ksphp-plus-main-rc6-2026-07-19-01');
+define('KSPHP_PLUS_BUILD', 'ksphp-rc8-2026-07-20-01');
 
 /* Launch */
 
@@ -205,19 +235,25 @@ define('CURRENT_TIME', time() - $CONF['DIFFTIME'] * 60 * 60 + $CONF['DIFFSEC']);
 function script_run() {
 
     $CONF = &$GLOBALS['CONF'];
-    # Password setting page (bbsadmin.php)
+    # 20260720 Gikoneko: Admin password is no longer configured through this
+    # in-board flow (formerly Bbsadmin::prtsetpass()/prtpass()). It is now
+    # set up via a standalone tool (initially named _setup.php, renamed by
+    # the operator on first run) that writes ADMINPOST/ADMINKEY directly to
+    # local.php, outside of conf.php and outside install.php's view.
     if ($CONF['ADMINPOST'] == '') {
-        require_once(PHP_BBSADMIN);
-        $bbsadmin = new Bbsadmin();
-        $bbsadmin->procForm();
-        $bbsadmin->refcustom();
-        $bbsadmin->setusersession();
-        if (@$_POST['ad'] == 'ps') {
-            $bbsadmin->prtpass(@$_POST['ps']);
-        }
-        else {
-            $bbsadmin->prtsetpass();
-        }
+        header('Content-Type: text/html; charset=UTF-8');
+        echo '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">'
+            . '<title>' . htmlspecialchars($CONF['BBSTITLE'], ENT_QUOTES, 'UTF-8') . '</title></head><body>'
+            . '<p>管理パスワードが未設定です。'
+            . '設置時に配布された初期設定ツール（初期名: _setup.php。'
+            . '設置者が既に別名へ変更している場合はその名前）にアクセスして、'
+            . '管理パスワードを設定してください。</p>'
+            . '<p>Admin password is not set yet. Please access the setup tool '
+            . 'included at install time (initially named _setup.php; if you '
+            . 'already renamed it, use that name instead) to set the admin '
+            . 'password.</p>'
+            . '</body></html>';
+        exit();
     }
 
     # Admin/mod login page (GET: ?m=login)
@@ -408,6 +444,12 @@ function tripuse($key) {
                 // 他サイトのトリップ計算機と結果が完全一致しない可能性はあるが、
                 // mbstring不在による500エラーで投稿自体ができなくなるよりは
                 // 望ましいための代替措置（2026-07-19）。
+                // Fallback (iconv) for environments without mbstring. SJIS-win
+                // and CP932 differ in how they handle some characters (e.g.
+                // the wave dash), so the resulting trip may not exactly match
+                // other sites' trip calculators, but this is preferable to
+                // posting being entirely broken by a 500 error from a
+                // missing mbstring (2026-07-19).
                 $converted = @iconv('UTF-8', 'CP932//IGNORE', $key);
                 $key = ($converted !== false) ? $converted : $key;
             }
@@ -1162,6 +1204,9 @@ class Bbs extends Webapp {
 #20260719 Gikoneko: conf.php の GIKONEKO_TOISSHO（あり=1／なし=0）で
 #分岐できるようにした。旧処理（NO_UNREAD_MESSAGES表示）はGIKONEKO_TOISSHO=0の
 #場合のフォールバックとして残す。
+#20260719 Gikoneko: Made this branch on conf.php's GIKONEKO_TOISSHO
+#(1=on/0=off). The old behavior (showing NO_UNREAD_MESSAGES) is kept as
+#the fallback for GIKONEKO_TOISSHO=0.
             if ($this->c['GIKONEKO_TOISSHO']) {
 require_once("./gikoneko.php");
 
@@ -1613,6 +1658,11 @@ $msgmore = ob_get_clean();
             # 20260719 Gikoneko: loadmessage()（file()で全件配列化）ではなく、
             # "ff"分岐と同じFunc::fgetline()によるストリーム読みに統一。
             # 全件を配列で保持しないため、ログが大きいほどメモリ削減効果が出る。
+            # 20260719 Gikoneko: Unified this with the same
+            # Func::fgetline()-based stream reading used by the "ff" branch,
+            # instead of loadmessage() (which loads everything into an array
+            # via file()). Since the whole log is no longer held in memory
+            # at once, the memory savings grow with log size.
             $logfilename = $this->c['LOGFILENAME'];
             if (!file_exists($logfilename) and $this->ensurefile($logfilename)) {
                 $this->prtfilecreated(array(sprintf(T('FILE_AUTOCREATED'), $logfilename)));
@@ -1690,6 +1740,7 @@ $msgmore = ob_get_clean();
         $redirecturl = $this->c['CGIURL'];
 
         # Cookie消去
+        # Clear cookies
         if (@$this->f['cr']) {
             @$this->f['c'] = '';
             setcookie('c');
@@ -1944,6 +1995,7 @@ $msgmore = ob_get_clean();
 ################
 
 ########## 1 メイン処理
+########## 1 Main process
 
 function handleUser(&$message)
 {
@@ -1971,6 +2023,7 @@ function handleUser(&$message)
 }
 
 ###########  2 ユーザー解析
+###########  2 User parsing
 
 function parseUser($user)
 {
@@ -1978,6 +2031,7 @@ function parseUser($user)
     $copy = '';
 
     # ◆コピー分解
+    # Split off a raw ◆-copy (a pasted trip-like string, not a computed trip)
     if (strpos($user, '◆') !== false) {
 
         $parts = explode('◆', $user);
@@ -1989,6 +2043,7 @@ function parseUser($user)
     }
 
     # 通常トリップ
+    # Normal (computed) trip
     if (($pos = strpos($user,'#')) !== false) {
 
         $name = substr($user,0,$pos);
@@ -2008,6 +2063,7 @@ function parseUser($user)
 }
 
 ############ 3 admin判定
+############ 3 Admin detection
 
 function checkAdmin($name,$trip,$copy,&$message)
 {
@@ -2025,6 +2081,7 @@ function checkAdmin($name,$trip,$copy,&$message)
     }
     
     # ◆コピーがある場合は管理不可
+    # If a ◆-copy is present, admin status is not granted
     if ($copy !== '') {
         return false;
     }
@@ -2055,6 +2112,7 @@ function checkAdmin($name,$trip,$copy,&$message)
 }
 
 ########## 4 admin騙り検出
+########## 4 Admin-impersonation detection
 
 function checkAdminFraud($name)
 {
@@ -2072,6 +2130,7 @@ function checkAdminFraud($name)
 }
 
 ########### 5 固定ハンドル処理
+########### 5 Fixed-handle processing
 
 function convertHandle($name)
 {
@@ -2099,6 +2158,7 @@ function convertHandle($name)
 }
 
 ######### 6 表示組み立て
+######### 6 Building the display string
 
 function buildName($name,$trip,$copy)
 {
@@ -2106,6 +2166,7 @@ function buildName($name,$trip,$copy)
     $adminName = $this->c['ADMINNAME'] ?? '';
 
     # 管理パス + ◆コピー → 管理人騙り
+    # Admin password + ◆-copy → treat as admin impersonation
     if ($copy !== '' && $adminPost && crypt($name,$adminPost) === $adminPost) {
 
         $copy = str_replace('◆','◇',$copy);

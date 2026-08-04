@@ -65,12 +65,24 @@ $CONF = array(
   // * Administrator email address
   'ADMINMAIL' => 'admin@example.com',
   
-  // * 管理用パスワード（暗号化パスワード。最初は空にしておいてください）
-  // * Administor password (Encrypted password. Please leave this empty at first)
+  // * 20260720: RC8以降、このキーは不使用です（実際の値は使われません）。
+  //   管理用パスワードはlocal.php（固定名・newbbs/テンプレート非同梱）
+  //   に移動しました。設定・変更は初期設定ツール（初期名: _setup.php）
+  //   で行ってください。このキーは保守（旧バージョンとの構造互換性・
+  //   参照用）のため残しています。
+  // * 20260720: Unused from RC8 onward (this value has no effect). The
+  //   admin password now lives in local.php (fixed filename, not
+  //   included in the newbbs/ distribution template). Set/change it
+  //   using the setup tool (initially named _setup.php). This key is
+  //   kept here only for maintenance/structural-compatibility reasons.
   'ADMINPOST' => '',
 
-  // * 管理モード移行用キーワード（半角英数字、空の場合管理モードを使用できません）
-  // * The keyword for entering administrator mode (regular alphanumeric characters are recommended. If empty, administrator mode will be unavailable)
+  // * 20260720: RC8以降、このキーは不使用です（実際の値は使われません）。
+  //   管理モード移行キーワードもlocal.phpへ移動しました。詳細は
+  //   ADMINPOSTのコメントを参照してください。
+  // * 20260720: Unused from RC8 onward (this value has no effect). The
+  //   admin-mode entry keyword now lives in local.php as well. See the
+  //   ADMINPOST comment above for details.
   'ADMINKEY' => '',
 
   ## TL note: To enter admin mode after the bulletin board is up and running, put the adminkey (and only the adminkey) into the name and contents fields of the post form, then hit send.

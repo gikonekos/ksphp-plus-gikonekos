@@ -28,8 +28,8 @@ This program has originally been translated to English by [Anonymous-san at Stra
 2. Open and configure conf.php
 3. Upload the files to the server using an FTP client or similar (it's a good idea to create a dedicated directory so that it doesn't get mixed up with other files)
 4. Set the permissions as described in readme.md
-5. Open a web browser, access bbs.php, and set the administrator password
-6. Open your local conf.php file, paste the admin password generated in step 6 to 'ADMINPOST' => 'here' on line 36, then upload the file using your FTP client to overwrite it
+5. Open a web browser, access `_setup.php` (a standalone tool included in the package; it is not part of conf.php or install.php), and set the administrator password there. On completion, the tool renames itself to a name of your choosing (a hard-to-guess default is suggested) — make a note of the new name/URL, since you'll need it to change the password later.
+6. (No longer needed — the admin password is written directly by `_setup.php` into its own file, not into conf.php.)
 7. Open your web browser, go to bbs.php, and see if you can post
 8. Access the URL where the log files (bbs.log, files inside log/, etc.) are located using a web browser, and check if you can see it (if you can see it, please hide it with .htaccess, etc.)
 
@@ -259,17 +259,21 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
   no-store` will NOT be added to bbs.php. The occasional stale form
   content after posting then navigating back is accepted as a
   trade-off in favor of bfcache's faster "back" navigation.
-* (Noted 2026-07-19) `ADMINKEY` (admin post mode entry keyword) is
-  stored in conf.php in plaintext and matched via a plain string
-  comparison, unlike `ADMINPOST` which is a crypt hash. Security
-  concern acknowledged; keeping the feature as-is for now, but a
-  future version should consider hashing/comparing it the same way
-  as `ADMINPOST`.
-* (Concept only, 2026-07-19) Externalize admin secrets
-  (`ADMINPOST`/`ADMINKEY`) out of conf.php entirely, so they're
-  never touched by install.php's conf-merge process. See
-  doc/admin-secrets-concept-2026-07-19-01.txt for
-  details; maintainer decision needed before implementation.
+* (Noted 2026-07-19; still applies after the 2026-07-20 change below)
+  `ADMINKEY` (admin post mode entry keyword) is stored in plaintext
+  and matched via a plain string comparison, unlike `ADMINPOST` which
+  is a crypt/bcrypt hash. Security concern acknowledged; keeping the
+  feature as-is for now, but a future version should consider
+  hashing/comparing it the same way as `ADMINPOST`.
+* (Implemented 2026-07-20) Admin secrets (`ADMINPOST`/`ADMINKEY`) have
+  been moved out of conf.php entirely, into a fixed-name file
+  (`local.php`) that is not part of the newbbs/ distribution template
+  and is therefore never touched by install.php's conf-merge process.
+  They are set/changed via a standalone tool (initially named
+  `_setup.php`, renamed by the operator on first use) instead of
+  through conf.php or install.php. See
+  doc/admin-secrets-concept-2026-07-19-01.txt for the original design
+  discussion.
 
 ## Known Bugs:
 * Large number of \&nbsp; appearances when searching logs
