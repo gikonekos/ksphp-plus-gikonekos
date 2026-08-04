@@ -1,2 +1,108 @@
-# ksphp-plus-gikonekos
+# KSPHP Plus gikonekos Edition
+
 Unofficial KSPHP Plus derivative with multilingual support, web installer, JavaScript enhancements, and compatibility fixes.
+
+Original project:
+
+https://github.com/Heyuri/ksphp-plus/
+
+This repository contains modifications and extensions developed by gikonekos.
+
+---
+
+# English
+
+## About
+
+KSPHP Plus gikonekos Edition is an unofficial derivative version of KSPHP Plus.
+
+This edition is based on the original KSPHP Plus project and includes additional modifications and extensions.
+
+## Main Features
+
+* Multilingual support
+* Web-based installer
+* Improved installation process
+* JavaScript enhancements
+* PHP 8.x compatibility improvements
+* Bug fixes and compatibility improvements
+* Extended configuration options
+
+## Project Policy
+
+This repository is not an official KSPHP Plus project.
+
+The goals of this project are:
+
+* Preserving and extending KSPHP Plus
+* Improving compatibility with modern server environments
+* Providing an easier installation experience
+
+## Archive Directory
+
+The `archive/` directory contains historical development materials, old files, and testing files.
+
+These files are preserved as development history and are not intended to represent the current recommended version.
+
+Archive contents are preserved without modification whenever possible.
+
+## Developer
+
+gikonekos
+
+## Credits
+
+Original KSPHP Plus:
+
+[heyuri/ksphp-plus/](https://github.com/Heyuri/ksphp-plus/)
+
+---
+
+# 日本語
+
+## 概要
+
+KSPHP Plus gikonekos Edition は、KSPHP Plus をベースにした非公式派生版です。
+
+オリジナルのKSPHP Plusを尊重しつつ、現代のWeb環境で利用しやすくすることを目的として、独自の改良を加えています。
+
+## 主な変更点
+
+* 多言語対応
+* Webベースのインストーラー追加
+* 導入手順の簡略化
+* JavaScript による機能改善
+* PHP 8.x 環境への対応改善
+* 不具合修正および互換性改善
+* 設定項目の拡張
+
+## プロジェクト方針
+
+本リポジトリは、KSPHP Plus の公式リポジトリではありません。
+
+以下を目的としています。
+
+* KSPHP Plus の保存と発展
+* 現代のサーバー環境への対応
+* 利用者が導入しやすい配布形態の提供
+
+## archive ディレクトリについて
+
+`archive/` には、開発過程で作成された旧ファイル、検証用ファイル、開発資料などが保存されています。
+
+これらは開発履歴を保存するための資料であり、現在利用する推奨版ではありません。
+
+アーカイブ内容は履歴資料として扱い、可能な限り変更せず保存します。
+
+## 開発者
+
+gikonekos
+
+## 謝辞
+
+Original KSPHP Plus:
+
+[heyuri/ksphp-plus/](https://github.com/Heyuri/ksphp-plus/)
+
+
+KSPHP Plus の開発者および関係者の方々に感謝します。
