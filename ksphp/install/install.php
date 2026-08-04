@@ -273,7 +273,8 @@ function ksphp_parse_module_array(string $content, string $global_var_name): arr
 
 	$values = array();
 	foreach ($scan['entries'] as $entry) {
-		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $entry, $em)) {
+		$entry_split = ksphp_conf_entry_split_lead_comments($entry);
+		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $entry_split['code'], $em)) {
 			$values[$em[2]] = $em[3];
 		}
 	}
@@ -336,15 +337,96 @@ function ksphp_is_manual_path_key(string $key): bool {
 }
 
 /**
+ * エントリ文字列の先頭から連続する空白・コメント（// # /* * /）を
+ * 読み飛ばし、実コード（'KEY' => ...）が始まるバイト位置を返す。
+ * ksphp_scan_array_block() と同じコメント判定ロジックを使う。
+ *
+ * 【20260801 root-cause fix】ksphp_conf_parse_entries() が返す1エントリ
+ * には、直前に置かれたコメント（旧デフォルト例など）がそのまま含まれる
+ * ことがある。そのコメント内に別キーの 'KEY' => パターンがあると、
+ * 後段のキー抽出用正規表現（非貪欲 .*?）がコメント側を実キーと誤認識
+ * していた。エントリ先頭の「コメントだけの行」を切り離してから
+ * キー抽出することで、これを避ける。
+ */
+function ksphp_conf_entry_code_start(string $entry): int {
+	$len = strlen($entry);
+	$pos = 0;
+	while ($pos < $len) {
+		$save = $pos;
+		while ($pos < $len && ctype_space($entry[$pos])) { $pos++; }
+		if ($pos < $len && $entry[$pos] === '/' && $pos + 1 < $len && $entry[$pos + 1] === '/') {
+			$nl = strpos($entry, "\n", $pos);
+			$pos = ($nl === false) ? $len : $nl + 1;
+			continue;
+		}
+		if ($pos < $len && $entry[$pos] === '#') {
+			$nl = strpos($entry, "\n", $pos);
+			$pos = ($nl === false) ? $len : $nl + 1;
+			continue;
+		}
+		if ($pos < $len && $entry[$pos] === '/' && $pos + 1 < $len && $entry[$pos + 1] === '*') {
+			$end = strpos($entry, '*/', $pos + 2);
+			$pos = ($end === false) ? $len : $end + 2;
+			continue;
+		}
+		if ($pos === $save) {
+			break;
+		}
+	}
+	return $pos;
+}
+
+/**
+ * エントリ文字列を「先頭の連続コメント（そのまま保持する）」と
+ * 「実コード部分（キー抽出用の正規表現に渡す部分）」に分割する。
+ */
+function ksphp_conf_entry_split_lead_comments(string $entry): array {
+	$start = ksphp_conf_entry_code_start($entry);
+	return array('lead_comments' => substr($entry, 0, $start), 'code' => substr($entry, $start));
+}
+
+/**
+ * エントリの先頭コメント（ksphp_conf_entry_split_lead_comments()の
+ * lead_comments）から、レビュー画面のヘルプテキストとして表示する
+ * 原文（日本語＋英語、conf.php記述のまま）を作る。
+ *
+ * 【20260801】多言語UI（7言語）向けの翻訳は行わない（原文をそのまま表示し、
+ * 閲覧者側のブラウザ翻訳機能に委ねる方針）。フル翻訳の実装は
+ * doc/README.md のToDoに記録し、次回以降の課題とする。
+ * 罫線（#---...---）・翻訳者向けメモ（## TL note: ...）は表示から除外する。
+ */
+function ksphp_conf_entry_comment_text(string $lead_comments): string {
+	$lines = preg_split('/\r\n|\r|\n/', $lead_comments);
+	$out = array();
+	foreach ($lines as $line) {
+		$line = trim($line);
+		if ($line === '' || strpos($line, '##') === 0) {
+			continue;
+		}
+		$line = preg_replace('#^/\*+\s*#', '', $line);
+		$line = preg_replace('#\s*\*+/$#', '', $line);
+		$line = preg_replace('#^//\s*#', '', $line);
+		$line = preg_replace('/^#+\s*/', '', $line);
+		$line = trim($line);
+		if ($line === '' || preg_match('/^-+$/', $line) || preg_match('/^-{2,}.*-{2,}$/', $line)) {
+			continue;
+		}
+		$out[] = $line;
+	}
+	return implode(' / ', $out);
+}
+
+/**
  * 1エントリ（'KEY' => 値, ）を、値を空文字列にし、末尾に「要手動設定」
  * である旨のコメントを付けた形へ差し替える。ksphp_is_manual_path_key()
  * が対象とするキーの新規追加時に使う。
  */
 function ksphp_conf_entry_blank_for_manual_setup(string $entry): string {
-	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/s', $entry, $m)) {
+	$split = ksphp_conf_entry_split_lead_comments($entry);
+	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/s', $split['code'], $m)) {
 		return $entry;
 	}
-	return $m[1] . "'" . $m[2] . "'" . $m[3] . "''" . ', // ' . T('PATH_KEY_MANUAL_NOTE') . $m[5];
+	return $split['lead_comments'] . $m[1] . "'" . $m[2] . "'" . $m[3] . "''" . ', // ' . T('PATH_KEY_MANUAL_NOTE') . $m[5];
 }
 
 /**
@@ -352,10 +434,11 @@ function ksphp_conf_entry_blank_for_manual_setup(string $entry): string {
  * 差し替える。リード部・トレイル部（コメント等）はそのまま残す。
  */
 function ksphp_conf_entry_with_value(string $entry, string $raw_value): string {
-	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/s', $entry, $m)) {
+	$split = ksphp_conf_entry_split_lead_comments($entry);
+	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/s', $split['code'], $m)) {
 		return $entry;
 	}
-	return $m[1] . "'" . $m[2] . "'" . $m[3] . $raw_value . ',' . $m[5];
+	return $split['lead_comments'] . $m[1] . "'" . $m[2] . "'" . $m[3] . $raw_value . ',' . $m[5];
 }
 
 /**
@@ -364,10 +447,11 @@ function ksphp_conf_entry_with_value(string $entry, string $raw_value): string {
  * 新版（テンプレート）側のものをそのまま残す。
  */
 function ksphp_conf_merge_entry(string $new_entry, ?string $old_entry): array {
-	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/s', $new_entry, $m)) {
+	$new_split = ksphp_conf_entry_split_lead_comments($new_entry);
+	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/s', $new_split['code'], $m)) {
 		return array('text' => $new_entry, 'key' => null);
 	}
-	$lead = $m[1];
+	$lead = $new_split['lead_comments'] . $m[1];
 	$key  = $m[2];
 	$sep  = $m[3];
 	$new_val = $m[4];
@@ -376,7 +460,8 @@ function ksphp_conf_merge_entry(string $new_entry, ?string $old_entry): array {
 	if ($old_entry === null) {
 		return array('text' => $new_entry, 'key' => $key, 'is_new' => true);
 	}
-	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $old_entry, $om)) {
+	$old_split = ksphp_conf_entry_split_lead_comments($old_entry);
+	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $old_split['code'], $om)) {
 		// 旧エントリは存在するのに値の切り出しに失敗した場合。
 		// 「本当に新規キーで旧設定が無い」ケースと区別し、呼び出し側で
 		// 「マージ失敗・要確認」として明示的にログへ残せるようにする。
@@ -432,7 +517,8 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 
 	$old_by_key = array();
 	foreach ($old_parsed['entries'] as $oe) {
-		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/s', $oe, $om)) {
+		$oe_split = ksphp_conf_entry_split_lead_comments($oe);
+		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/s', $oe_split['code'], $om)) {
 			$old_by_key[$om[2]] = $oe;
 		}
 	}
@@ -444,7 +530,8 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 	$seen = array();
 	$merged_entries = array();
 	foreach ($new_parsed['entries'] as $entry) {
-		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/s', $entry, $km)) {
+		$entry_split = ksphp_conf_entry_split_lead_comments($entry);
+		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/s', $entry_split['code'], $km)) {
 			$key = $km[2];
 			$seen[$key] = true;
 			$old_entry = isset($old_by_key[$key]) ? $old_by_key[$key] : null;
@@ -538,6 +625,12 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?str
 /**
  * 真偽値(0/1)キー一覧。値はnull（汎用ラベルCONF_BOOL_DISABLED/
  * CONF_BOOL_ENABLEDを使う）、またはarray(offラベルキー, onラベルキー)。
+ *
+ * 【20260801 UI改善】実機フィードバック（checkboxは分かりにくい）を受け、
+ * レビュー画面では他の真偽値と同様に2択のラジオボタンとして表示する
+ * （ksphp_conf_field_type()側でtype='radio'、options={'0':off,'1':on}に
+ * 変換）。この一覧自体は「真偽値キーかどうか」の判定リストとしての
+ * 役割は変わらない。
  */
 function ksphp_conf_checkbox_keys(): array {
 	static $keys = array(
@@ -601,12 +694,37 @@ function ksphp_conf_regex_list_keys(): array {
 	return $keys;
 }
 
+/**
+ * 「パス指定は弄らない」対象キー（ksphp_is_manual_path_key()）のうち、
+ * conf.php自身のコメントで「空欄の場合は当該機能を無効化する」と
+ * 明記されているもの一覧。これらは値が空でも正当な設定として扱い、
+ * 確認画面で必須項目としない。
+ *
+ * 【20260801 実機フィードバック】ZIPDIRが誤って必須項目として弾かれる
+ * バグを受けての対応。同じ理由でOLDLOGFILEDIR（過去ログ保存無効化）・
+ * CNTFILENAME（リアルタイム参加者カウント機能無効化）もconf.php本文の
+ * コメントに明記されているため対象に含めた。他の手動パス系キー
+ * （LOGFILENAME・COUNTFILE・GIKONEKO_KOTOBA_FILE・UPLOADDIR・
+ * UPLOADIDFILE）にはそのような記述がないため、引き続き必須のまま。
+ */
+function ksphp_conf_optional_manual_path_keys(): array {
+	static $keys = array(
+		'OLDLOGFILEDIR' => true,
+		'ZIPDIR'        => true,
+		'CNTFILENAME'   => true,
+	);
+	return $keys;
+}
+
 /** 確認画面で必須項目として扱うキー（空欄ならエラー）。 */
 function ksphp_conf_is_required_key(string $key): bool {
 	if ($key === 'BBSTITLE') {
 		return true;
 	}
-	return ksphp_is_manual_path_key($key);
+	if (ksphp_is_manual_path_key($key)) {
+		return !isset(ksphp_conf_optional_manual_path_keys()[$key]);
+	}
+	return false;
 }
 
 /**
@@ -633,7 +751,14 @@ function ksphp_conf_field_type(string $key, string $raw_value): array {
 
 	$checkbox_keys = ksphp_conf_checkbox_keys();
 	if (array_key_exists($key, $checkbox_keys)) {
-		return array('type' => 'checkbox', 'labels' => $checkbox_keys[$key]);
+		$label_keys = $checkbox_keys[$key] ?? array('CONF_BOOL_DISABLED', 'CONF_BOOL_ENABLED');
+		return array(
+			'type' => 'radio',
+			'options' => array(
+				'0' => $label_keys[0],
+				'1' => $label_keys[1],
+			),
+		);
 	}
 	$radio_keys = ksphp_conf_radio_keys();
 	if (array_key_exists($key, $radio_keys)) {
@@ -698,7 +823,7 @@ function ksphp_conf_build_list_value(array $lines): string {
 /** 確認画面のフォームへ表示する初期値文字列（表示用に整形済み）を返す。 */
 function ksphp_conf_review_display_value(string $raw, string $type): string {
 	$trimmed = trim($raw);
-	if ($type === 'checkbox' || $type === 'radio') {
+	if ($type === 'radio') {
 		return trim($trimmed, "'\" \t");
 	}
 	if ($type === 'list') {
@@ -726,7 +851,8 @@ function ksphp_conf_build_review(string $old_conf_path, string $new_template_pat
 	if ($old_content !== false) {
 		$old_parsed = ksphp_conf_parse_entries($old_content);
 		foreach ($old_parsed['entries'] as $oe) {
-			if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/s', $oe, $om)) {
+			$oe_split = ksphp_conf_entry_split_lead_comments($oe);
+			if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>/s', $oe_split['code'], $om)) {
 				$old_by_key[$om[2]] = true;
 			}
 		}
@@ -734,7 +860,8 @@ function ksphp_conf_build_review(string $old_conf_path, string $new_template_pat
 
 	$fields = array();
 	foreach ($parsed['entries'] as $entry) {
-		if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $entry, $m)) {
+		$entry_split = ksphp_conf_entry_split_lead_comments($entry);
+		if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $entry_split['code'], $m)) {
 			continue;
 		}
 		$key = $m[2];
@@ -747,10 +874,6 @@ function ksphp_conf_build_review(string $old_conf_path, string $new_template_pat
 			continue;
 		}
 
-		$labels = array('off' => T('CONF_BOOL_DISABLED'), 'on' => T('CONF_BOOL_ENABLED'));
-		if (isset($type_info['labels']) && $type_info['labels'] !== null) {
-			$labels = array('off' => T($type_info['labels'][0]), 'on' => T($type_info['labels'][1]));
-		}
 		$options = null;
 		if (isset($type_info['options'])) {
 			$options = array();
@@ -760,13 +883,13 @@ function ksphp_conf_build_review(string $old_conf_path, string $new_template_pat
 		}
 
 		$fields[] = array(
-			'key'      => $key,
-			'type'     => $type_info['type'],
-			'value'    => ksphp_conf_review_display_value($raw, $type_info['type']),
-			'required' => ksphp_conf_is_required_key($key),
-			'is_new'   => !isset($old_by_key[$key]),
-			'options'  => $options,
-			'labels'   => $labels,
+			'key'         => $key,
+			'type'        => $type_info['type'],
+			'value'       => ksphp_conf_review_display_value($raw, $type_info['type']),
+			'required'    => ksphp_conf_is_required_key($key),
+			'is_new'      => !isset($old_by_key[$key]),
+			'options'     => $options,
+			'description' => ksphp_conf_entry_comment_text($entry_split['lead_comments']),
 		);
 	}
 
@@ -788,7 +911,8 @@ function ksphp_conf_apply_review(string $merged_content, array $overrides): arra
 	$regex_list_keys = ksphp_conf_regex_list_keys();
 
 	foreach ($parsed['entries'] as $entry) {
-		if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $entry, $m)) {
+		$entry_split = ksphp_conf_entry_split_lead_comments($entry);
+		if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/s', $entry_split['code'], $m)) {
 			$new_entries[] = $entry;
 			continue;
 		}
@@ -803,12 +927,6 @@ function ksphp_conf_apply_review(string $merged_content, array $overrides): arra
 		$field = ksphp_conf_field_type($key, $current_raw);
 		$submitted = $overrides[$key];
 		$required = ksphp_conf_is_required_key($key);
-
-		if ($field['type'] === 'checkbox') {
-			$raw = ($submitted === '1' || $submitted === 1 || $submitted === true) ? '1' : '0';
-			$new_entries[] = ksphp_conf_entry_with_value($entry, $raw);
-			continue;
-		}
 
 		if ($field['type'] === 'radio') {
 			// PHPは連想配列の'0'/'1'/'2'のような数値文字列キーを自動的に
@@ -1482,6 +1600,7 @@ function h(string $s): string {
 	#conf-review-panel { border:2px solid #ffcf5c; background:#003030; padding:0.75em 1em; margin:0.75em 0; }
 	.conf-review-table th { vertical-align:top; white-space:nowrap; }
 	.conf-review-table td textarea, .conf-review-table td input[type="text"] { background:#002828; color:#efefef; border:1px solid #007f7f; font-family:inherit; }
+	.conf-desc { font-weight:normal; font-size:0.85em; color:#9fdada; margin-top:0.2em; white-space:normal; }
 	tr.conf-required th { background:#3a2a00; }
 	.req-star { color:#ffcf5c; font-weight:bold; }
 	.new-tag { color:#8cff8c; font-size:0.85em; }
@@ -1726,12 +1845,9 @@ function renderConfReviewForm(fields) {
 	fields.forEach(function (f) {
 		var reqMark = f.required ? ' <span class="req-star">*</span>' : '';
 		var newTag = f.is_new ? ' <span class="new-tag">' + escapeHtml(L('CONF_REVIEW_NEW_KEY_TAG')) + '</span>' : '';
-		html += '<tr class="' + (f.required ? 'conf-required' : '') + '"><th>' + escapeHtml(f.key) + reqMark + newTag + '</th><td>';
-		if (f.type === 'checkbox') {
-			var checked = (String(f.value) === '1') ? ' checked' : '';
-			html += '<label><input type="checkbox" class="conf-field" data-key="' + escapeHtml(f.key) + '" data-type="checkbox"' + checked + '> '
-				+ escapeHtml(f.labels.on) + ' / ' + escapeHtml(f.labels.off) + '</label>';
-		} else if (f.type === 'radio') {
+		var descHtml = f.description ? '<div class="conf-desc">' + escapeHtml(f.description) + '</div>' : '';
+		html += '<tr class="' + (f.required ? 'conf-required' : '') + '"><th>' + escapeHtml(f.key) + reqMark + newTag + descHtml + '</th><td>';
+		if (f.type === 'radio') {
 			(f.options || []).forEach(function (opt) {
 				var checked = (String(f.value) === String(opt.value)) ? ' checked' : '';
 				html += '<label style="display:block"><input type="radio" class="conf-field" name="conf-radio-' + escapeHtml(f.key) + '" data-key="' + escapeHtml(f.key) + '" data-type="radio" value="' + escapeHtml(opt.value) + '"' + checked + '> ' + escapeHtml(opt.label) + '</label>';
@@ -1754,10 +1870,7 @@ function renderConfReviewForm(fields) {
 function collectConfOverrides(fields) {
 	var overrides = {};
 	fields.forEach(function (f) {
-		if (f.type === 'checkbox') {
-			var el = document.querySelector('.conf-field[data-key="' + f.key + '"][data-type="checkbox"]');
-			overrides[f.key] = (el && el.checked) ? '1' : '0';
-		} else if (f.type === 'radio') {
+		if (f.type === 'radio') {
 			var el = document.querySelector('.conf-field[data-key="' + f.key + '"][data-type="radio"]:checked');
 			overrides[f.key] = el ? el.value : String(f.value || '0');
 		} else {

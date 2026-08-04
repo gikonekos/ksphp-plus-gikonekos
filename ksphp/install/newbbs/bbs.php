@@ -50,7 +50,7 @@ if (file_exists($ksphp_local_secrets_file)) {
 unset($ksphp_local_secrets_file, $ksphp_local_secrets);
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '擬古猫+RC10 [20260801] (Heyuri, ヶ, ＠Links, 擬古猫)';
+$CONF['VERSION'] = '擬古猫+RC11 [20260801] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
@@ -2532,8 +2532,32 @@ if ($result === 3) {
                 }
                 #20260719 Gikoneko: auto-create the old-log directory/file on first use
                 #(mirrors the 20260717 LOGFILENAME auto-create pattern in putmessage())
+                #20260801 Gikoneko: only show the "newly created" notice when this
+                #looks like a genuinely first-time setup (no other old-log files
+                #exist yet in the directory). Routine daily/monthly rotation --
+                #the normal case, where past-period files already exist -- creates
+                #a new dated file at every period boundary; showing the notice on
+                #every such occasion surprised viewers into thinking something had
+                #gone wrong. A directory-listing check (any other *.$oldlogext file
+                #already present) is used instead of a stricter date calculation,
+                #since it is enough to distinguish "brand new setup" from "routine
+                #rotation" without needing to reason about calendar boundaries.
                 if (!file_exists($oldlogfilename) and $this->ensurefile($oldlogfilename)) {
-                    $this->prtfilecreated(array(sprintf(T('FILE_AUTOCREATED'), $oldlogfilename)));
+                    $has_other_oldlogs = FALSE;
+                    $dh_check = @opendir($dir);
+                    if ($dh_check) {
+                        while ($entry_check = readdir($dh_check)) {
+                            if ($entry_check !== basename($oldlogfilename)
+                                and preg_match("/\.$oldlogext$/", $entry_check)) {
+                                $has_other_oldlogs = TRUE;
+                                break;
+                            }
+                        }
+                        closedir($dh_check);
+                    }
+                    if (!$has_other_oldlogs) {
+                        $this->prtfilecreated(array(sprintf(T('FILE_AUTOCREATED'), $oldlogfilename)));
+                    }
                 }
                 $fh = @fopen($oldlogfilename, "ab");
                 if (!$fh) {

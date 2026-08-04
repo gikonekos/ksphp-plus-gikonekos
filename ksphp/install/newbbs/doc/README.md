@@ -257,15 +257,54 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
   during migration -- checkbox/radio/list/text fields pre-filled from
   the automatic merge, required-field highlighting, server-side
   validation with per-file rollback, opt-out personal toggle
-  (default ON), full 7-language translations. Follow-up items not yet
-  done, requested after live testing on qptns.com: (1) convert all
-  checkboxes to radio buttons (found confusing in live use), (2)
-  ZIPDIR (and similar manual-path keys where blank is a valid
-  "feature disabled" state) is currently wrongly marked required --
-  needs fixing, (3) root-cause fix for the
-  ksphp_conf_parse_entries() entry-boundary parser bug found during
-  testing (see Known Bugs) -- currently only defended against, not
-  fixed. This follow-up work is planned to ship as a future revision.
+  (default ON), full 7-language translations.
+* (Implemented 2026-08-01) Follow-up UI fixes requested after live
+  testing on qptns.com: (1) all former checkboxes (boolean 0/1 keys)
+  now render as a 2-option radio group instead, for consistency with
+  the existing 3-option radio keys and to address "checkbox was
+  confusing" feedback; (2) ZIPDIR, OLDLOGFILEDIR, and CNTFILENAME are
+  no longer marked required in the review screen -- conf.php's own
+  comments document blank as a valid "feature disabled" state for
+  these three (verified by reading each manual-path key's actual
+  comment text; the other manual-path keys -- LOGFILENAME, COUNTFILE,
+  GIKONEKO_KOTOBA_FILE, UPLOADDIR, UPLOADIDFILE -- have no such
+  comment and remain required).
+* (Fixed 2026-08-01, root cause) `ksphp_conf_parse_entries()`
+  entry-boundary parser bug (see Known Bugs for the original report):
+  the key-extraction step across `ksphp_conf_merge()`,
+  `ksphp_conf_build_review()`, `ksphp_conf_apply_review()`, and
+  `ksphp_parse_module_array()` now strips an entry's *leading*
+  comment lines (via a new `ksphp_conf_entry_split_lead_comments()`
+  helper) before running the key-name regex, so a commented-out
+  example containing its own `'KEY' => ...` no longer gets
+  mis-attributed as the following real key. The original comment
+  text is preserved verbatim in the written-out conf.php (only the
+  internal key-matching input is affected, never the output). The
+  install.php-side defensive fallback (forcing such fields to
+  uneditable "raw" display) is superseded by this fix but left in
+  place as a safety net. Verified against the reported
+  HOSTNAME_POSTDENIED/TMPL_MSG/TMPL_ENVLIST case, a
+  CHECKCOUNT/MINPOSTSEC/MAXPOSTSEC sequence, and a HANDLENAMES-style
+  nested-array entry (regression check for the outer-key detection
+  the non-greedy match relies on).
+* (Implemented 2026-08-01) conf.php review screen now shows each
+  setting's own comment text (conf.php already carries paired
+  Japanese/English comments per key) as a help line under the key
+  name in the review table, via a new
+  `ksphp_conf_entry_comment_text()` helper. Decorative section-header
+  dividers (`#---- ... ----`) and translator-only notes (`## TL
+  note: ...`) are filtered out. Deliberately scoped light: the text
+  shown is the conf.php source comment as-is (Japanese + English),
+  not translated into the install UI's other 5 languages -- relies
+  on the reader's browser translation feature for those. Full
+  per-key translation into all 7 install-UI languages (~98 keys) was
+  discussed and deferred as a separate, heavier future task (see
+  further down this list).
+* Not yet started: full 7-language translation of each conf.php key's
+  help text (currently Japanese/English source text only, see above).
+  Scope is roughly 98 keys; would need new `install/language/*.txt`
+  keys (e.g. `CONF_HELP_<KEY>`) for Korean, Portuguese, Turkish,
+  zh-hans, zh-hant.
 * (Implemented 2026-08-01, client-side JS) Community feature requests
   raised on the board -- LaTeX math rendering (`$E=mc^2$` style,
   newbbs/js/latexrender.js, loads KaTeX from a CDN only when the
@@ -327,26 +366,33 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
 
 ## Known Bugs:
 * Large number of \&nbsp; appearances when searching logs
-* (Found 2026-08-01 during install.php conf-review testing)
-  ksphp_conf_parse_entries()'s entry-boundary scanner mis-attributes
-  a key when it's immediately preceded by a commented-out example
-  containing a quoted 'KEY' => -looking string (e.g.
-  HOSTNAME_POSTDENIED after commented TMPL_MSG/TMPL_ENVLIST,
-  CHECKCOUNT/MINPOSTSEC/MAXPOSTSEC after their own commented
-  examples) -- the wrong key ends up "owning" a blob that includes
-  the real key's array/value. Currently only defended against in the
-  new conf-review screen (such entries are excluded from editing,
-  not fixed at the root); the underlying automatic conf-merge has
-  carried this latent quirk since before this session. Root-cause fix
-  planned for a future revision.
-* (Confirmed live on qptns.com 2026-08-01) install.php's conf-review
-  screen wrongly marks ZIPDIR as a required field; an empty ZIPDIR is
-  actually a valid setting meaning "don't create a zip log". Needs
-  fixing.
-* ZIPLOG's "file didn't exist, so it was created" notice shows on
-  every first post of a new day/month (routine automatic log
-  rotation), which surprises viewers -- it should only show for
-  genuinely unexpected/non-routine creation.
+* (Found 2026-08-01 during install.php conf-review testing; fixed
+  2026-08-01, root cause -- see ToDo) ksphp_conf_parse_entries()'s
+  entry-boundary scanner mis-attributed a key when it was immediately
+  preceded by a commented-out example containing a quoted 'KEY' =>
+  -looking string (e.g. HOSTNAME_POSTDENIED after commented
+  TMPL_MSG/TMPL_ENVLIST, CHECKCOUNT/MINPOSTSEC/MAXPOSTSEC after their
+  own commented examples). Fixed by stripping leading comment lines
+  before key-name matching in all four call sites
+  (ksphp_conf_merge(), ksphp_conf_build_review(),
+  ksphp_conf_apply_review(), ksphp_parse_module_array()); the
+  install.php-side defensive "raw" fallback for such entries remains
+  in place as a safety net but should no longer trigger in practice.
+* (Confirmed live on qptns.com 2026-08-01; fixed 2026-08-01 -- see
+  ToDo) install.php's conf-review screen wrongly marked ZIPDIR as a
+  required field; an empty ZIPDIR is actually a valid setting meaning
+  "don't create a zip log". Fixed, along with the same issue on
+  OLDLOGFILEDIR and CNTFILENAME (same "blank = feature disabled"
+  pattern, confirmed via their own conf.php comments).
+* (Implemented 2026-08-01) The "file didn't exist, so it was
+  created" auto-create notice for the daily/monthly old-log rotation
+  file now only shows on a genuine first-time setup (no other
+  same-extension old-log file present yet in OLDLOGFILEDIR). Routine
+  rotation -- a new dated file appearing at each day/month boundary
+  while past files already exist -- no longer triggers the notice.
+  Deliberately scoped light: a directory-listing check (does any
+  other old-log file already exist) rather than a calendar/date
+  calculation of "is this the first post of the period".
 
 
 
