@@ -1,0 +1,99 @@
+KuzuhaScriptPHP+ (ksphp-plus) 安装指南
+适用范围：帖子链接图片缩略图功能（js/imgthumb.js）／
+          JavaScript多语言支持（window.KSPHP_LANG）
+时间格式：ISO 8601（精确到分钟），时区为UTC
+创建时间：2026-07-17T05:05 UTC
+
+============================================================
+【本压缩包包含内容】
+------------------------------------------------------------
+这是与完整论坛脚本包分开的差异包，仅包含本次新增／修改的
+文件。文件夹结构保持原样（sub/, js/, language/, doc/）。
+
+  bbs.php                      … 新增供JS使用的语言数据输出处理
+  sub/template.html            … 新增<script>加载／嵌入标签
+  js/imgthumb.js               … 新增：帖子链接图片缩略图显示
+  js/ayashiibreaker.js         … 多语言支持化（改动）
+  js/upthumb.js                … 多语言支持化（改动）
+  js/vanish.js                 … 多语言支持化（改动，含判断逻辑的漏洞修复）
+  js/admin.js                  … 多语言支持化（改动）
+  language/english.txt         … 新增键
+  language/japanese.txt        … 新增键
+  doc/changelog-2026-07-16-01.txt … 合并后的changelog（含本次内容）
+  doc/CSScheck.txt             … 上次CSS调查报告（作为参考附带）
+  安装指南.txt                  … 本文件
+
+  ※language/*.txt是由现有论坛脚本端与JS端共同引用的单一文件。
+    文件并未按端分开。
+
+============================================================
+【1. 帖子链接图片缩略图功能（js/imgthumb.js）】
+------------------------------------------------------------
+当帖子正文中的URL指向实际存在的图片文件（默认支持的扩展名为
+jpg/jpeg/png/gif/webp/bmp/avif/svg）时，会在该URL右侧自动
+显示缩略图。
+
+  ・这是与现有js/upthumb.js（针对特定上传工具的已知目录结构）
+    相互独立的另一个文件。两者可以同时启用。
+  ・在显示前会通过HEAD请求确认URL确实存在且Content-Type为
+    image/*（不仅仅根据扩展名判断）。
+  ・会在发帖表单旁边（与现有"Uploader thumbnails"同一行）添加
+    "Link thumbnails"复选框。开启／关闭状态保存在浏览器的
+    localStorage中，不会发送到服务器。
+  ・目标扩展名的筛选，通过个人环境设置界面（?setup=1）中自动
+    添加的复选框组进行。默认全部勾选。这也仅保存于localStorage，
+    不包含在设置表单的提交内容中。
+
+  【安装步骤】
+  1. 将 js/imgthumb.js 放入 js/ 目录。
+  2. 替换 sub/template.html（<head>内的脚本加载部分已添加了
+     <script src="js/imgthumb.js" defer></script> 一行）。
+  3. 替换 bbs.php（包含下文所述的window.KSPHP_LANG嵌入处理）。
+  4. 替换 language/english.txt・language/japanese.txt（已新增
+     12个键，未改动现有键）。
+  无需特殊设置。只需放置文件即可生效。
+
+============================================================
+【2. JavaScript多语言支持（window.KSPHP_LANG）】
+------------------------------------------------------------
+迄今为止，论坛本体（PHP模板）已通过语言文件（language/*.txt）
+实现多语言支持，但js/下各脚本中的文字（按钮标签等）不在此
+范围内，一直以固定文字显示。
+
+本次在bbs.php端新增了将语言文件内容转换为JSON、并在HTML的
+<head>内、其他脚本之前
+
+    <script>window.KSPHP_LANG = { ... };</script>
+
+的形式嵌入的机制。这样一来，js/下的脚本便可以通过
+
+    window.KSPHP_LANG.键名
+
+的形式，直接引用language/*.txt中定义的文字。
+（例：window.KSPHP_LANG.MAKE_LINE_BREAKS_BTN）
+
+  【本次已适配该机制的文件】
+  js/ayashiibreaker.js, js/upthumb.js, js/imgthumb.js, js/vanish.js,
+  js/admin.js 共5个文件。
+
+  【今后为新的JS文件添加多语言支持时】
+  1. 在language/english.txt・language/japanese.txt中添加键，以及
+     对应的日语／英语文字（按照现有键值格式，以KEY=值的单行形式）。
+  2. 在JS文件中引用 `window.KSPHP_LANG.键名`。为应对尚未加载完成
+     的情况，建议按
+     `(window.KSPHP_LANG && window.KSPHP_LANG.键名) || "默认值"`
+     的形式准备后备值。
+  3. 无需修改服务器端（PHP）（window.KSPHP_LANG会在所有页面
+     自动输出）。
+
+============================================================
+【已确认动作事项】
+------------------------------------------------------------
+- 全部PHP文件：经php -l确认无语法错误
+- 全部JS文件（改动及新增部分）：经node --check确认无语法错误
+- language/english.txt・language/japanese.txt：键数一致（216个），
+  无重复键
+- 已在论坛主页・过去日志搜索・树状视图・管理员登录（GET/POST）・
+  个人设置界面・管理菜单的所有路径下确认：在日语、英语两种
+  LANGUAGE_FILE设置下均返回HTTP 200，不残留{PLACEHOLDER}渲染痕迹，
+  window.KSPHP_LANG以有效的JSON形式输出。

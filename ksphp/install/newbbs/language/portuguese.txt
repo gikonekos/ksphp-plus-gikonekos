@@ -1,0 +1,372 @@
+# ksphp-plus language file (Portuguese / Português)
+# Format: KEY=value  (no spaces around "=" -- anything after "=" is taken
+# literally, including leading/trailing spaces, up to end of line)
+# Lines starting with "#" or ";" are comments. Blank lines are ignored.
+# Encoding: UTF-8, no BOM.
+# Placeholders like {MAXNAMELENGTH} are substituted by the script and must
+# be kept as-is (same spelling, including the curly braces).
+
+# Service / access
+BBS_OUT_OF_SERVICE=Este fórum está fora de serviço no momento.
+ACCESS_PROHIBITED=O acesso é proibido.
+
+# Generic / IO errors
+FAILED_TO_READ_MESSAGE=Falha ao ler a mensagem
+FILE_AUTOCREATED=%s não foi encontrado, então foi criado agora.
+FAILED_TO_OPEN_LOG=Falha ao abrir o arquivo de log: %s
+FAILED_TO_OUTPUT_LOG=Falha ao gravar o log de mensagens
+OLDLOG_TOO_LARGE=O arquivo de log de mensagens excede o limite de tamanho
+PARTICIPANT_FILE_ERROR=Erro ao gravar o arquivo de participantes
+
+# Posting / validation
+POSTING_SUSPENDED=A função de postagem deste fórum está suspensa no momento.
+ADMIN_ONLY_POSTING=Somente administradores podem postar neste fórum.
+ADMIN_POST_DISABLED=O acesso de administrador pelo formulário de postagem está desativado. Use o link Administrar.
+BAD_REFERER=Não é possível postar a partir de URLs diferentes de
+POST_TOO_WIDE=Há caracteres demais no conteúdo da postagem.
+POST_TOO_MANY_LINES=Há quebras de linha demais no conteúdo da postagem.
+POST_TOO_LARGE=O conteúdo da postagem é grande demais.
+NAME_TOO_LONG=Há caracteres demais no campo de nome. (Até %s caracteres)
+EMAIL_TOO_LONG=Há caracteres demais no campo de e-mail. (Até %s caracteres)
+TITLE_TOO_LONG=Há caracteres demais no campo de título. (Até %s caracteres)
+POST_TOO_FAST=O intervalo entre postagens é curto demais. Tente novamente.
+NGWORD_FOUND=A postagem contém palavras proibidas.
+SPAM_KUN=SPAM-KUN, FORA DAQUI!!!
+
+# Caller / request
+INVALID_CALLER=Chamada inválida.
+NO_PARAMETERS=Não há parâmetros.
+INVALID_PASSWORD=A senha está incorreta.
+
+# Follow / search / reference
+MESSAGE_NOT_FOUND=A mensagem especificada não foi encontrada.
+REFERENCE_NOT_FOUND=Postagem de referência não encontrada.
+REFERENCE_COLON=Referência:
+FOLLOW_UP_POST=Postagem de resposta
+POST_SEARCH=Pesquisar postagens
+
+# Completion / undo
+POST_COMPLETE=Postagem concluída
+DELETION_COMPLETE=Exclusão concluída
+UNDO_POST_NOT_FOUND=A postagem correspondente não foi encontrada.
+UNDO_NOT_PERMITTED=A exclusão da postagem correspondente não é permitida.
+
+# Main list footer
+POSTS_RANGE_NEWEST_TO_OLDEST=Acima são exibidas as postagens {BINDEX} a {EINDEX}, da mais recente para a mais antiga. 
+NO_UNREAD_MESSAGES=Não há mensagens não lidas. 
+NO_POSTS_BELOW=Não há postagens abaixo deste ponto.
+
+# New post page
+NEW_POST=Nova postagem
+
+# Labels / tags inserted into messages
+HACKER_TAG= (hacker)
+FRAUDSTER_TAG= (fraudador)
+SELF_REPLY_TAG= (auto-resposta)
+
+# Weekdays
+SUNDAY=Dom
+MONDAY=Seg
+TUESDAY=Ter
+WEDNESDAY=Qua
+THURSDAY=Qui
+FRIDAY=Sex
+SATURDAY=Sáb
+
+# Admin / image upload errors (added 2026-07-16: externalized from
+# sub/{ja,en}/bbsadmin.php, bbsimage.php, bbslog.php -- these previously
+# hardcoded the same message independently in each language file)
+NO_PASSWORD_SET=Nenhuma senha foi definida.
+FILE_SIZE_OVER_LIMIT=O tamanho do arquivo excede %sKB.
+FILE_UPLOAD_FAILED=O processo de envio do arquivo falhou. Código: %s
+FAILED_TO_LOAD_UPLOAD_ID=Falha ao carregar o arquivo de imagem enviado.
+IMAGE_WIDTH_EXCEEDED=A largura da imagem excede o limite.
+IMAGE_FILEMSG=Imagem%s %s %s*%s %sKB
+INVALID_FILE_FORMAT=O formato do arquivo está incorreto.
+DIRECTORY_OPEN_FAILED=Não foi possível abrir este diretório.
+TOO_MANY_KEYWORDS=Há palavras-chave de pesquisa demais.
+
+# Page titles (added 2026-07-16: externalized during sub/ja+sub/en merge --
+# these were previously hardcoded independently per language, and were at
+# risk of being lost entirely for non-English locales once the folders
+# were unified)
+TITLE_ADMIN_MENU=Menu de administração
+TITLE_MESSAGE_DELETE_MODE=Modo de exclusão de mensagens
+TITLE_PASSWORD_SETTINGS=Página de configuração de senha
+TITLE_OLDLOG_SEARCH=Pesquisa no log de mensagens
+TITLE_OLDLOG_SEARCH_RESULTS=Resultados da pesquisa no log de mensagens
+TITLE_OLDLOG=Log de mensagens
+TITLE_TOPIC_LIST=Lista de tópicos
+TITLE_OLDLOG_ARCHIVE=Arquivo do log de mensagens
+TITLE_TREEVIEW_MAIN=Visualização em árvore
+TITLE_ERROR=Erro
+TITLE_NOTICE=Aviso
+
+# HTML titles
+TITLE_FOLLOWUP=Postagem de resposta (réplica)
+TITLE_SEARCH_BY_USER=Pesquisar por usuário
+TITLE_THREAD_VIEW=Visualização de tópico
+TITLE_TREE_VIEW=Visualização em árvore
+TITLE_DELETE_POST=Excluir postagem
+
+# Additional UI strings
+URL_REDIRECTION=Redirecionamento de URL
+USER_SETTINGS=Configurações do usuário
+COUNTER_ERROR=Erro no contador
+
+# template.html UI strings (added 2026-07-17: template.html was still
+# hardcoding button/label text in English regardless of LANGUAGE_FILE.
+# Externalized so the UI actually follows the language setting.)
+NAV_PR_OFFICE=Sala de imprensa
+NAV_CONTACT=Contato
+NAV_MESSAGE_LOGS=Logs de mensagens
+NAV_MANAGE=Administrar
+BRAND_NAME=KuzuhaScriptPHP+
+RETURN=Voltar
+MSG_USER_LABEL=Usuário:
+MSG_POST_DATE_LABEL=Data da postagem:
+NEXT_PAGE=Próxima página
+RELOAD=Recarregar
+UNREAD=Não lidas
+TITLE_ADMIN_POST=Postar como administrador
+FORM_NAME_LABEL=Nome
+FORM_EMAIL_LABEL=E-mail
+FORM_TITLE_LABEL=Título
+POST_RELOAD=Postar/Recarregar
+CLEAR=Limpar
+FORM_CONTENTS_LABEL=Conteúdo
+FORM_CONTENTS_HELP_SIMPLE=(Até %s colunas e %s linhas. Insira quebras de linha onde for apropriado. Tags HTML/BBCode não podem ser usadas.)
+FORM_CONTENTS_HELP_IMAGE=(Até %s colunas e %s linhas. Insira quebras de linha onde for apropriado. Tags HTML/BBCode não podem ser usadas. <br>            Se você escrever %s no texto, a imagem enviada será inserida nessa posição.)
+KAOMOJI_SHOW_MORE=Mostrar mais kaomoji
+KAOMOJI_INTRO=Mostrando mais kaomoji no estilo Ayashii World. Confira também o <a target="_blank" href="//mattari.heyuri.net/">Mattari AA</a>.
+KAOMOJI_CAT_MATTARI=Mattari / Tranquilo
+KAOMOJI_CAT_DAUSO=Dauso / Triste
+KAOMOJI_CAT_ANGRY=Bravo / Maligno
+KAOMOJI_CAT_EHHH=Ehhh!?
+KAOMOJI_CAT_GESTURES=Gestos / Acenos
+KAOMOJI_CAT_SLEEPY=Sonolento / Outros
+KAOMOJI_CAT_DROOLING=Babando
+KAOMOJI_CAT_SMOKING=Fumando / Tomando chá
+KAOMOJI_CAT_FUN=Diversão / Diversos
+IMAGE_UPLOAD_LABEL=Envio de imagem
+IMAGE_UPLOAD_HELP=（Somente JPG/GIF/PNG. Largura máx. %spx; altura máx. %spx; tamanho máx. do arquivo %sKB.）
+POSTS_DISPLAYED_LABEL=Postagens&nbsp;exibidas
+AUTO_LINK_URLS_LABEL=Vincular&nbsp;URLs&nbsp;automaticamente
+LOG_READING_MODE_LABEL=Modo&nbsp;de&nbsp;leitura
+HIDE_LINK_LINE_LABEL=Ocultar&nbsp;linha&nbsp;de&nbsp;links
+SHOW_IMAGES_LABEL=Mostrar&nbsp;imagens
+COUNTER_TEXT=Visualizações&nbsp;desde&nbsp;%s:&nbsp;%s (nível&nbsp;à&nbsp;prova&nbsp;de&nbsp;balas:&nbsp;%s)
+MBRCOUNT_TEXT=Participantes&nbsp;atuais:&nbsp;%s&nbsp;usuários (nos&nbsp;últimos&nbsp;%s&nbsp;segundos)
+LOGSAVE_TEXT=Máx.&nbsp;de&nbsp;postagens&nbsp;salvas:&nbsp;%s&nbsp;postagens
+THREAD_LABEL=Tópico
+TREE_LABEL=Árvore
+DELETE_PREVIOUS_POST=Excluir&nbsp;postagem&nbsp;anterior
+LATEST_30_POSTS=Últimas 30 postagens
+POSTS_FOUND= postagens encontradas.
+RETURN_TO_BBS_HELP=Clique no link acima ou pressione <kbd>Alt</kbd>(+<kbd>Shift</kbd>)+<b><kbd>O</kbd></b> para voltar ao fórum.
+DISPLAY_COLORS_LEGEND=Cores de exibição (hexadecimal)
+TEXT_COLOR_LABEL=Cor do texto
+BACKGROUND_COLOR_LABEL=Cor do fundo
+LINK_COLOR_LABEL=Cor do link
+VISITED_LINK_COLOR_LABEL=Cor do link visitado
+ACTIVE_LINK_COLOR_LABEL=Cor do link ativo
+MOUSEOVER_LINK_COLOR_LABEL=Cor do link sob o cursor
+TITLE_COLOR_LABEL=Cor do título
+QUOTE_COLOR_LABEL=Cor da citação
+ADDITIONAL_FEATURES_LEGEND=Recursos adicionais
+GZIP_LABEL=Transferir usando compressão gzip (a exibição ficará mais rápida)
+LOG_READING_MODE_DESC_LABEL=Modo de leitura (não exibirá o formulário de postagem)
+AUTO_LINK_URLS_DESC_LABEL=Vincular URLs automaticamente (as URLs no conteúdo da postagem se tornarão links automaticamente ao postar)
+COOKIE_LABEL=Salvar seu nome e endereço de e-mail em um cookie ao postar
+HIDE_LINK_ROW_DESC_LABEL=Ocultar linha de links (não exibirá a lista de links abaixo do formulário de postagem)
+FOLLOW_DISPLAY_LEGEND=Como exibir a página de resposta
+FOLLOW_NEW_WINDOW_LABEL=Abrir e exibir em uma nova janela
+FOLLOW_SAME_PAGE_LABEL=Exibir na mesma página
+BOOKMARK_HELP=Se você adicionar aos favoritos a URL que aparece após clicar em "Registrar", poderá navegar no fórum com as configurações acima.
+REGISTER=Registrar
+UNDO_CHANGES=Desfazer alterações
+RESTORE_DEFAULTS=Restaurar padrões
+REDIRECTING=Redirecionando…
+PAGE_GEN_TIME_TEXT=Tempo de geração da página: %s segundos
+OG_LOCALE=pt_BR
+
+# tmpltree.html UI strings (added 2026-07-17)
+STANDARD_VIEW=Visualização&nbsp;padrão
+TOP_LABEL=Topo
+
+# login.html UI strings (added 2026-07-17)
+MOD_LOGIN_TITLE=Login de moderador
+PASSWORD_LABEL=Senha:
+LOGIN_BUTTON=Entrar
+LOGIN_ERROR=Nome de usuário ou senha inválidos.
+
+# tmpladmin.html UI strings (added 2026-07-17)
+DELETE_MESSAGES_BTN=Excluir mensagens
+VIEW_LOG_FILE_BTN=Ver arquivo de log
+REGEN_PASSWORD_BTN=Gerar nova senha criptografada
+PHP_CONFIG_INFO_BTN=Informações da configuração PHP do servidor
+LOGOUT_BTN=Sair
+CLOSE_BTN=Fechar
+PERFORM_DELETION_BTN=Executar exclusão
+DELETE_INSTRUCTIONS=Marque as caixas de seleção das postagens que deseja excluir e clique no botão [Executar exclusão] na parte inferior.
+DELETE_COL_HEADER=Excluir
+VIEW_COL_HEADER=Ver
+DATE_POSTED_COL_HEADER=Data da postagem
+SUBJECT_COL_HEADER=Assunto
+USERNAME_COL_HEADER=Nome de usuário
+HOST_COL_HEADER=Host
+COMMENT_COL_HEADER=Comentário
+SETPASS_INSTRUCTIONS=Defina sua senha.<br>		Insira a senha de administrador que você usará para administrar o fórum de agora em diante.<br>	A senha inserida aqui será usada para postar com o nome do administrador e para autenticá-lo ao entrar no modo de administração.
+ADMIN_PASSWORD_LABEL=Senha de administrador
+SET_BTN=Definir
+RESET_BTN=Redefinir
+PASSWORD_GENERATED_MSG=Senha criptografada gerada!<br>	Cole a seguinte string de senha criptografada na seção designada do script principal do fórum.
+BULLETIN_BOARD_LABEL=Fórum
+WARNING_LABEL=AVISO
+ADMIN_ACCESS_WARNING=O ACESSO POR PESSOAL NÃO AUTORIZADO É ESTRITAMENTE PROIBIDO. OS INFRATORES SERÃO RASTREADOS, LOCALIZADOS E DETIDOS.
+
+# tmpllog.html UI strings (added 2026-07-17)
+FROM_DAY_LABEL=Do dia
+HOUR_LABEL=hora
+TO_DAY_LABEL=até o dia
+MINUTE_LABEL=minutos
+ZIP_ARCHIVES_LINK=Arquivos ZIP dos logs de mensagens
+LIST_OF_LOGS_HEADING=Lista de logs de mensagens
+DOWNLOAD_LABEL=Baixar
+SELECT_DESELECT_ALL_LABEL=Selecionar/desmarcar tudo
+JS_UNAVAILABLE_WARNING=O JavaScript não está disponível.
+JS_UNAVAILABLE_HELP=Ative o JavaScript para usar selecionar/desmarcar tudo.
+SEARCH_LOGS_HEADING=Pesquisar logs de mensagens
+SPECIFY_KEYWORDS_LEGEND=Especificar palavras-chave
+SEARCH_BTN=Pesquisar
+SPECIFY_TIME_RANGE_LEGEND=Especificar intervalo de tempo
+BOOLEAN_OPERATOR_LEGEND=Operador booleano
+AND_SEARCH_OPTION=Pesquisa AND (E)
+OR_SEARCH_OPTION=Pesquisa OR (OU)
+SEARCH_TARGET_LEGEND=Alvo da pesquisa
+ALL_TEXT_OPTION=Todo o texto
+USERNAMES_OPTION=Nomes de usuário
+TITLES_OPTION=Títulos
+OTHER_LEGEND=Outros
+CASE_INSENSITIVE_LABEL=Pesquisar maiúsculas e minúsculas
+SHOW_POST_BUTTONS_LABEL=Mostrar botões de postagem
+GZIP_SIMPLE_LABEL=Transferir usando compressão gzip
+UNABLE_TO_OPEN_FILE_TEXT=Não foi possível abrir %s.
+TOPIC_LIST_COLUMN_HEADERS=Visualização de tópico - Visualização em árvore - Respostas - Última atualização - Conteúdo
+ZIP_ARCHIVES_HEADING=Arquivos ZIP dos logs de mensagens
+ZIP_ARCHIVE_COLUMN_HEADERS=Baixar - Data - Hora - Tamanho
+
+# JavaScript UI strings, exposed via window.KSPHP_LANG (added 2026-07-17)
+MAKE_LINE_BREAKS_BTN=Inserir quebras de linha
+UPLOADER_THUMBNAILS_LABEL=Miniaturas do uploader
+LINK_THUMBNAILS_LABEL=Miniaturas de links
+LINK_THUMBNAIL_EXTENSIONS_LEGEND=Extensões de miniaturas de links
+NGWORD_LINK_START=Palavras filtradas&nbsp;(
+NGWORD_LINK_HITS=&nbsp;ocorrências)
+NGWORD_UPDATE_BTN=Atualizar
+ADMIN_FILTER_BY_LABEL=Filtrando por 
+ADMIN_FILTER_HOST_LABEL=host
+ADMIN_FILTER_NAME_LABEL=nome
+ADMIN_FILTER_CLEAR_BTN=limpar ✕
+ADMIN_RANGE_START_MSG=início do intervalo definido — clique em outra célula de Data para concluir
+
+# sub/bbstree.php UI strings (added 2026-07-18, fix for untranslated hardcoded text)
+TREE_RANGE_TEXT=Acima são exibidos os tópicos {BINDEX} a {EINDEX}, em ordem do mais recentemente atualizado para o menos recente.
+TREE_NO_THREADS_BELOW=Não há tópicos abaixo deste ponto.
+TREE_DATE_UPDATED=[Atualizado em: %s]
+TREE_USER_LABEL=Usuário: 
+
+# sub/bbslog.php search result summary (added 2026-07-18, fix for untranslated hardcoded text)
+SEARCH_RESULT_FOR_QUERY=Para "%s" foram 
+SEARCH_RESULTS_COUNT=encontrados %d resultados.
+SEARCH_NO_RESULTS=encontrados 0 resultados.
+
+# sub/bbsimage.php error messages (added 2026-07-18, fix for untranslated hardcoded text)
+UPLOAD_DISABLED_ERROR=Erro: O recurso de envio de arquivos não é permitido.
+IMAGE_PROCESSING_UNSUPPORTED_ERROR=Erro: O recurso de processamento de imagens não é suportado.
+
+# title attribute tooltips across sub/template.html, sub/tmpltree.html
+# (added 2026-07-18, fix for untranslated hardcoded text)
+TITLE_ADMIN_LOGIN=Login de administrador/moderador
+TITLE_SETTINGS_SHORTCUT=Alt(+Shift)+C, entrar na página de configurações
+TITLE_POST_RELOAD_SHORTCUT_P=Alt(+Shift)+P, se você clicar no botão de postar sem escrever nenhum conteúdo, a página será recarregada
+TITLE_POST_RELOAD_SHORTCUT_R=Alt(+Shift)+R, se você clicar no botão de postar sem escrever nenhum conteúdo, a página será recarregada
+TITLE_BOTTOM=Rodapé
+TITLE_BOTTOM_SHORTCUT=Rodapé Alt(+Shift)+B
+TITLE_BROWSE_OLD_POSTS=Navegue e pesquise em postagens antigas.
+TITLE_DELETE_CHANGES_RETURN=Excluir todas as alterações e voltar ao fórum.
+TITLE_DELETE_LAST_POST=Excluir a última postagem que você fez
+TITLE_STACK_BBS_DISPLAY=Exibir postagens no formato de fórum tipo pilha.
+TITLE_DISPLAY_REPLY_THREAD=Exibir a cadeia de respostas como um tópico
+TITLE_DISPLAY_AS_TREE=Exibir o tópico como uma árvore
+TITLE_DISPLAY_THREADS_BRANCHES=Exibir tópicos como ramificações
+TITLE_EMAIL_ADMIN=Enviar e-mail ao administrador
+TITLE_GO_TO_PR_OFFICE=Ir para a sala de imprensa
+TITLE_TO_PR_OFFICE=Para a sala de imprensa
+TITLE_PR_OFFICE=Sala de imprensa
+TITLE_LIST_USER_POSTS=Listar todas as postagens do mesmo usuário
+TITLE_POST_REPLY=Postar uma resposta
+TITLE_RETURN_PREV_PAGE=Voltar à página anterior
+TITLE_RETURN_PREV_PAGE2=Voltar para a página anterior
+TITLE_RETURN_BBS_SHORTCUT=Voltar ao fórum Alt(+Shift)+O
+TITLE_SAVE_SETTINGS_RETURN=Salvar suas configurações e voltar ao fórum.
+TITLE_RESET_SETTINGS=Redefinir suas configurações
+TITLE_TOP_SHORTCUT=Topo Alt(+Shift)+T
+
+# Gikoneko Together (gikoneko.php / gikonekoadd.php)
+GIKO_TOGETHER=Gikoneko Junto
+GIKO_TEACH_LINK_TEXT=Ensinar uma palavra ao Gikoneko
+GIKO_FORTUNE_SHOKICHI=Pequena Bênção
+GIKO_FORTUNE_CHUKICHI=Bênção Média
+GIKO_FORTUNE_KYOU=Maldição
+GIKO_FORTUNE_DAIKICHI=Grande Bênção
+GIKO_FORTUNE_YOUKICHI=Bênção Jovem
+GIKO_FORTUNE_GOUKICHI=Bênção Trovejante
+GIKO_FORTUNE_NEKOKICHI=Bênção Felina
+GIKO_FORTUNE_DOKICHI=Bênção Furiosa
+GIKO_FORTUNE_AIKICHI=Bênção Amorosa
+GIKO_FORTUNE_INKICHI=Bênção Recolhida
+GIKO_FORTUNE_KICHI=Bênção
+GIKO_FORTUNE_RAKUKICHI=Bênção Despreocupada
+GIKO_ADD_TITLE=Gikoneko Junto - Tela de postagem
+GIKO_ERR_DUPLICATE=Isto já foi registrado.
+GIKO_ERR_TOO_LONG=Essa palavra é longa demais.
+GIKO_ERR_WRITE_FAILED=Falha ao gravar. Verifique o local e as permissões de escrita do arquivo de dados (%s).
+GIKO_POST_COMPLETE=Postagem concluída
+GIKO_BACK_TO_BBS=Voltar ao fórum
+GIKO_ADD_PROMPT=Escreva algo para o Gikoneko dizer (até %s caracteres de meia largura)
+GIKO_ADD_SUBMIT=Ensinar uma palavra
+GIKO_ADD_RESET=Limpar
+
+LANG_SELECT_LABEL=Idioma:
+
+# 20260801 Gikoneko: tree-hide (unread thread deletion) JS feature
+TREE_HIDE_LINK=[Ocultar]
+TREE_HIDE_SETTING_LABEL=Ativar ocultação de tópicos (configuração pessoal, somente neste navegador)
+TREE_HIDDEN_PANEL_TITLE=Tópicos ocultos
+TREE_RESTORE_LINK=Restaurar
+TREE_RESTORE_ALL_LINK=Restaurar todos
+TREE_HIDDEN_EMPTY=Nenhum tópico oculto.
+
+# 20260801 Gikoneko: long-post line-count NG filter JS feature
+LONGPOST_SETTING_LABEL=Ativar filtro de posts longos (configuração pessoal, somente neste navegador)
+LONGPOST_THRESHOLD_LABEL=Limite de linhas:
+LONGPOST_COLLAPSED_TEXT=Post recolhido por ter mais de {N} linhas.
+LONGPOST_EXPAND_LINK=Mostrar
+LONGPOST_COLLAPSE_LINK=Recolher
+
+# 20260801 Gikoneko: LaTeX math rendering JS feature (KaTeX via CDN)
+LATEX_SETTING_LABEL=Ativar renderização de fórmulas LaTeX (configuração pessoal, somente neste navegador, carrega o KaTeX via CDN)
+
+# 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
+JS_SETTINGS_LEGEND=Configurações de JS
+JS_GIKO_LABEL=Gikoneko-to-issho (quando não há posts não lidos)
+JS_IMGTHUMB_LABEL=Miniaturas de imagens
+JS_KAOMOJI_LABEL=Paleta de emoticons
+JS_LATEX_LABEL=Renderização de fórmulas LaTeX (carrega o KaTeX via CDN)
+JS_LINEBREAKER_LEN_LABEL=Comprimento alvo da quebra de linha:
+JS_LINEBREAKER_NOTE=Nota: o quebrador de linha em si não pode ser desativado (necessário pelo limite de tamanho das mensagens). O número acima só ajusta onde ele quebra as linhas.
+JS_LONGPOST_LABEL=Filtro de mensagens longas
+JS_TREEHIDE_LABEL=Exclusão de tópicos não lidos
+JS_UPTHUMB_LABEL=Miniaturas de upload
+JS_VIDEMBED_LABEL=Incorporação de vídeos

@@ -1,0 +1,2045 @@
+くずはすくりぷとPHP+ (ksphp-plus) 言語ファイル一本化作業 changelog
+記録形式：ISO 8601（分単位）、タイムゾーンはUTC
+（本ファイルは ksphp-plus-handoff-2026-07-17-01.zip からの引き継ぎ以降の
+  作業記録。以前の経緯は CHANGELOG_HANDOFF.txt を参照）
+
+============================================================
+2026-07-16T23:30 UTC
+------------------------------------------------------------
+【段階1：ja版固有の改善点をen版（正本）へ移植】
+対象：sub/en/bbstree.php, sub/en/template.html
+
+これまでja/en両サブフォルダに分かれていたロジック／テンプレートを、
+将来的に英語版を正本として一本化する方針に基づき、まずja版側にしか
+無かった改善点をen版に移植した。
+
+  [1] sub/en/bbstree.php：indexthreads()最適化（2026-07-16T17:13、
+      ja版のみに適用済みだったもの）を移植。ログ全体を毎スレッド毎に
+      再走査していた旧O(n^2)実装を、1パスでスレッド別バケット化する
+      方式に置き換え。未読判定・ページング判定のロジックもja版に
+      合わせて修正。コメント・エラーメッセージは英語表記に統一。
+      php -lで構文確認済み。
+  [2] sub/en/template.html：{CUSTOMHEAD}プレースホルダ（ja版のみに
+      存在）を、スクリプトタグ群の直後・<style>直前に追加。bbs.php
+      側は既にCUSTOMHEAD変数を汎用的にセットしているため、テンプレート
+      側への追加のみで動作する。patTemplate:tmplタグの開閉数（40対40）
+      が一致することを確認。
+
+  ※調査の過程で、ハニーポット（スパムボット対策の隠し入力欄）の設置
+    箇所がja版とen版で異なっており（ja版はadminlogin側、en版は一般
+    投稿フォーム側）、擬古猫さんに確認したところ「ハニーポット機能は
+    うまく動作しないと確認済み。en側の配置を残す」との回答を得た。
+    ja版側の配置は移植せず、en版の配置（一般投稿フォーム側）をそのまま
+    採用した。
+
+
+============================================================
+2026-07-16T23:32 UTC
+------------------------------------------------------------
+【段階2：言語ファイル機構の実装】
+対象：language/english.txt（新規）, language/japanese.txt（新規）,
+      conf.php, bbs.php
+
+sub/ja・sub/enサブフォルダ丸ごとの重複を解消するための第一歩として、
+UI文言（$MSG）を専用の言語ファイルとして外出しする機構を実装した。
+
+  [1] language/english.txt, language/japanese.txt を新規作成。
+      内容はsub/en/lang.php・sub/ja/lang.phpの$MSG配列をPHP経由で
+      機械的にダンプし、新パーサーで読み戻した結果が元の配列と
+      完全一致すること（キー数55件、値の差異ゼロ）を確認した上で
+      採用した。
+      書式：KEY=値（「=」前後にスペースを入れない。「=」より後ろは
+      行末まで値としてそのまま保持）、「#」「;」始まりの行はコメント、
+      空行は無視、UTF-8（BOM無し）。
+  [2] conf.php：新規キー'LANGUAGE_FILE'を追加（デフォルト'japanese'）。
+      既存の'TEMPLATE_LANGUAGE'（サブフォルダ選択用）とは役割を分離。
+      日英併記コメント付き。
+  [3] bbs.php：自前パーサー関数loadLanguageFile()を追加。
+      $CONF['LANGUAGE_FILE']が設定されていればlanguage/*.txtを読み込む
+      新方式、未設定の場合は旧方式（sub/{TEMPLATE_LANGUAGE}/lang.php の
+      require_once）に自動フォールバックする形にした。T()関数（翻訳
+      ヘルパー）は変更なし。
+      動作確認：日本語ファイル読み込み・英語ファイル読み込み・旧方式
+      フォールバックの3パターンを個別実行し、いずれも件数55件、値も
+      一致することを確認。php -lで構文エラー無しを確認。
+
+  ※既存のsub/ja/lang.php・sub/en/lang.phpはまだ削除・変更せず、
+    フォールバック用として温存している（ロジックファイル一本化が
+    完了するまでの経過措置）。
+
+
+============================================================
+2026-07-16T23:33 UTC
+------------------------------------------------------------
+【バグ修正：FRAUDSTER_TAGの閉じ括弧欠落】
+対象：sub/en/lang.php, language/english.txt
+
+段階2の言語ファイル移植作業中に発見した既存不具合。sub/en/lang.phpの
+'FRAUDSTER_TAG'の値が ' (fraudster'（閉じ括弧無し）になっていた
+（ja版は'（騙り）'で正しく閉じている）。' (fraudster)' に修正。
+移植元・移植先の両方（sub/en/lang.php, language/english.txt）に
+同一の修正を適用し、今後どちらの読み込み経路（新方式／旧フォール
+バック）を通っても同じ値になることを確認した。
+
+
+============================================================
+2026-07-16T23:40 UTC
+------------------------------------------------------------
+【バグ修正：$MSGを経由しないハードコード文字列（既存キーとの重複／未外部化）】
+対象：sub/{ja,en}/bbsadmin.php, sub/{ja,en}/bbsimage.php,
+      sub/{ja,en}/bbslog.php, sub/{ja,en}/bbstree.php,
+      sub/{ja,en}/lang.php, language/english.txt, language/japanese.txt
+
+FRAUDSTER_TAGの調査中、$MSG（T()関数）を経由せず各言語ファイルに
+それぞれ独立にハードコードされていた文言が他にも見つかったため、
+まとめて洗い出し・修正した。ja/en間で将来内容が食い違う潜在リスクと
+なるため、優先度の高いバグ修正として対応した。
+
+  [1] 既存キーとの重複（新規キー不要、T()呼び出しへの置き換えのみ）：
+      - bbsadmin.php 2箇所：'Failed to load message'（ja:'メッセージ
+        読み込みに失敗しました'）→ T('FAILED_TO_READ_MESSAGE')
+        （既存キー。文言はFAILED_TO_READ_MESSAGE側の英語表記
+        'Failed to read message'に統一）
+      - bbslog.php 1箇所：'$filename was unable to be opened.'
+        （ja:'$filenameを開けませんでした。'）
+        → sprintf(T('FAILED_TO_OPEN_LOG'), $filename)（既存キー）
+      - bbstree.php 1箇所：'There are no parameters.'
+        （ja:'パラメータがありません。'）→ T('NO_PARAMETERS')（既存キー）
+
+  [2] 新規キー追加（$MSGに存在しなかったため、language/*.txt・
+      sub/{ja,en}/lang.php双方に追加）：
+      NO_PASSWORD_SET, FILE_SIZE_OVER_LIMIT, FILE_UPLOAD_FAILED,
+      FAILED_TO_LOAD_UPLOAD_ID, IMAGE_WIDTH_EXCEEDED,
+      INVALID_FILE_FORMAT, DIRECTORY_OPEN_FAILED, TOO_MANY_KEYWORDS
+      （bbsadmin.php, bbsimage.php, bbslog.phpの計8箇所を対応する
+      T()呼び出しに置き換え。%sプレースホルダを使う2件はsprintf()
+      でラップ）
+
+php -lで全対象ファイルの構文エラー無しを確認。language/*.txtと
+sub/{ja,en}/lang.phpの内容が新パーサー経由で完全一致することを
+再確認した（キー数63件）。
+
+  ※sub/en/bbsadmin.php内、327行目付近のコメントアウト済みprterror
+    呼び出し（#$this->prterror(...)）は無効なコード（実行されない）
+    のため、今回の対応範囲からは除外した。
+
+
+============================================================
+2026-07-17T00:05 UTC
+------------------------------------------------------------
+【段階3：sub/ja・sub/enの物理統合（ロジック／テンプレート一本化）】
+対象：sub/ 以下全体（削除・移動）, bbs.php, conf.php, docs/permissions.md,
+      language/english.txt, language/japanese.txt
+
+段階1・2でen版（正本）にja版の改善点を移植し、UI文言を言語ファイルへ
+外部化した上で、sub/ja・sub/enサブフォルダの重複を解消する物理統合を
+実施した。
+
+  [1] sub/en/{bbsadmin.php, bbsimage.php, bbslog.php, bbstree.php,
+      template.html, tmpladmin.html, tmpllog.html, tmpltree.html,
+      login.html, index.html} を sub/ 直下へ移動。
+  [2] sub/ja/ ・ sub/en/ ディレクトリを削除（lang.php含む。言語文言は
+      language/*.txt に完全移行済みのため）。
+  [3] bbs.php：$tmpl_lang/$SUBDIR分岐（'./sub/' . TEMPLATE_LANGUAGE . '/'）
+      を廃止し、$SUBDIRを'./sub/'固定に変更。LANGUAGE_FILE未設定時の
+      sub/{lang}/lang.phpへのフォールバックも、当該フォルダ自体が
+      無くなったため削除（LANGUAGE_FILE未設定時は既定で'english'を
+      使用する形に変更）。
+  [4] conf.php：'TEMPLATE_LANGUAGE'キーを廃止（日英併記の説明コメントに
+      置き換え）。言語切り替えは'LANGUAGE_FILE'キーのみで行う。
+  [5] docs/permissions.md：sub/ja・sub/enのlang.phpを参照していた
+      切り分け手順の記述を、language/*.txtを参照する形に更新。
+
+  【移動作業中に発見・修正した不具合（優先対応）】
+  ファイル移動に伴い、以下の不具合を発見し、その場で修正した。
+    - sub/{bbsadmin,bbsimage,bbslog,bbstree}.php・sub/index.html内の
+      INCLUDED_FROM_BBSガード等が参照する相対パス「../../bbs.php」が、
+      旧構成（sub/en/等、階層が1段深い）を前提にしていたため、新構成
+      （sub/直下）では階層が合わなくなっていた。「../bbs.php」に修正。
+    - 【重大】sub/ja/{bbsadmin,bbslog,bbstree}.php・bbs.phpには、
+      $MSG（T()関数）を経由しない日本語タイトル文字列（管理メニュー、
+      パスワード設定画面、過去ログ検索、ツリービュー、エラー、
+      お知らせ　等、計11箇所）がハードコードされていた。sub/ja削除に
+      伴いこれらがそのまま失われ、日本語設定（LANGUAGE_FILE=japanese）
+      でもタイトルが英語表示になってしまうところだった。該当11箇所を
+      すべてT()呼び出しに置き換え、対応する新規キー11件を
+      language/english.txt・language/japanese.txtに追加した。
+
+  【動作確認】
+    - 変更対象全ファイルをphp -lで構文確認（エラー無し）。
+    - PHP内蔵サーバー（php -S）でbbs.phpを実際に起動し、HTTP 200での
+      応答、および初回起動時パスワード設定画面のタイトルが
+      LANGUAGE_FILE=japaneseで「パスワード設定画面」、
+      LANGUAGE_FILE=englishで「Password settings page」と、
+      それぞれ正しく切り替わることを確認した。
+    - 「../../bbs.php」等の残存参照が無いことを全ファイル横断で
+      grep確認済み。
+
+  【現在の構成】
+  sub/ 直下に bbsadmin.php, bbsimage.php, bbslog.php, bbstree.php,
+  template.html, tmpladmin.html, tmpllog.html, tmpltree.html,
+  login.html, index.html, patTemplate.php, patTemplate/, phpzip.inc.php
+  が一本化されている。sub/ja・sub/enは存在しない。UI文言は
+  language/english.txt・language/japanese.txtの2ファイルのみで管理。
+
+
+============================================================
+2026-07-17T00:10 UTC
+------------------------------------------------------------
+【全体バグ精査：PHPStan（Level 5）による静的解析＋手動grep調査】
+対象：bbs.php, conf.php, sub/{bbsadmin,bbsimage,bbslog,bbstree,
+      patTemplate,phpzip.inc}.php
+
+擬古猫さんの指示により、typo・括弧/波括弧の閉じ忘れ・構文的に機能
+しないコードの洗い出しを実施。PHPStan Level 5を全PHPファイルに対して
+実行し、検出された全項目を1件ずつ精査した。
+
+  【実際のバグとして修正した項目】
+  [1] conf.php：'HANDLENAMES'設定例に、キー'騙り'の重複があった
+      （'騙り' => '管理人' と '騙り' => '管理入'）。後者は「管理人」の
+      誤字（人→入）で、PHP配列では後勝ちのため誤字入りの値で上書き
+      されていた。誤字の行を削除し、正しい'騙り' => '管理人'のみを
+      残した。
+  [2] bbs.php：Func::getdatestr()内、曜日配列$wdaysをキャッシュする
+      意図と思われるisset()チェックがあったが、'static'宣言が
+      抜けていたため、実際には毎回配列を再構築しており、キャッシュが
+      一度も機能していなかった（動作結果自体は正しいが、意図した
+      最適化が無効化されていた）。static宣言を追加。
+  [3] コメント内の英語スペルミス3件を修正（機能への影響なし）：
+      conf.php・sub/patTemplate.php内の'seperated'→'separated'
+      （2箇所）、sub/patTemplate.php内の'teh'→'the'（1箇所）。
+
+  【調査したが「バグではない」と判断し、変更しなかった項目】
+  PHPStanはLevel 5で多数の警告を出したが、大半は以下のいずれかに
+  分類される、機能に影響しない既存のPHPDoc精度の問題だった：
+    - 関数のPHPDoc（@return等）が実際の戻り値の型と一致していない
+      （例：Func::fgetline()は実際にはFALSEを返しうるが、PHPDocには
+      Stringとしか書かれていない）ことに起因する「常にtrue/false」
+      「到達不能コード」という誤検出。実際の制御フロー（EOF判定の
+      while ($x !== FALSE)ループ等）は正しく機能しており、動作
+      確認でも問題は再現しなかった。同様のパターンがbbs.php・
+      sub/bbsadmin.php・sub/bbslog.php・sub/bbstree.php全体で
+      多数該当。
+    - patTemplate.php全体：PHP4/5時代の動的プロパティ宣言スタイルに
+      よる「未定義プロパティへのアクセス」警告多数。既存の設計方針
+      であり、今回の指示（typo・括弧忘れ等）の範囲外と判断。
+    - $this->fの動的キーアクセスに起因する型不整合の警告多数
+      （元々全ての値が文字列として扱われる$_GET/$_POST由来のため）。
+
+  ※PHPDoc自体の精度向上（@return型の是正など）は、機能面のバグでは
+    ないため今回は対象外としたが、まとまった量があるため、ご希望が
+    あれば別途対応可能。
+
+  【動作確認】
+  修正対象全ファイルをphp -lで構文確認（エラー無し）。PHP内蔵サーバー
+  でbbs.phpを再度起動し、HTTP 200・タイトル正常表示を確認した。
+
+
+============================================================
+2026-07-17T01:58 UTC
+------------------------------------------------------------
+【重大バグ修正：テンプレートHTML内のハードコード文言をLANGUAGE_FILEに接続】
+対象：sub/template.html, sub/tmpladmin.html, sub/tmpllog.html,
+      sub/tmpltree.html, sub/login.html, bbs.php,
+      language/english.txt, language/japanese.txt
+
+擬古猫さんより、LANGUAGE_FILE=japaneseに設定しているにも関わらず、
+実機（qptns.com/test/bbs.php）でボタンラベル等が英語表示のままである
+との報告を受け調査。原因は、$MSG（T()関数）経由の文言は正しく言語
+切り替えされる一方、5つのHTMLテンプレートファイル内のボタン・ラベル・
+見出し等が直接ハードコードされており、$MSGを一切経由していなかった
+ことによる（段階1の時点ではテンプレートの構造差分のみ解消し、文言の
+外部化は未着手だった）。
+
+  【対応方式】
+  patTemplateライブラリのaddGlobalVars()を利用し、$MSGの全キーを
+  リクエスト単位で全テンプレートに自動的にグローバル変数として注入する
+  方式を採用。個々のテンプレート描画箇所ごとにaddVar()を書く必要が
+  無くなり、以後$MSGに追加されたキーは自動的に{KEY}としてどの
+  テンプレートからも参照可能になる。
+
+  [1] bbs.php: Webapp::refcustom()内の`$tmp = array_merge($this->c, $this->s)`
+      に`$GLOBALS['MSG']`を追加。メイン処理経路（Bbs/Bbsadmin/Bbslog/
+      Bbstree/Imagebbs全クラス共通）で有効。
+  [2] bbs.php: script_run()内の管理者ログイン画面表示処理（GET/POST
+      それぞれ）でも同様に$MSGをテンプレート変数に合流。実装時、
+      script_run()が関数スコープであることを見落とし、初回は
+      `$MSG`を裸で参照してしまい「Undefined variable」からの
+      Fatal error（array_merge(): Argument #2 must be of type array,
+      null given）を引き起こしたため、`$GLOBALS['MSG']`に修正して
+      解消（動作確認で発見・即修正）。
+  [3] sub/template.html: ボタン・ラベル・見出し・案内文等、約73箇所の
+      ハードコード文言を{PLACEHOLDER}化。
+  [4] sub/tmpladmin.html: 管理メニュー・削除モード・パスワード設定
+      画面等、約25箇所を{PLACEHOLDER}化。
+  [5] sub/tmpllog.html: 過去ログ検索・トピック一覧・ZIPアーカイブ
+      画面等、約35箇所を{PLACEHOLDER}化。日付範囲検索フォームの
+      日/時ラベル（sd/sh/ed/eh各select要素）はja/en間で語順が
+      異なる構造だったため、FROM_DAY_LABEL/HOUR_LABEL/TO_DAY_LABEL/
+      MINUTE_LABELとして整理し直した。
+  [6] sub/tmpltree.html: ナビゲーション・ボタン類、約10箇所を
+      {PLACEHOLDER}化。
+  [7] sub/login.html: タイトル・ラベル・ボタン、3箇所を{PLACEHOLDER}化。
+      あわせてbbs.php内でハードコードされていたログインエラー文言
+      （'Invalid username or password.'）もT('LOGIN_ERROR')に変更。
+  [8] {OG_LOCALE}を新設し、<meta property="og:locale">がLANGUAGE_FILEに
+      連動するよう修正（従来はen_US固定だった）。
+
+  新規追加キー：204件（既存キーからの再利用7件を含む、実質約150件が
+  今回の新規追加）。language/english.txt・language/japanese.txtの
+  キー数が一致すること、重複キーが無いことをスクリプトで確認済み。
+
+  【動作確認】
+  変更対象全ファイルをphp -lで構文確認（エラー無し）。PHP内蔵サーバーで
+  以下の全経路をLANGUAGE_FILE=japanese／englishの両方で実行し、HTTP
+  200・{PLACEHOLDER}の描画残り無し・該当言語での正しい文言表示を確認：
+  掲示板メイン（m省略）、過去ログ検索（m=g）、ツリー表示（m=tree）、
+  管理者ログイン（m=login、GET/POST両方、パスワード誤り時のエラー
+  文言含む）、個人設定画面（setup=1）、管理メニュー（m=ad）。
+
+
+============================================================
+2026-07-17T02:17 UTC
+------------------------------------------------------------
+【重大バグ修正：$MSG内のプレースホルダのネスト置換が機能しない問題】
+対象：bbs.php, sub/bbslog.php, language/english.txt, language/japanese.txt
+
+擬古猫さんの実機確認（qptns.com/test/bbs.php）により、カウンター表示
+行「{COUNTDATE} から {COUNTER} (こわれにくさレベル : {COUNTLEVEL})」等が
+すべて空欄で表示される不具合が発覚。原因を調査したところ、patTemplate
+ライブラリのstripUnusedVars()が、変数置換後の出力バッファに対して
+「未解決の{……}パターンを一括除去する」処理を行っており、$MSGの値の
+中に{COUNTDATE}のような別プレースホルダを埋め込んでも、patTemplateは
+一度置換した文字列を再走査しない（＝ネストした置換は行われない）ため、
+埋め込んだトークンがすべて空文字列に消されていたことが判明した。
+
+  【対象範囲の再調査】
+  同じパターンで$MSGの値に{……}が埋め込まれている箇所を全キーに対して
+  機械的に検索し、以下11件を特定した（今回のテンプレート作業で追加した
+  8件に加え、それより前の段階2で追加していた3件も同様の不具合を抱えて
+  いたことが判明。後者は今回のテンプレート作業で初めて実際にレンダリング
+  され、発覚した）：
+    COUNTER_TEXT, MBRCOUNT_TEXT, LOGSAVE_TEXT, FORM_CONTENTS_HELP_SIMPLE,
+    FORM_CONTENTS_HELP_IMAGE, IMAGE_UPLOAD_HELP, PAGE_GEN_TIME_TEXT,
+    UNABLE_TO_OPEN_FILE_TEXT, NAME_TOO_LONG, EMAIL_TOO_LONG, TITLE_TOO_LONG
+  （POSTS_RANGE_NEWEST_TO_OLDEST は元々str_replace()でPHP側解決済みの
+  ため対象外。既存の対応済みパターン（FILE_AUTOCREATED, FAILED_TO_OPEN_LOG
+  等）は元から%sベースのsprintf()方式だったため無事だった。）
+
+  【対応方針】
+  上記11キーの言語ファイル側の値を{BRACE}形式からsprintf()の%s形式に
+  変更し、対応するPHP側の呼び出し箇所で、実際の値が確定した時点で
+  sprintf(T('KEY'), ...)により文字列を完成させてからaddVar()/prterror()
+  に渡す方式に統一した。
+
+  [1] bbs.php: COUNTER/MBRCOUNT算出直後（`counter()`/`mbrcount()`呼び出し
+      箇所）でCOUNTER_TEXT/MBRCOUNT_TEXTをsprintf()で解決。
+  [2] bbs.php: Webapp::refcustom()内でLOGSAVE_TEXT・
+      FORM_CONTENTS_HELP_SIMPLE・FORM_CONTENTS_HELP_IMAGE・
+      IMAGE_UPLOAD_HELPを、リクエスト開始時点で判明している$CONF値から
+      sprintf()で解決し、$MSGマージ後の値を上書き。MAX_IMAGE*系は
+      BBSMODE_IMAGE=1の時のみ存在するため??で安全にフォールバック。
+  [3] bbs.php: prthtmlfoot()内のDURATION算出直後でPAGE_GEN_TIME_TEXTを
+      sprintf()で解決。
+  [4] sub/bbslog.php: 過去ログファイルのfopen失敗検知箇所で
+      UNABLE_TO_OPEN_FILE_TEXTをsprintf()で解決。
+  [5] bbs.php: chkmessage()内のNAME_TOO_LONG/EMAIL_TOO_LONG/
+      TITLE_TOO_LONGの各prterror()呼び出しをsprintf()経由に変更
+      （これは段階2からの既存不具合で、対応する文字数上限が常に
+      空欄表示になっていた）。
+
+  【動作確認】
+  language/*.txt全体を機械的に走査し、{……}を含む$MSG値が上記の
+  意図的なもの（POSTS_RANGE_NEWEST_TO_OLDEST、PHP側でstr_replace
+  済み）以外に残っていないことを確認。実機相当のテスト環境で
+  カウンター行・投稿フォーム説明文・実行時間表示を実際にレンダリング
+  し、すべて実際の数値が正しく埋め込まれること、{PLACEHOLDER}の
+  描画残りが無いことを確認した。NAME_TOO_LONG等はsprintf()の出力を
+  直接検証（PHP CLIでの単体確認）。全経路（メイン・過去ログ検索・
+  ツリー表示・管理者ログイン・個人設定・管理メニュー）をHTTP 200・
+  プレースホルダ残り無しで再確認済み。
+
+
+============================================================
+2026-07-17T02:35 UTC
+------------------------------------------------------------
+【バグ修正：完了メッセージのCSSクラス名不一致】
+対象：sub/template.html
+
+擬古猫さんより、書き込み・消去完了画面の文字サイズが（ja版と比べて）
+小さいとの指摘を受け調査。CSSは`.msg-completed`（末尾d）というクラス名
+でxx-large・太字を定義しているが、該当の<div>要素側は`class="msg-complete"`
+（dが無い）となっており、名前不一致でスタイルが適用されていなかった。
+これは元々のen版template.htmlに存在した綴りミスで、ja版は元々
+`msg-completed`で一致していた（今回の作業以前からの既存バグ）。
+`msg-completed`に統一して修正。
+
+
+============================================================
+2026-07-17T04:44 UTC
+------------------------------------------------------------
+【新機能：投稿内URLの画像サムネイル表示（js/imgthumb.js）】
+対象：js/imgthumb.js（新規）, sub/template.html
+
+擬古猫さんのご要望により、投稿本文中のURLリンクが実在する画像ファイル
+（拡張子判定）を指している場合、該当URLの右側にサムネイル表示する
+機能を新規JavaScriptファイルとして実装した。既存のjs/upthumb.js
+（特定アップローダーの既知ディレクトリ構造に対して別途生成済みの
+サムネイルファイルを探す仕組み）とは別物として、独立ファイルで追加。
+
+  【仕様】
+  - 対応拡張子はJavaScript側に既定リスト（jpg, jpeg, png, gif, webp,
+    bmp, avif, svg）を保持。サーバー側（conf.php）の設定は使わない。
+  - 表示前にfetch()のHEADリクエストでURLが実在し、かつContent-Typeが
+    image/*であることを確認してから埋め込む（拡張子だけでの判定を
+    避け、壊れた画像が表示されるのを防止）。
+  - 有効／無効の切り替えは、投稿フォーム脇（.small内、既存の
+    「Uploader thumbnails」チェックボックスと同じ行）に
+    「Link thumbnails」チェックボックスを追加。状態はlocalStorage
+    （imgThumbEnabled）に保存し、サーバーには送信しない。
+  - 対象拡張子の絞り込みは、個人用環境設定画面（?setup=1）に
+    JavaScriptで動的にフィールドセットを追加する形で提供。既定は
+    全選択。この選択もlocalStorage（imgThumbExtensions）に保存する
+    のみで、サーバー側の設定フォーム（<form>）には一切送信しない
+    （name属性を持たないinput要素として実装し、誤送信を防止）。
+  - 掲示板メイン・ツリー表示の両方に対応（既存のupthumb.jsと同じ
+    セレクタ `.contents pre.msgnormal, .msgtree .ngline` を使用）。
+
+  【動作確認】
+  掲示板メイン・個人設定画面（?setup=1）の両方で、スクリプトタグの
+  読み込み・想定するDOM要素（.small内submitボタン、name="cr"の
+  設定リセットボタン）の存在をHTTP応答から確認。JS構文はnode --check
+  で確認済み。php -lで全PHPファイルの構文エラー無しを確認。
+
+  ※JS内の文言（"Link thumbnails"等）は、既存のupthumb.jsの
+    "Uploader thumbnails"チェックボックスと同様、英語ハードコードの
+    まま（JSファイルは$MSG言語ファイルの対象外という既知の制約に
+    準拠。「Make line breaks」ボタンと同じカテゴリの既存の未対応
+    事項）。
+
+  ※パッケージング（zip化）は別途「go」待ち。InstallGuide.txtを
+    同梱予定。
+
+
+============================================================
+2026-07-17T04:53 UTC
+------------------------------------------------------------
+【JS全体の多言語対応：window.KSPHP_LANGの導入】
+対象：bbs.php, sub/template.html, js/ayashiibreaker.js, js/upthumb.js,
+      js/imgthumb.js, js/vanish.js, js/admin.js,
+      language/english.txt, language/japanese.txt
+
+擬古猫さんのご提案により、$MSG（言語ファイル）の内容をJavaScript側
+からも参照できる仕組みを整備し、js/以下の全ファイルのハードコード
+文言を解消した。
+
+  【仕組み】
+  bbs.php側で$MSGを`json_encode()`（JSON_UNESCAPED_UNICODE,
+  JSON_HEX_TAG, JSON_HEX_AMP付き。<script>タグ内への直接埋め込みでも
+  安全なようエスケープ）した`$MSG_JSON`を生成し、既存の3箇所の
+  テンプレート変数マージ処理（Webapp::refcustom()、ログイン画面
+  GET/POST）全てに`JS_LANG_JSON`として追加。sub/template.htmlの
+  <head>内、他のJSファイルより前の位置に
+  `<script>window.KSPHP_LANG = {JS_LANG_JSON};</script>`を追加した。
+  これにより、$MSGに追加したキーは自動的にJS側からも
+  `window.KSPHP_LANG.KEY`として参照可能になる。
+
+  【対応した既存ファイル】
+  [1] js/ayashiibreaker.js：「Make line breaks」ボタン
+      （MAKE_LINE_BREAKS_BTN、擬古猫さんが最初に発見した件）
+  [2] js/upthumb.js：「Uploader thumbnails」チェックボックスラベル
+      （UPLOADER_THUMBNAILS_LABEL）
+  [3] js/imgthumb.js：「Link thumbnails」「Link thumbnail extensions」
+      （LINK_THUMBNAILS_LABEL, LINK_THUMBNAIL_EXTENSIONS_LEGEND。
+      直前に実装した新機能の文言も同じ仕組みに乗せた）
+  [4] js/vanish.js：NGワード関連の3文言（NGWORD_LINK_START,
+      NGWORD_LINK_HITS, NGWORD_UPDATE_BTN）。
+      ※このファイルは元々navigator.language（ブラウザの言語設定）で
+      判定していたが、これは掲示板側のLANGUAGE_FILE設定と食い違う
+      ことがあるため（例：サイトは日本語設定なのに閲覧者のブラウザは
+      英語）、window.KSPHP_LANGを優先参照する形に修正した。実質的な
+      不具合修正を兼ねる。
+  [5] js/admin.js：削除モード画面の絞り込みUI文言5件
+      （ADMIN_FILTER_BY_LABEL等）。こちらも元々<thead>内の文言を
+      正規表現で走査してja/enを判定する自前の仕組みだったが、
+      window.KSPHP_LANGを直接参照する形に置き換えた。あわせて、
+      列見出しの照合（find()関数）も、ハードコードされたja/en
+      文字列ペアだけでなく、実際に描画されているKSPHP_LANGの値を
+      優先的に照合するよう変更（将来的な他言語対応にも自動追従する）。
+      未定義値でのTypeErrorを防ぐガードも追加。
+
+  新規追加キー：12件（既存の翻訳データと重複無し）。
+
+  【動作確認】
+  全JSファイルをnode --checkで構文確認。全PHPファイルをphp -lで
+  構文確認。掲示板メイン・過去ログ検索・ツリー表示・管理者ログイン
+  ・個人設定・管理メニューの全経路で、window.KSPHP_LANGの埋め込みと
+  有効なJSONとしてのパース可否（204キー→今回12件追加で216キー）を
+  確認。日本語・英語両方のLANGUAGE_FILE設定で全経路HTTP 200・
+  {PLACEHOLDER}残り無しを再確認。
+
+  ※パッケージング（zip化）は別途「go」待ち。
+
+
+============================================================
+2026-07-17T22:04 UTC
+------------------------------------------------------------
+【バグ修正：投稿フォームの投稿者・メール・題名欄の位置ズレ】
+対象：sub/template.html
+
+かぐやさんの実機テスト報告（スクリーンショット提供）により発覚。
+「投稿者」「メール」「題名」の各入力欄の左端が、ラベル文字列の
+文字数に応じてバラバラの位置にズレて表示されていた。
+
+  【原因】
+  オリジナルのja版・en版template.htmlは、いずれもCSSではなく、
+  ラベルと入力欄の間に手動で全角スペース（U+3000）や半角スペースを
+  個別に挿入することで、見た目上の位置揃えを実現していた。この
+  パディング量は、ja版なら「投稿者」「メール」「題名」の文字幅に、
+  en版なら「Name」「Email」「Title」の文字幅に、それぞれ個別に
+  調整されたものだった。
+
+  今回の言語ファイル統合で、テンプレートはen版を正本として一本化
+  したため、手動スペースはen版の英語文字幅用のまま残った。一方、
+  ラベルの中身は{FORM_NAME_LABEL}等のプレースホルダに置き換わり、
+  LANGUAGE_FILE=japaneseの場合は日本語文字列（投稿者／メール／題名）
+  が代入される。英語用に調整された手動スペースと、実際に表示される
+  日本語文字列の幅が一致しないため、位置がズレて見えていた。
+
+  【対応】
+  手動のスペース調整（全角/半角スペースの個別挿入）を廃止し、
+  ラベル側に`postform-label`という共通クラスを付与した上で、
+  CSSで`display: inline-block; min-width: 4.5em;`という言語非依存の
+  固定幅ルールを追加した。どの言語の文字列がラベルに入っても、
+  入力欄の開始位置が揃うようになる。対象は投稿フォーム本体
+  （name1/mail1/title1）と、フォロー投稿等で使う簡易投稿フォーム
+  （name2/mail2/title2）の計6箇所。
+
+  ※チェックボックス行（表示件数・URL自動リンク等）は、入力欄が
+    小さく「列を揃える」必要が無い（各行独立して見える）ため、
+    今回の対象外とした。設定画面の色指定欄（文字色・背景色等）も、
+    元々ラベルの文字数差が大きく（例：マウスオーバーリンク色は
+    11文字）、オリジナル版でも位置揃えの手動調整はされていなかった
+    ため、既存の見た目のまま変更していない。
+
+  【動作確認】
+  php -l・patTemplate:tmplタグの開閉数（40対40）で構造確認。
+  LANGUAGE_FILE=japaneseで実際にレンダリングし、投稿者・メール・
+  題名の3ラベルが`postform-label`クラス付きで正しく出力される
+  ことを確認した。
+
+
+============================================================
+2026-07-17T22:18 UTC
+------------------------------------------------------------
+【新機能：CSSの外部化（css.php）】
+対象：css.php（新規）, sub/template.html
+
+擬古猫さんのご要望により、sub/template.htmlの<head>内にインライン
+記述されていた共通CSS（約130行）を、外部ファイルとして<link>タグ
+経由で読み込む形に変更した。
+
+  【方式選定の経緯】
+  CSS内には、個人用環境設定画面で変更可能な配色8項目
+  （C_BACKGROUND, C_TEXT, C_A_COLOR, C_A_VISITED, C_SUBJ, C_QMSG,
+  C_A_ACTIVE, C_A_HOVER）が{C_TEXT}のようなプレースホルダとして
+  埋め込まれており、リクエストごとに動的に値が変わる。これは静的な
+  .cssファイルには出来ないため、以下2案を提示し、擬古猫さんに
+  「個人用環境設定は重要」との理由で案B（PHP経由で配信）を選んで
+  いただいた。
+    案A：ほぼ静的化＋配色部分のみ小さなインラインstyleとして残す
+    案B：CSS全体をPHP経由で動的に配信し、完全に<link>タグ化する（採用）
+
+  【実装】
+  新規ファイルcss.phpを作成。conf.phpを読み込んで既定の配色値を取得
+  した上で、bbs.php側のWebapp::refcustom()と同じ「?c=」パラメータの
+  デコード方式（4文字ずつのbase64風エンコードを6桁16進数に変換）を
+  再実装し、URLの?cパラメータに応じて配色を動的に決定する。
+  Content-Type: text/css、Cache-Control: public, max-age=3600を出力。
+
+  sub/template.htmlの<style>ブロック（約130行）を
+  `<link rel="stylesheet" href="css.php?c={C}">` に置き換えた。
+  {C}は既存のセッション変数（個人設定の状態を保持するパラメータ）を
+  そのまま利用しており、新規の仕組みは不要だった。
+
+  ※{CUSTOMSTYLE}（bbslog.php・bbstree.php等が個別ページ向けに注入する
+  追加スタイル。検索結果ページの強調表示色など）は今回の対象外とし、
+  従来通り`<style>{CUSTOMSTYLE}</style>`という小さなインライン
+  ブロックとしてtemplate.html内に残した（ページ関数呼び出しごとに
+  内容が変わるページ固有の仕組みのため、css.phpの汎用配色機構とは
+  別物として扱うのが妥当と判断）。
+
+  ※base64デコード処理は、bbs.php側のFunc::base64_threebytehex()と
+  同じロジックをcss.php内に独立実装した（bbs.php自体を直接require
+  すると、ルーティング処理までまとめて実行されてしまうため）。今後
+  エンコード方式を変更する場合は、両方を同時に更新する必要がある
+  旨をコード内コメントに明記した。
+
+  【動作確認】
+  css.phpを直接リクエストし、配色パラメータ無し（既定値）・
+  独自エンコードした配色パラメータあり（往復デコード検証済み）の
+  両方で、正しい16進数カラーコードがCSSに反映されることを確認。
+  php -lで構文確認。掲示板メイン・過去ログ検索・ツリー表示・
+  管理者ログイン・個人設定・管理メニューの全経路でHTTP 200・
+  {PLACEHOLDER}残り無しを確認。<link>タグと{CUSTOMSTYLE}用の
+  小さな<style>タグが正しく出力されることも確認した。
+
+============================================================
+2026-07-18T02:50 UTC
+------------------------------------------------------------
+【仕様判断確定：保留2件（現状維持で決定）】
+対象：readme.md
+
+引き継ぎ後、readme.mdのToDoに記載されていた保留2件について、
+擬古猫さんに判断を仰ぎ、いずれも「現状維持」で確定した。
+
+  [1] トップページ投稿フォームでの「書き込み完了」画面
+      → 現状（フォロー投稿時のみ表示）を維持。修正しない。
+  [2] bfcache起因の投稿内容残存対策（Cache-Control: no-store追加案）
+      → 追加しない。体感速度・スクロール位置保持を優先する
+        トレードオフとして受容。
+
+readme.mdのToDoセクションを「決定済み」の記述に書き換え、コード側の
+変更は行っていない。
+
+============================================================
+2026-07-18T03:05 UTC
+------------------------------------------------------------
+【バグ修正：ツリー表示（sub/bbstree.php）に未翻訳の英語ハードコード
+文字列が残存】
+対象：sub/bbstree.php, language/english.txt, language/japanese.txt
+
+擬古猫さんの実機スクリーンショット（qptns.com/test/bbs.php?m=tree、
+LANGUAGE_FILE=japanese）で、ページの大半は日本語表示なのに以下4箇所
+だけ英語のまま表示される不具合を発見。
+
+  【原因】
+  sub/ja・en統合およびbbs.php/bbslog.php側の$MSGプレースホルダ化は
+  以前のセッションで完了していたが、sub/bbstree.php自体はその作業の
+  対象から漏れており、次の文字列がPHPコード内に直書きされたままに
+  なっていた。
+    - 「Shown above are threads {bindex} through {eindex}, ...」
+      （スレッド範囲表示、m=tree一覧下部）
+    - 「There are no threads below this point.」（同上）
+    - 「[Date updated: ...]」（各スレッドの更新日時表示）
+    - 「User: 」（投稿者名の接頭ラベル）
+  なお「There are no unread messages. 」は既存キー
+  NO_UNREAD_MESSAGESと文言が完全一致していたため、新規キー追加は
+  せずそのまま流用した。
+
+  【対応】
+  language/english.txt・japanese.txtに以下3キーを新規追加
+  （tmpltree.html用セクションの直後に配置）：
+    TREE_RANGE_TEXT, TREE_NO_THREADS_BELOW, TREE_DATE_UPDATED,
+    TREE_USER_LABEL
+  bbs.php側の既存パターン（str_replace(['{BINDEX}','{EINDEX}'], ...,
+  T('POSTS_RANGE_NEWEST_TO_OLDEST'))）に倣い、TREE_RANGE_TEXTは
+  {BINDEX}/{EINDEX}をstr_replace()で解決。TREE_DATE_UPDATEDは%s形式
+  でsprintf()により解決（ネスト置換問題を避けるため、既存の11キー
+  修正と同じ方式）。
+
+  【動作確認】
+  php -l sub/bbstree.phpで構文確認。english.txt/japanese.txtの
+  キー集合が完全一致することをdiffで確認（重複キーも無し）。
+  loadLanguageFile()と同等のロジックを単体で実行し、日本語版で
+  「以上は、更新順（新しい順）3番目から10番目までのスレッドです。」
+  「[更新日時：2026-07-18 10:14:23]」「投稿者： 擬古猫」のように、
+  プレースホルダ残り無く正しくレンダリングされることを確認した。
+
+============================================================
+2026-07-18T03:40 UTC
+------------------------------------------------------------
+【バグ修正：sub/フォルダ全体の未翻訳ハードコード文字列の洗い出しと修正】
+対象：sub/bbslog.php, sub/bbsimage.php, sub/template.html,
+      sub/tmpltree.html, language/english.txt, language/japanese.txt
+
+前回のsub/bbstree.php修正を受け、擬古猫さんの指示によりsub/フォルダ
+配下の既存ファイル全体（bbsadmin.php, bbsimage.php, bbslog.php,
+template.html, tmpladmin.html, tmpllog.html, tmpltree.html,
+login.html, index.html）を対象に、同種の未翻訳ハードコード文字列が
+無いか機械的に洗い出した。
+
+  【発見1：sub/bbslog.php 過去ログ検索結果サマリー】
+  「For "keyword" there were N results found.」「no results found.」
+  が、LANGUAGE_FILE設定に関わらず常に英語で表示される状態だった。
+  新規キー SEARCH_RESULT_FOR_QUERY, SEARCH_RESULTS_COUNT,
+  SEARCH_NO_RESULTS を追加し、sprintf()経由でT()から解決するよう修正。
+
+  【発見2：sub/bbsimage.php エラーメッセージ2件】
+  file_uploads無効時／GetImageSize関数が存在しない場合にそれぞれ表示
+  される「Error: The file upload feature is not allowed.」
+  「Error: The image processing feature is not supported.」が未翻訳
+  だった（通常環境では発生しないエッジケースだが、念のため対応）。
+  新規キー UPLOAD_DISABLED_ERROR, IMAGE_PROCESSING_UNSUPPORTED_ERROR
+  を追加。
+
+  【発見3：sub/template.html・sub/tmpltree.html のtitle属性（ツール
+  チップ）多数】
+  ラベル本体のテキストは以前のテンプレート作業で$MSGプレースホルダ化
+  済みだったが、各種リンク・ボタンのtitle属性（マウスオーバー時の
+  説明文）はその対象から漏れており、25種類の英文がLANGUAGE_FILE設定
+  に関わらず常時英語表示のままだった（例：「Admin/Mod login」
+  「Browse and search through old posts.」「Save your settings and
+  return to the bulletin board.」等）。
+  $MSGは既にbbs.php側でarray_merge()によりテンプレートのグローバル
+  変数として一括登録される仕組みが存在していたため（2026-07-17の
+  {CUSTOMHEAD}対応時に導入済み）、PHP側の追加実装は不要で、
+  language/english.txt・japanese.txtに25キー（TITLE_プレフィックス）
+  を追加し、該当するtitle="..."をtitle="{KEY}"に置換するのみで対応
+  できた。
+  なお、キーボードショートカットの表記のみで構成される
+  title="Alt(+Shift)+X"（説明文を伴わないもの、およびsub/tmpladmin.html
+  内の同種のもの）は、言語に依存しない技術的表記のため翻訳対象外とし、
+  意図的に変更していない。
+
+  【動作確認】
+  bbs.php・sub/以下の全PHPファイルでphp -l実行、エラー無し。
+  english.txt/japanese.txtのキー集合が完全一致（250キー、重複無し）
+  することを確認。sub/template.html・tmpltree.html・tmpladmin.html・
+  tmpllog.htmlのpatTemplate:tmplタグの開閉数が変更前と同数であること
+  を確認（構造は変更していないため）。loadLanguageFile()相当の
+  ロジックで日本語版を実際にレンダリングし、追加した全キーのtitle内
+  プレースホルダが残らず、対応する日本語文言に正しく置換されることを
+  確認した。
+
+============================================================
+2026-07-18T04:10 UTC
+------------------------------------------------------------
+【新機能：bbs00.phpのパッチ2件を本体bbs.phpに反映（gikoneko.php統合）】
+対象：bbs.php, gikoneko.php（新規配置）, gikonekoadd.php（新規配置）
+
+擬古猫さんから提供されたパッチ2件を、bbs.php本体に反映した。
+
+  [1] 「ttp -> http converted」（setmessage()、youtube埋め込み
+      ブロック直後に追加）
+      投稿文中の意図的にhを省いた「ttp://」「ttps://」「ftp://」
+      「news://」表記を、表示テキストはそのまま・リンク先のみh
+      補完してクリック可能にする。
+
+  [2] gikoneko.php統合（prtmain()の「未読メッセージはありません」
+      分岐を置換）
+      未読が無いときの表示を、擬古猫の点取り占い風AA表示
+      （gikoneko.php:giko_display()の出力）に切り替え。
+      gikoneko.php・gikonekoadd.php（ことば投稿用の独立スクリプト）
+      をksphp-plus-mainルート直下に新規配置。
+
+  【動作確認】
+  bbs.php・gikoneko.php・gikonekoadd.php全てphp -lエラー無し。
+  PHP内蔵サーバー上で実際に投稿し、「ttp://example.com/test」が
+  `<a href="http://example.com/test">ttp://example.com/test</a>`
+  に変換されることを確認。擬古猫さんから提供されたテスト用
+  gikoneko_kotoba.dat（cgi-bin/に配置、gikoneko.phpから見て
+  ../cgi-bin/相対パス）を用いて、未読なし時にAA＋ことばが正しく
+  表示されることも確認した（本番のqptns.com側は既存のcgi-bin/
+  データをそのまま使う想定、パス自体は変更していない）。
+
+  【保留事項（readme.mdのToDoに追記、今回は未対応）】
+  - gikoneko.php / gikonekoadd.phpのUI文言（ページタイトル・
+    フォームラベル・エラーメッセージ）は日本語ハードコードのままで、
+    多言語化は本体側の$MSG機構に未統合。
+  - gikoneko.phpのgiko_fortune()は、ことばデータファイル
+    （../cgi-bin/gikoneko_kotoba.dat）が存在しない場合、file()の
+    生のPHP警告がページ出力に混入する（テスト環境で確認済み）。
+    file_exists()チェック等によるサイレントなフォールバックは未対応。
+
+============================================================
+2026-07-18T04:20 UTC（擬古猫さんによる作業）
+------------------------------------------------------------
+【実機側の配置変更：gikoneko_kotoba.dat / gikoneko.phpの参照パス】
+対象：gikoneko_kotoba.dat（実機）, gikoneko.php（実機）
+
+擬古猫さんの実機環境にて、gikoneko_kotoba.dat（仮データ）を
+ksphp-plus-mainルート直下に配置。あわせて、gikoneko.php側の
+データ参照部分（giko_fortune()内の$giko_dirパス指定）もルート
+参照に変更した。
+
+  ※前回セッションのテストでは、gikoneko_kotoba.datを
+  ../cgi-bin/（ksphp-plus-mainと同階層のcgi-bin/フォルダ）に
+  配置する前提で動作確認していたが、擬古猫さんの実機では
+  ルート直下配置に変更されている。本ドキュメント側のパス前提も
+  実機の構成に合わせて訂正する。
+
+============================================================
+2026-07-18T04:35 UTC
+------------------------------------------------------------
+【バグ修正：gikoneko.phpのデータファイル参照パスの連結ミス】
+対象：gikoneko.php
+
+擬古猫さんが実機に合わせて`../cgi-bin/gikoneko_kotoba.dat`から
+`./gikoneko_kotoba.dat`（ルート直下参照）へ変更した際の公開用
+ファイルに、パス連結のバグを発見。
+
+  【原因】
+  $giko_dir（__DIR__、末尾にスラッシュを含まない）に対して、
+  スラッシュを含まない'./gikoneko_kotoba.dat'を直接連結していた
+  ため、"ksphp-plus-main./gikoneko_kotoba.dat"という、ディレクトリ名
+  とファイル名の間にスラッシュが無い不正なパス文字列になっていた。
+  実際にfile()がこのパスを開けず、以前修正対象とした「データファイル
+  不在時にPHP警告がページに混入する」現象がそのまま再現することを
+  確認した（原因は「ファイルが無い」ことではなく「パス文字列の
+  組み立てミス」だった）。
+
+  【対応】
+  擬古猫さんにより`$giko_dir . '/gikoneko_kotoba.dat'`
+  （スラッシュのみ、ドット無し）に修正済み。
+
+  【動作確認】
+  php -lで構文確認。実際にgikoneko_kotoba.datを配置した状態で
+  giko_display()を呼び出し、PHP警告が出ないこと、AA＋ことばが
+  正しく表示されることを確認した。
+
+============================================================
+2026-07-18T05:40 UTC
+------------------------------------------------------------
+【機能追加：gikoneko.php / gikonekoadd.phpの多言語化】
+対象：gikoneko.php, gikonekoadd.php, language/japanese.txt,
+      language/english.txt
+
+保留事項1「gikoneko.php / gikonekoadd.phpの多言語化」に対応。
+本体（bbs.php）の$MSG機構に統合し、新規キー22個を追加
+（language/japanese.txt・english.txt、日英とも272キーで完全一致
+確認済み）。
+
+  【gikoneko.php】
+  giko_display()内、見出し部（GIKO_TOGETHER・GIKO_TEACH_LINK_TEXT）
+  と、おみくじ結果ラベル12種（小吉〜楽吉。凶と吉は複数箇所で
+  同一キーを再利用）をT()呼び出しに置換。本ファイルはbbs.php内
+  から$MSG確立後にrequire_once されるため、追加の読み込み処理は
+  不要（T()はグローバル関数のためそのまま呼び出し可能）。
+
+  【gikonekoadd.php】
+  単体で直接呼び出される独立スクリプトのため、bbs.php本体は
+  requireせず、conf.php（$CONF['LANGUAGE_FILE']取得用）のみを
+  読み込み、bbs.php内のloadLanguageFile()と同等の軽量な言語
+  ファイル読み込み処理・T()関数をローカルに実装（既存のsub/配下の
+  スタンドアロンスクリプトが独自にエラー表示関数等を持つのと
+  同じ設計方針）。タイトル・エラーメッセージ・投稿完了画面・
+  入力フォームの文言をすべてT()経由に置換。
+
+  【動作確認】
+  php -lで両ファイルの構文確認。日本語・英語それぞれの言語
+  ファイルを読み込ませ、giko_display()の出力（見出し・おみくじ
+  ラベル）が正しく翻訳されることを確認。gikonekoadd.phpは
+  投稿・重複投稿・フォーム表示の3パターンをスタンドアロン実行で
+  確認し、いずれも正常に動作。
+
+------------------------------------------------------------
+【バグ修正：gikonekoadd.phpのデータファイル参照パスの不整合】
+対象：gikonekoadd.php
+
+$dataの参照先が`$giko_dir . '/../cgi-bin/gikoneko_kotoba.dat'`の
+ままとなっており、gikoneko.php側（giko_fortune()）が参照する
+`$giko_dir . '/gikoneko_kotoba.dat'`（ルート直下）と一致していな
+かった。2026-07-18T04:35 UTCの記録にある通り、実機ではルート直下
+配置に統一されているため、gikonekoadd.php側もgikoneko.phpと同じ
+パス（`$giko_dir . '/gikoneko_kotoba.dat'`）に修正した。この不一致
+により、gikonekoadd.phpで教えた言葉がgikoneko.php側の占いに反映
+されない状態になっていた（機能しないコードのため、確認を取らずに
+修正）。
+
+  【動作確認】
+  gikonekoadd.phpでの投稿がgikoneko_kotoba.datに追記され、
+  同ファイルをgikoneko.php側のgiko_fortune()が正しく読み込める
+  ことをスタンドアロン実行で確認した。
+
+------------------------------------------------------------
+【機能追加：giko_fortune()のデータファイル自動生成】
+対象：gikoneko.php
+
+保留事項2「giko_fortune()：データファイル不在時、file()の生の
+PHP警告がページ出力に混入する問題」に対応。file_exists()による
+事前チェックを追加し、データファイルが存在しない場合は空ファイル
+を自動生成（file_put_contents）した上でfile()を呼び出すよう変更。
+これにより、データファイル不在時にも生の警告が出力に混入せず、
+処理がそこで止まらない（giko_fortune()は空文字列を返し、以降の
+呼び出しでは自動生成済みのファイルがそのまま使われる）。
+
+  【動作確認】
+  php -lで構文確認。GIKO_DATA_DIRを一時ディレクトリに向けて
+  データファイルが存在しない状態でgiko_display()を呼び出し、
+  PHP警告が出力されないこと、および呼び出し後にファイルが
+  自動生成されていることを確認した。
+
+============================================================
+2026-07-18T06:10 UTC
+------------------------------------------------------------
+【機能追加：ayashiibreaker.js 日本語向け改行アルゴリズム（禁則処理）】
+対象：js/ayashiibreaker.js
+
+保留事項3「日本語（スペース区切りが無い言語）向け改行アルゴリズム
+調整」に対応。別スレッドで完成した ayashiibreaker.js v0.4.0
+（ayashiibreaker.zip添付）を反映。
+
+  【変更内容（v0.3.1→v0.4.0）】
+  日本語文字を含む行は、スペース区切りではなく文字数ベースで改行
+  し、禁則処理（行頭禁則・行末禁則）を適用するよう変更。行ごとに
+  日本語判定（isJapanese()）を行うため、多言語混在の投稿にも
+  自動対応。checkLineLengths()側も、日本語行には「単語1つが
+  MAX_LENGTHを超える場合はアラート抑制」という非日本語向けの
+  救済ロジックを適用しないよう調整済み（日本語行は文字単位で常に
+  改行可能なため）。
+
+  【マージ時の対応】
+  別スレッド側のv0.4.0では、addButton()内のボタンラベルが
+  window.KSPHP_LANG参照（2026-07-17に導入した多言語対応）を
+  経由せず、"Make line breaks"のハードコード に戻ってしまって
+  いた。既存の多言語対応を退行させないよう、
+  `(window.KSPHP_LANG && window.KSPHP_LANG.MAKE_LINE_BREAKS_BTN) || "Make line breaks"`
+  の参照を復元してマージした（挙動を変える仕様判断ではなく、
+  既存機能の退行防止のため確認を取らずに復元）。
+
+  【動作確認】
+  node --checkで構文確認。isJapanese()・breakJapaneseLine()を
+  単体で実行し、禁則処理（行頭・行末とも）が正しく機能することを
+  確認した。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【ドキュメント追加：Migration Engine設計仕様メモ】
+対象：doc/migrate-spec-2026-07-19-01.txt（新規）
+
+ChatGPTさんとのレビュー内容、および基さんとの検討で固まった
+Migration Engineの設計決定事項を記録した仕様メモを新規作成。
+コード実装はまだ行っていない（設計合意の記録のみ）。
+
+主な決定事項：
+* Migration Engineはbbs.php本体に組み込まず独立ファイル
+  （migrate.php想定）とする。理由：(1)本体組み込みだと毎リクエスト
+  ごとに旧ファイル検索・バックアップ試行が走る構成になり「速い・
+  軽い」原則に反する、(2)bbs.php自体はコピー対象ファイルであり、
+  上書きの危険がある
+* 呼び出しはbbs.php側から自動（初回起動時のみ、以降はスキップ）。
+  手動実行前提のinstall.phpという発想ではなく自動移行エンジンとして
+  設計
+* バックアップは実行ごとに個別フォルダへ格納し、フォルダ構成は維持
+  （同名ファイルの上書き衝突を回避するため、リネーム方式ではなく
+  フォルダ分離方式を採用）
+* CSS外部動的生成（css.php）は既に対応済みであることを確認
+* データベースは不採用の方針を再確認
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【新規実装（ドラフト）：migrate.php（Migration Engine本体）】
+対象：migrate.php（新規）
+
+doc/migrate-spec-2026-07-19-01.txtの決定事項に基づき、
+Migration Engine本体の初版ドラフトを実装。bbs.php・conf.phpからは
+まだ呼び出していない（レビュー待ちの単体ドラフト）。
+
+  【動作】
+  ksphp_migrate()を呼ぶと、data/.migratedマーカーの有無を確認し
+  （存在すれば即return、file_exists() 1回分のコストのみ）、無ければ
+  旧構成ファイル（bbs.log, log/, bbs.cnt, count/,
+  gikoneko_kotoba.dat）の存在を確認する。1つでも見つかれば
+  backup/YYYY-MM-DD-NN/（フォルダ分離方式、当日中は連番）へ丸ごと
+  コピーし、コピー成功を確認できたファイル／ディレクトリのみ
+  rename()でdata/またはlogs/へ移動する。migration.logをbackupフォ
+  ルダ内に生成し、最後にマーカーファイルを作成する。旧ファイルが
+  1つも無い場合（新規設置）は、backupを作らずマーカーのみ立てる。
+
+  【動作確認（/tmp配下の一時ディレクトリでスタンドアロン実行）】
+  1. 旧構成一式（bbs.log, log/2020.log, bbs.cnt, count/count,
+     gikoneko_kotoba.dat）を用意して実行→全ファイルが正しく
+     backup/2026-07-18-01/へ複製された上でdata/・logs/へ移動され、
+     migration.logの内容も想定通りであることを確認
+  2. 同ディレクトリで2回目実行→マーカー検知により0.01ms未満で
+     即終了し、backupフォルダが増えないことを確認
+  3. 旧ファイルが1つも無い新規設置を想定したディレクトリで実行→
+     backupを作らずマーカーのみ生成されることを確認
+
+  【未着手・今後の課題】
+  conf.php側のパス設定（LOGFILENAME・CNTFILENAME・OLDLOGFILEDIR・
+  COUNTFILE等）を新構成（data/・logs/）に合わせて書き換える作業、
+  およびbbs.php側からのrequire_once・ksphp_migrate()呼び出しの
+  組み込みは、まだ行っていない。conf.php/bbs.php本体を触る変更に
+  なるため、この初版ドラフトのレビュー後に別途対応する。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【Migration Engineの本組み込み：conf.php / bbs.php / gikoneko.php / gikonekoadd.php】
+
+基さんより実機conf.php（conf.zip）の提供を受け、07-17バックアップ
+との差分を確認した上で、実機の値を土台に以下を反映した。
+
+  【実機conf.phpとの差分確認】
+  BBSTITLE・ADMINMAIL・ADMINPOST・ADMINKEY・SECRETCODE（Cloudflare
+  Turnstile）・META_DESCRIPTION・リンク一覧・NGワード・トリップ
+  コード辞書・LOGSAVE・MAXMSGCOL・MAXMSGLINE・COUNTDATE・COUNTLEVEL・
+  TXTUNDO・ZIPDIR・INFOPAGE等、実機固有の設定値はすべて維持し、
+  一切変更していない（diffで確認済み）。
+
+  【1点統合したもの：TEMPLATE_LANGUAGE → LANGUAGE_FILE】
+  実機conf.phpは2026-07-16の言語ファイル統合（sub/ja・sub/en廃止）
+  以前の'TEMPLATE_LANGUAGE' => 'ja'キーのままだった。本日までの
+  gikoneko.php等の多言語化作業は新しい'LANGUAGE_FILE'キーを前提と
+  しているため、意図（日本語表示）はそのままに
+  'LANGUAGE_FILE' => 'japanese'へ置き換えた（META_LANGUAGE'ja'
+  キーは無関係のため変更なし）。
+
+  【conf.php：新構成パスへの4項目書き換え】
+  LOGFILENAME: ./bbs.log → ./logs/bbs.log
+  OLDLOGFILEDIR: ./log/ → ./logs/log/
+  COUNTFILE: ./count/count → ./data/count/count
+  CNTFILENAME: ./bbs.cnt → ./data/bbs.cnt
+
+  【bbs.php：Migration Engineの呼び出しを追加】
+  require_once("./conf.php")の直後に
+  require_once("./migrate.php"); ksphp_migrate();
+  を追加。2回目以降のリクエストではdata/.migratedマーカーの
+  file_exists()判定のみで即returnする。
+
+  【gikoneko.php / gikonekoadd.php：デフォルトデータパス変更】
+  $giko_dirのデフォルトを__DIR__から__DIR__.'/data'へ変更
+  （GIKO_DATA_DIR環境変数による上書きは従来通り可能）。
+
+  【動作確認（/tmp配下でのエンドツーエンド検証）】
+  実際のconf.php・migrate.phpを用い、旧構成一式（bbs.log, log/,
+  bbs.cnt, count/, gikoneko_kotoba.dat）を配置した状態でrequire
+  conf.php→require migrate.php→ksphp_migrate()を実行。移行後、
+  $CONF['LOGFILENAME']・$CONF['OLDLOGFILEDIR']・$CONF['CNTFILENAME']
+  がいずれも新しいパスで正しくfile_exists()することを確認。続けて
+  gikoneko.phpを同環境でrequireし、GIKO_DATA_DIR未設定のまま
+  giko_fortune()がdata/gikoneko_kotoba.datを正しく読み込めることも
+  確認した。
+
+  【未着手】
+  gikonekoadd.php側の実データファイル書き込みを含めた本番相当の
+  投稿テストは未実施（gikoneko.php側の読み込み確認のみ）。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【バグ修正：gikonekoadd.phpのconf.php/language参照パス破損】
+対象：gikonekoadd.php
+
+前回の「デフォルトデータパスをdata/配下に変更」作業で、$giko_dirを
+conf.php・language/の参照にも使い回していたため、conf.phpの
+require_once先が誤って「data/conf.php」（存在しないパス）になり、
+Fatal errorで落ちる状態になっていた。エンドツーエンドの投稿テストで
+発覚。
+
+  【修正】
+  $script_root（= __DIR__、conf.php・language/の基準）と、$giko_dir
+  （データファイル用、GIKO_DATA_DIR環境変数またはdata/）を分離した。
+
+  【動作確認】
+  修正後、移行済み環境（conf.php・migrate.php実行済み）で
+  gikonekoadd.phpの投稿・重複投稿・gikoneko.php側での新規語読み込み
+  を一通り実行し、いずれも正常に動作することを確認した。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【改良の移植：6042.zip（外部で作成された修正版）からの取り込み】
+対象：gikonekoadd.php, language/japanese.txt, language/english.txt
+
+基さんより提供された6042.zip（2026-07-16付、gikoneko.php/
+gikonekoadd.phpの独自修正版一式）を確認。多言語化は既に本セッションで
+$MSG/LANGUAGE_FILE方式にて対応済みだったため、そちらの構成は維持し、
+6042.zip側の改良点のうち以下4点を移植した（方式(A)：基さん確認済み）。
+
+  1. ホストチェック（$bbshostによる「呼び出し元が不正です。」判定）を
+     撤廃。HTTP_HOSTヘッダは呼び出し元が任意に詐称できるため、実質的な
+     セキュリティ効果はほぼ無く、撤廃してもリスク増は小さいと判断。
+     不要になったGIKO_ERR_BAD_HOSTキーも言語ファイルから削除。
+  2. 書き込みの成否（file_put_contents()の戻り値）を確認してから完了
+     画面を出すよう変更。失敗時はデータファイルのパスを示すエラーを
+     表示する（GIKO_ERR_WRITE_FAILEDキーを新設）。
+  3. データファイルが改行で終わっていない場合でも、新しいことばが
+     最終行に連結されず正しく新しい行として追記されるよう対応。
+  4. ことばの長さをサーバー側でも検査するよう変更（従来はHTMLの
+     maxlengthのみに依存）。超過時はGIKO_ERR_TOO_LONGを表示。
+
+  ※6042.zip側はconf.phpの'TEMPLATE_LANGUAGE'キーを参照する設計だったが、
+  本日の作業で同キーは'LANGUAGE_FILE'へ統合済みのため、上記4点の移植に
+  あたっては$MSG/T()方式へ読み替えて実装した。
+
+  【追加の修正】
+  移植時にfile_put_contents()・fopen()の呼び出しに@を付け、生のPHP
+  警告が出力に混入しないようにした。また、gikonekoadd.php単体が
+  bbs.php（Migration Engine）より先に呼ばれるケースに備え、data/
+  ディレクトリが無ければここでも自動生成するようにした。
+
+  【動作確認】
+  以下をすべて/tmp配下のスタンドアロン実行で確認：
+  - フォーム表示、通常投稿、重複投稿（従来通り正常動作）
+  - 末尾に改行の無いデータファイルへの追記が正しく改行区切りになる
+  - 長すぎることばの投稿がGIKO_ERR_TOO_LONGで正しく拒否される
+  - 存在しないディレクトリを指定した書き込み失敗時、生の警告無しで
+    GIKO_ERR_WRITE_FAILEDが表示される
+  - data/ディレクトリが存在しない状態からの投稿でも自動生成され
+    正常に書き込まれる
+
+  【未対応（保留、基さんの判断待ち）】
+  5. 運勢AAのif/elseif連鎖を$GIKO_FORTUNES配列へ再構成する案は、
+     より大きな構造変更のため今回は見送り、別途確認を取る。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【構造変更：運勢AAをif/elseif連鎖から$GIKO_FORTUNES配列へ再構成】
+対象：gikoneko.php
+
+6042.zipで保留していた項目5について、基さんより「今後ラクになる
+なら導入」の確認を得て実施。
+
+  【変更内容】
+  15個のif/elseif分岐を$GIKO_FORTUNES配列（'label'・'weight'・'aa'）
+  に再構成。{label}はT()キーの訳語に、{kotoba}はgiko_fortune()の
+  結果に置換される。{kotoba}は同一AA内に複数書けるようにし
+  （轟吉=3箇所、愛吉=2箇所は従来通りそれぞれ独立した抽選結果になる）、
+  重み付き乱数選択（既定重み1、通常の【吉】のみ11）で、旧来の
+  random_int(0,24)によるif/elseif連鎖と同じ出現確率を維持した。
+  新しいAAを追加する場合は配列末尾に1項目足すだけでよい。
+
+  【動作確認】
+  1. 25000回試行の統計検証：合計【吉】51.9%（理論値13/25=52%）、
+     【凶】7.8%（理論値2/25=8%）、他の各運勢は約4%（理論値1/25=4%）
+     で、旧仕様の確率分布と一致することを確認。
+  2. 全25パターン（points=0〜24相当）について、旧ロジック（本セッ
+     ション冒頭の多言語化直後の版）と新ロジックの出力をT()・
+     giko_fortune()を固定値にモックした上でバイト単位でdiff比較し、
+     完全一致することを確認（作成時に【吉】の1ブロックでラベル行を
+     落とすミスがあったが、この比較で発見し修正した）。
+  3. 轟吉（{kotoba}×3）・愛吉（{kotoba}×2）について、データファイルに
+     複数語がある状態で、各{kotoba}が独立にランダム選択されること
+     （同じ語が固定的に繰り返されないこと）を確認。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【Migration Engineの対象範囲を最終決定】
+対象：doc/migrate-spec-2026-07-19-01.txt
+
+upload/（画像アップロード）・archive/（過去ログzip、ZIPDIR）は
+容量が大きくバックアップコストが重いため、Migration Engineの
+移行対象から明確に除外することを決定（現状のパスのまま流用、
+コード変更なし。migrate.phpは元々この2つを対象に含めていなかった
+ため実装上の変更は不要）。bbs.log・log/・bbs.cnt・count/・
+gikoneko_kotoba.datはテキストベースで軽量なため、引き続き移行対象
+のまま。config/管理パスの配置は次段階へ持ち越し。仕様メモに対応
+状況の一覧も追記した。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【公開前最終レビュー：migrate.php】
+
+「省リソースなし」で通しレビューを実施し、以下3点を修正した。
+
+  1. 冒頭のドキュメントコメントが「bbs.php/conf.phpにはまだ組み込んで
+     いないドラフト」のまま古くなっていた。実際には既に本組み込み
+     済みのため、現状（対応済み事項・移行対象範囲の最終決定）に
+     合わせて更新した。
+  2. 【重要】移行先（data/またはlogs/）に既に同名のファイル／
+     ディレクトリが存在する場合、rename()でそのまま上書きしてしまう
+     可能性があった（想定外の状態、例：手動で先にdata/へ何か置いて
+     あった場合）。移行先の存在チェックを追加し、既にある場合は
+     上書きせずスキップ（元データはルートに残る）するよう修正した。
+  3. migrate.php作成時に改行コードがLFになっていた（プロジェクト
+     全体はCRLF）。CRLFに統一した。
+
+  【動作確認】
+  - 通常の移行（回帰確認）：修正前と同じ結果になることを確認
+  - 移行先に既存ファイルがある場合：上書きされず、ルート側・data側
+    双方のデータがそのまま残り、migration.logに
+    「already exists, not migrated」と記録されることを確認
+  - conf.php・migrate.php・gikoneko.php・gikonekoadd.phpの一式を
+    通しで実行し、$CONFの全パス解決・投稿・占い読み込みが問題
+    ないことを再確認
+
+  【既知の制約（コメントに明記）】
+  複数リクエストが同時に初回移行を踏んだ場合の排他制御は行って
+  いない。小規模コミュニティ向けの低トラフィック環境を前提としており、
+  競合時もデータ破損は起きない設計だが、厳密な排他が必要な環境では
+  別途検討が必要。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【重大バグ修正：gikoneko.phpの$GIKO_FORTUNES変数がクラスメソッド内
+require時にグローバルとして参照できない問題】
+対象：gikoneko.php
+
+実機で500エラー（Fatal error: random_int()のmin>max）が発生し調査。
+原因は、gikoneko.phpがbbs.php側でクラスメソッド内から
+require_once されるため、トップレベルの$GIKO_FORTUNES = array(...)が
+「そのメソッドのローカル変数」になってしまい、giko_display()内の
+global $GIKO_FORTUNES;では参照できず、常にnullになっていたこと
+（PHP標準の挙動：require/includeは呼び出し元のスコープで実行される
+ため）。CLIから直接requireするテストでは問題が再現せず、本番の
+呼び出し文脈で初めて表面化した。
+
+  【修正】
+  $GIKO_FORTUNESをトップレベル変数ではなく、ksphp_giko_fortunes()
+  という関数の戻り値として定義するよう変更した。PHP関数はrequireの
+  スコープに関わらず常にグローバルに登録されるため、この問題を
+  回避できる。giko_display()側もglobal宣言をやめ、関数呼び出しの
+  結果をローカル変数として受け取るよう変更。
+
+  【動作確認】
+  クラスメソッド内からgikoneko.phpをrequire_once・giko_display()を
+  呼び出す実際の文脈を再現し、警告・エラー無く正常に動作すること、
+  および2回目の呼び出し（require_onceの再入）でも問題ないことを
+  確認した。
+
+------------------------------------------------------------
+【500エラーの根本原因判明：sub/フォルダの構成不備】
+
+実機の`ksphp-plus-main/sub/`にpatTemplate.php等のコア依存ファイルが
+一切無く（bbs.php本体は用意されていたが、sub/フォルダ自体が存在
+しなかった）、これが直接の原因だった。
+
+  基さんより提供された`ksphp-plus-main-2026-07-17-04.zip`（07-17時点
+  の完全バックアップ）に、bbs.phpが要求する「sub/直下に統一された
+  構成」（bbsadmin.php・bbsimage.php・bbslog.php・bbstree.php・
+  template.html・tmpladmin.html・tmpllog.html・tmpltree.html・
+  login.html・index.html・patTemplate.php・patTemplate/・
+  phpzip.inc.php）がすでに完備されていることを確認。これに
+  `ksphpfix-2026-0718-04.zip`（07-18差分）のsub/更新分
+  （bbsimage.php・bbslog.php・bbstree.php・template.html・
+  tmpltree.html）を重ねて最終版のsub/を再構成した。
+
+  なお、GitHub公式最新（ksphp-plus-main.zip、07-16時点）は
+  sub/en・sub/jaの分割構成のままで、sub/直下への統一はまだ
+  取り込まれておらず、直接は使えないことも確認した。
+
+  sub/配下のPHPファイル（bbsadmin.php・bbsimage.php・bbslog.php・
+  bbstree.php）はT()/$MSG方式で既に多言語化済みであることも確認
+  した（ハードコードされた日本語文字列は見当たらなかった）。
+
+  【動作確認】
+  再構成したsub/一式・修正済みgikoneko.php・今回のセッションの
+  全変更を合わせた状態で、bbs.phpをクラスメソッド呼び出しの文脈を
+  含めて実行し、警告・Fatal errorが一切無く、ページ全体
+  （KSPHP_LANGへの$MSG全件埋め込みを含む）が正常に出力される
+  ことを確認した。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【install/install.php を診断専用から実導入ツールへ拡張】
+対象：install/install.php（更新）、install/newbbs/（新設）
+
+「bbs.phpが実質のインストーラーというのは変」というご指摘を受け、
+install.phpに実際の導入処理（ファイル配置）を持たせる方針に変更。
+
+  【構成】
+  install/newbbs/ に、導入する新バージョンの完全な一式
+  （bbs.php・conf.php・migrate.php・gikoneko.php・gikonekoadd.php・
+  css.php・sub/・js/・language/・doc/・README.md）を格納する。
+  data系の実データファイル（bbs.log・bbs.cnt・count/・log/・
+  gikoneko_kotoba.dat）は含めない方針とし、導入処理もこれらの
+  パスには一切触れない。
+
+  【導入処理（ksphp_install_run()）】
+  install/newbbs/ の内容をサイトルート（install/の一つ上）へ
+  コピーする。上書きされる既存ファイルは、コピー前に必ず
+  install/backup/YYYY-MM-DD-NN/ へ退避する（フォルダ分離方式、
+  migrate.phpと同じ考え方）。導入完了後、migrate.php（Migration
+  Engine）を自動的に呼び出し、旧構成データがあればdata/・logs/へ
+  移行する。
+
+  【動的表示（AJAX）】
+  「セットアップを実行する」ボタン押下で、ページ全体を再読み込み
+  せずにfetch()で導入処理を実行し、結果ログを1行ずつ表示する。
+  完了後は書き込み権限・Migration Engine状態も再取得して表示を
+  更新する（?ajax=1&action=run_setup / ?ajax=1&action=status の
+  2エンドポイントをinstall.php自身に持たせた）。
+
+  【bbs.php自動検出との連携（既存機能）】
+  従来通り、install.phpの設置場所から出発してbbs.phpを自動検出し、
+  conf.php・migrate.phpの併存有無から「KSPHP Plus系か無関係の設置か」
+  を判定する機能はそのまま維持。
+
+  【動作確認】
+  1. 新規サイト（bbs.php等が一切無い状態）でセットアップ実行→
+     68ファイルすべてが正しく導入され、bbs.phpが警告・エラー無く
+     正常動作することを確認。
+  2. 導入済みの状態でconf.phpを手動編集した上で再度セットアップ
+     実行→編集済みconf.phpがinstall/backup/へ正しく退避された上で
+     新バージョンに上書きされ、かつdata/・logs/・.migratedマーカー・
+     bbs.log等の実データ・状態には一切影響が無いことを確認
+     （今回のトラブルの再発防止を直接検証）。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【改良：install.php セットアップ完了後にbbs.phpへのリンクを表示】
+対象：install/install.php
+
+実機での動作確認（権限修正→セットアップ実行→導入完了、投稿ログも
+保持されていることを確認）を経て、基さんより「完了後、確認の
+手間を減らすためbbs.phpへのリンクが欲しい」との要望。導入ログの
+最終行の後に「→ bbs.php を開く」というリンク（新規タブで開く、
+install.phpから見た相対パス ../bbs.php）を表示するよう追加した。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【install.php：複数bbs.php検出時、それぞれに個別導入できるよう対応】
+対象：install/install.php
+
+「複数のbbs.phpがある場合、それぞれの場所を特定して個別に導入
+できるように」との要望に対応。
+
+  【変更内容】
+  - 候補検出ロジックをksphp_install_find_candidates()として関数化
+    （ページ描画・AJAX双方から共通利用）
+  - 検出テーブルの各行にチェックボックスを追加、「全選択」「全解除」
+    ボタンを設置（既定では最初の候補＝このinstall.phpに対応する
+    導入先のみチェック済み）
+  - 「セットアップを実行する」は、チェックされた候補を順番に処理
+    する方式に変更。?ajax=1&action=run_setup&target=N という形で、
+    候補一覧のインデックス番号のみをクライアントから受け取り、
+    サーバー側で候補一覧を再計算してパスを解決する（任意のパスを
+    クライアントから直接受け取らない設計とし、パストラバーサル等
+    のリスクを避けた）
+  - バックアップ先はinstall/backup/targetN/YYYY-MM-DD-NN/と、
+    導入先ごとに分離。複数の導入先を同時に扱ってもバックアップが
+    混ざらない
+  - 書き込み権限・Migration Engine状態の表示（3〜5節）は、主対象
+    （install.phpの直近の親フォルダ）のみを表示する形に簡略化。
+    複数対象それぞれの詳細はセットアップ実行時のログで確認する方針
+
+  【動作確認】
+  旧設置（bbs.php単体、conf.php無し）と、KSPHP Plus系設置
+  （install/install.php自身が置かれている場所）が兄弟フォルダに
+  併存する状態を再現し、候補一覧に両方が正しく表示されること、
+  target=1（旧設置側）を指定してセットアップ実行すると、旧設置側
+  にのみ導入され、対応するtarget1専用のバックアップフォルダに
+  旧bbs.phpが正しく退避されること、KSPHP Plus系設置側（target0）
+  には一切影響がないことを確認した。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【install.php：本体がbbs.php以外にリネームされている場合に対応】
+対象：install/install.php
+
+「bbs.phpがdiary.php等にリネームされている場合、検出できるか」との
+質問に対応。
+
+  【検出（(a)対応）】
+  候補検出をファイル名"bbs.php"固定から、ディレクトリ直下のPHP
+  ファイルの中身を軽く確認する方式に変更（$CONF['VERSION']の
+  特徴的な記述の有無で判定、深い再帰走査はしない）。これにより、
+  ファイル名が何であっても本体を検出できるようになった。
+
+  【導入時のファイル名維持（(b)対応、基さん確認済み）】
+  検出時にファイル名（例：diary.php）を保持し、導入処理でも
+  newbbs/bbs.php を対象ディレクトリの実際のファイル名（例：
+  diary.php）としてコピーするよう変更した（ksphp_install_run()に
+  $entry_filenameパラメータを追加）。これにより、余分な"bbs.php"が
+  新規生成されることを防ぎ、既存のリネームを尊重する。導入ログにも
+  「本体ファイル名は{name}として検出されたため...」と明示する。
+  「導入先を開く」リンクも、検出したファイル名に対応する形に変更した
+  （対象#0のみ ../{ファイル名} で開ける。対象#1以降は従来通り
+  URLの自動解決ができないため、その旨を案内する）。
+
+  【動作確認】
+  bbs.phpをdiary.phpにリネームした環境を用意し、install.phpが
+  正しくdiary.phpを検出（VERSION・判定表示含む）すること、
+  セットアップ実行で新規のbbs.phpが生成されず、diary.phpとして
+  正しく導入・上書き前のdiary.phpがバックアップされること、
+  導入後のdiary.phpが警告なく正常動作することを確認した。
+
+【本セッションでのパッケージングについて】
+基さんの指示により、以降は明示的に「ZIP作成」の指示があるまで
+パッケージング（zip化）は行わない（nogo）。
+
+============================================================
+2026-07-19T (UTC、複数セッション分をまとめて記載)
+------------------------------------------------------------
+【bbs.php：掲示板表示処理のワンパス化・省メモリ化】
+対象：newbbs/bbs.php
+
+掲示板表示（getdispmessage()）が、file()でログ全件を配列化して
+から必要な範囲だけ切り出す設計だったため、LOGSAVEを大きく設定
+した掲示板ほど、閲覧のたびに無駄なメモリを消費していた。
+
+  Func::fgetline()による1行ずつのストリーム読みに変更し、表示に
+  必要な範囲（bindex〜eindex）のみメモリに保持するよう変更した。
+  array_splice()のPHP独自仕様（負のoffset／lengthで「末尾から
+  数える」）が必要になる稀なケース（bindexが負、または
+  eindex-bindexが負）は、行数だけ数える事前パス＋対象範囲のみ
+  再読み込みする2パス方式にフォールバックし、厳密に同じ挙動を
+  再現する。
+
+  msgsearchlist()の現行ログ検索（ユーザー・スレッド検索）も同様に
+  loadmessage()（file()一括読み込み）からストリーム読みに変更した
+  （過去ログ検索側は元々ストリーム読みだったため、これで両方が
+  同じ方式に統一された）。
+
+  【検証】
+  - 新旧アルゴリズムの純ロジックfuzzテスト（13,202通り）、実装
+    コードそのものを実ファイルI/O経由で検証する統合テスト
+    （getdispmessage: 3,240通り、msgsearchlist: 50通り）で全件一致
+    を確認。
+  - 実ログ（102,300行・約41〜58MB相当）での負荷テストで、通常表示
+    時のピークメモリが約131MB→約2MBに削減されることを確認。
+  - 震災等のアクセス集中を想定した同時実行テスト（100並列）で、
+    旧実装はサーバーのメモリ不足によりOOM Killerで54プロセスが
+    強制終了したのに対し、新実装は100/100成功することを確認。
+
+【bbs.php：コメントアウト済みyoutube埋め込み処理の削除】
+対象：newbbs/bbs.php
+
+ytthumb.js側で対応済み（2024-10-16、埋め込みは表示を遅くするため
+非推奨化）のため、コメントアウトされたまま残っていた旧youtube
+埋め込み処理（3パターン分、説明コメント含め12行）を削除した。
+
+【bbs.php・conf.php：「擬古猫といっしょ」のconf.php設定化】
+対象：newbbs/bbs.php、newbbs/conf.php
+
+未読0件時の「擬古猫といっしょ」表示を、conf.phpの新設定
+GIKONEKO_TOISSHO（あり=1／なし=0、既定値1）で切り替え可能にした。
+0の場合は、これまでコメントアウトされていた旧処理
+（NO_UNREAD_MESSAGES表示）にフォールバックする。旧設置からの
+アップグレード時は、conf.phpマージにより新規項目として自動的に
+追加されることをテストで確認済み。
+
+【install.php：新規インストール先フォルダ選択機能】
+対象：install/install.php
+
+近隣スキャンで見つからない場所（未設置の新規フォルダ等）にも
+導入できるよう、テキスト入力＋「新規に追加」ボタン＋確認ステップ
+を追加した。実際の導入処理は既存の導入先と完全に同じ経路
+（バックアップ→マージ→コピー）を通る。入力パスは"../"等のディレクト
+リトラバーサルを拒否するバリデーションを実装（実ファイルI/O経由の
+テストで、トラバーサル拒否・正常系とも確認済み）。
+
+【install.php：多言語化（日本語／English）】
+対象：install/install.php、install/language/{japanese,english}.txt（新規）
+
+bbs.php本体と同じ単一スクリプト＋言語ファイル切り替え方式を
+install.phpにも適用。既定言語は日本語。ページ上部にスクロール
+ボックス（日本語／English）を設置し、選択言語はAJAX実行時のログ
+文言にも反映される。識別できた82個の文言キーすべてを翻訳対象とし、
+使用キーと言語ファイル定義キーの整合性を確認済み。
+
+【install.php：導入先パスの安全ガード】
+対象：install/install.php
+
+過去に「ルートフォルダに設置すると全削除される」事故があったとの
+指摘を受け、導入処理（ksphp_install_run()）の入り口で、導入先が
+空文字列・"/"・浅すぎるパス（例："/var"）・install/フォルダ自身
+またはその配下である場合を拒否するガードを追加した。単体テスト
+11パターン（"install2"のような紛らわしい別名フォルダを誤検知
+しないことを含む）で全件確認済み。
+
+【install.php：バックアップ処理のrename化・自動ロールバック・
+別途エラーログ】
+対象：install/install.php
+
+既存ファイルの退避処理をcopy()からrename()に変更した。rename()は
+同一ファイルシステム内であれば原子的（atomic）なため、「バック
+アップが未完了なのに元ファイルが失われる」という中間状態が構造的
+に起こらなくなった。バックアップ用フォルダ作成失敗・退避（rename）
+失敗は、それぞれ個別にそのファイルだけスキップして次へ進む（全体
+は中断しない）方針に変更。さらに、新版の書き込み・コピーが失敗
+した場合は、退避済みの元ファイルを自動的に元の場所へ復元する
+ロールバック処理を追加した。失敗内容はinstall/backup/
+install-errors-YYYY-MM-DD.txtに永続的に記録する。
+
+  【検証】
+  namespaceトリックによるcopy()/rename()のモック化で、
+  (1) 通常成功、(2) 書き込み失敗→ロールバック成功、
+  (3) 書き込み失敗→ロールバックも失敗（最悪ケース）
+  の3パターンを実際にコードを動かして確認。いずれの場合も
+  バックアップと元ファイルの両方を同時に失うことがないことを
+  確認した。
+
+【本セッションでのパッケージングについて】
+基さんの指示により、実装完了後、明示的な許可（go）があるまで
+zip化は行わない。
+
+============================================================
+2026-07-19T14:36 UTC
+------------------------------------------------------------
+【bbs.php：過去ログ出力・カウンター処理のディレクトリ自動作成】
+対象：bbs.php（putmessage(), counter()）
+
+掲示板向けRC6告知への反応として、「過去ログ出力に失敗しました」
+（kaguya氏、install.php不使用での手動セットアップ時に発生）と、
+「カウンターエラー（こわれにくさレベル：3）」（擬古猫さん、実機
+qptns.comにて発生）の2件の不具合報告があった。
+
+調査の結果、install.phpのファイルコピー処理は「テンプレートに
+実在するファイルの配置先ディレクトリ」しか作成しない仕組みであり、
+newbbs/テンプレート自体にはdata/・logs/log/等の空フォルダが一切
+含まれていない（zip/gitが空フォルダを保持しないため）ことが判明。
+このため、install.php経由の新規導入であっても、過去ログ・カウンター
+用のディレクトリは実際には作成されない構造上の欠陥があった。
+
+対応として、2026-07-17にLOGFILENAME（本体ログ）向けに導入済みの
+ensurefile()による自動作成パターンを、putmessage()内の過去ログ
+出力処理（fopen($oldlogfilename, "ab")の前）と、counter()内の
+カウンターファイル書き込み処理（ディレクトリのmkdir()のみ、
+COUNTFILEはファイル名接頭辞のためensurefile()自体は使えない）の
+双方に適用した。
+
+  【調査の経緯・訂正】
+  カウンターエラーについては、当初「confの移行失敗」を疑い、
+  原因特定のため一時的なデバッグパッチ（fopen失敗時にパス・
+  open_basedir・error_get_last()の内容を画面表示する版）を
+  putmessage()とは別にcounter()へ追加して調査した。
+  結果、実際の原因はconf.phpのCOUNTFILEパス指定そのものの誤り
+  （"./count/count/"のままになっていて"./data/count/"が抜けていた）
+  であり、ディレクトリ自動作成とは別件の設定ミスと判明。デバッグ
+  パッチは原因確認後に撤去し、COUNTER_ERROR表示は元の形に戻した。
+  過去ログ側の不具合原因はディレクトリ未作成のままで確定。
+  上記のensurefile()/mkdir()による自動作成自体は、今後同種の
+  ディレクトリ欠落が別環境で起きた際の保険として、そのまま採用。
+
+【install.php：新規パス系設定キーの自動穴埋めを廃止】
+対象：install/install.php, install/language/japanese.txt,
+      install/language/english.txt
+
+上記カウンターエラーの原因調査を踏まえ、「パス指定（confの設定値）
+は、install.php側が推測・自動設定してはならない」という運用方針を
+新たに採用した。旧設置に存在しない新規キーをconf.phpマージ時に
+補う既存のksphp_conf_merge()の仕組み（(1)旧モジュールファイルから
+の値引き継ぎ、(2)いずれにも無ければ新版テンプレートの既定値を採用）
+は、パス指定を扱わない設定項目については従来通りとするが、データの
+保存場所を指すパス系キー（LOGFILENAME, OLDLOGFILEDIR, ZIPDIR,
+COUNTFILE, CNTFILENAME, GIKONEKO_KOTOBA_FILE, UPLOADDIR,
+UPLOADIDFILE）に限り対象外とした。これらが新規キーとして追加される
+際は、値を常に空文字列にし、末尾に「要手動設定」の旨のコメントを
+付けて追加するのみとし、導入者が明示的に指定するまで一切値を推測
+しない（ksphp_is_manual_path_key(), ksphp_conf_entry_blank_for_
+manual_setup()を新設）。自己参照パス（CGIURL, INFOPAGE）は対象外
+のまま従来通り。
+
+これに伴い、migrate.php（Migration Engine）のデータファイル移動
+機能を無効化したままにしている現状の方針（カウンターデータ等の
+実データファイルを自動移動しない）を、一時的な保留ではなく恒久
+方針として確定した。
+
+【本セッションでのパッケージングについて】
+本セッション分の変更について、基さんより明示的な許可（go）を
+受領済み。次回パッケージング時に反映する。
+
+============================================================
+2026-07-19T15:10 UTC
+------------------------------------------------------------
+【migrate.php：パス移動系機能を完全削除（A案採用）】
+対象：migrate.php, bbs.php（コメントのみ）
+
+「パス指定は弄らない」方針の徹底のため、migrate.php内に残っていた
+死んだコード（旧構成ファイルの物理移動処理、およびconf.php側の
+パス設定を新構成パスへ書き換えるksphp_migrate_update_conf_value()
+とその対応表）を完全に削除した。基さんの判断（A案：今後パス移動系
+を弄る予定を無くす、必要になるとも思えない）による。
+
+削除前は関数冒頭の`return;`で到達不能化されていただけで、コード
+自体は残存しており、かつ冒頭コメントには「conf.php側のパス設定も
+新構成パスへ書き換え済み」という、実態と食い違う（誤解を招く）
+記述が残っていた。これが今回の一連の不具合調査の発端でもあった
+ため、コードとコメントの両方を実態に合わせて全面的に書き直した。
+
+現在のmigrate.php（ksphp_migrate()）は、data/.migratedマーカーの
+有無を確認し、無ければ作成するだけの後方互換用の薄いラッパーとして
+存続する。ファイル移動・conf.php書き換えは一切行わない。
+bbs.php側の呼び出し元コメントも実態に合わせて修正した（呼び出し
+コード自体（require_once・ksphp_migrate()）は変更不要）。
+
+  【補足】doc/migrate-spec-2026-07-19-01.txt（ChatGPTとの
+  設計レビューを踏まえた当初の仕様メモ）はそのまま残してある。
+  経緯の記録として保存する意義はあると考えたが、内容自体は今回
+  廃止した設計を前提としたものなので、扱い（そのまま保存／廃止
+  済みの注記を追加／削除）についてはご判断いただきたい。
+
+============================================================
+2026-07-19T15:25 UTC
+------------------------------------------------------------
+【bbs.php：毎リクエストのmigrate.php呼び出しを削除】
+対象：bbs.php
+
+migrate.php簡略化後も、bbs.php側にはアクセスの度に
+require_once("./migrate.php")・ksphp_migrate()を呼ぶコードが
+残っていた。中身がマーカーファイルの有無チェックのみになった
+以上、毎リクエストで呼ぶ意味が無く、また万一migrate.php自体が
+欠落した場合にbbs.php本体ごと停止してしまう（require_onceのため）
+不要な依存でもあった。基さんの判断により、bbs.php側からこの
+呼び出しを完全に削除した。
+
+install.php側は元々file_exists()・function_exists()の存在確認
+込みでksphp_migrate()を呼んでおり、影響を受けない。今後
+ksphp_migrate()が呼ばれるのは導入（install.php実行）時のみとなる。
+
+============================================================
+2026-07-19T15:35 UTC
+------------------------------------------------------------
+【README.md：ADMINKEYのセキュリティ懸念をToDoに記録】
+対象：README.md
+
+kaguya氏の指摘・基さんとの確認により、ADMINKEY（管理人投稿モード
+移行用キーワード）がconf.phpに平文で保存され、crypt比較ではなく
+単純な文字列比較で照合されている点（ADMINPOSTとは異なる）を
+セキュリティ上の懸念として認識した。今すぐ削除・改修する必要は
+無いとの判断（管理人投稿モード自体は今後も維持）だが、将来の
+バージョンアップ時の検討事項としてToDoリストに記録した。
+コードの変更は無し。
+
+============================================================
+2026-07-19T15:48 UTC
+------------------------------------------------------------
+【構想メモ新規作成：管理系秘匿設定の外部ファイル化】
+対象：doc/admin-secrets-concept-2026-07-19-01.txt
+      （新規）, README.md（ToDo参照追記のみ）
+
+ADMINKEYの平文比較問題（本日のToDo記録）を発端に、そもそも
+ADMINPOST・ADMINKEYのような管理系秘匿情報をconf.php本体から
+切り離し、install.phpのマージ処理（今回の一連の事故の温床）の
+対象外にする、という構想が持ち上がった。
+
+構想段階であり実装はまだ行っていない。検討事項（PHPファイル形式
+vs テキスト/ini形式、install.phpの$files走査対象から外す方法、
+ファイル命名、対象範囲）を専用の構想メモに記録し、README.md側の
+ToDoは詳細を書かず当該メモへの参照のみとした。メンテナーの判断を
+待って詳細設計・実装へ進む。
+
+============================================================
+2026-07-20T[JST時刻省略・記録時UTC基準]
+------------------------------------------------------------
+【実装：管理系秘匿設定（ADMINPOST/ADMINKEY）のconf.php外部化】
+対象：newbbs/_setup.php（新規）, newbbs/bbs.php, newbbs/conf.php,
+      README.md（ToDo更新・手順更新）,
+      doc/admin-secrets-concept-2026-07-19-01.txt（実装済み追記）
+
+2026-07-19の構想メモを実装した。ADMINPOST・ADMINKEYはconf.phpから
+削除し、install.phpの走査対象外である固定名ファイル local.php に
+移動。設定・変更は新規の独立ツール newbbs/_setup.php（初期名。設定
+完了時に設置者が指定した名前へrenameされる）で行う。
+
+運用：local.php不在時は誰でも新規設定可、存在後は現行パスワードでの
+ログインが必須（基さん決定・案1）。bbs.php側の埋め込み設定フロー
+（旧Bbsadmin::prtsetpass()/prtpass()経由）は案内メッセージ表示のみに
+変更し、実際の設定処理からは切り離した。
+
+なお、日付+seed文字列（$SETUP_SEED、ツール内で編集可）をsha256で
+ハッシュ化したものを、ツール自身のデフォルト改名候補として使用する
+（設置者は任意の名前に変更可能）。
+
+実機（qptns.com）への導入・動作確認は未実施。
+
+============================================================
+2026-07-25T05:46 UTC
+------------------------------------------------------------
+【RC9：モバイル表示修正2件／ZIP作成時の未定義変数修正／
+  ハッシュタグ→getlog検索リンク機能】
+対象：newbbs/css.php, newbbs/bbs.php
+
+擬古猫さんからのモバイル対応状況の調査依頼を受けて現状のCSS
+レスポンシブ対応を点検したところ、.msgtree（AA/スレッド表示）の
+overflow-x:autoが1020px以上（PC幅）にしか付いておらず、スマホ幅
+ではwhite-space:preとの組み合わせでページ全体が横に広がって崩れる
+不具合を発見。0px側（常時適用）に移動して修正した。あわせて管理
+画面の投稿一覧テーブル（.postlists）にも横スクロール対応が無かった
+ため、display:block+overflow-x:autoを追加した。
+
+擬古猫さんからの実機スクリーンショット報告（qptns.com本番環境での
+投稿時ワーニング「Undefined variable $checkedfile」）を受けて調査。
+bbs.php内、過去ログHTMLのZIPアーカイブ自動作成処理で、現在ログ
+以外の直近ファイルが1件も無い場合に$checkedfileが未初期化のまま
+参照される既存バグを特定・修正した（sub/bbslog.php側の同種処理
+149行目と同じくループ前に空文字初期化を追加）。
+
+過去のあやしいわーるど投稿（擬古猫さんが「#test」等のタグ機能案に
+言及していたもの）を受け、投稿本文中の#ハッシュタグをgetlog（m=g）
+全文検索リンクへ自動変換する機能を実装。投稿日時を基準に、日毎
+保存（OLDLOGSAVESW=0）なら直近7日分、月毎保存（OLDLOGSAVESW=1）
+なら当月1ファイルのみをf[]で指定して検索範囲を絞る。検索フォーム
+を経由しないリンクだとsd/sh/ed/eh等の日付範囲パラメータが省略され
+「空レンジ＝全件除外」と解釈されてしまう既存の挙動を踏まえ、フォーム
+の初期値（全範囲）と同じ値を明示的に付与している。URLの#fragmentや
+単語途中の#を誤って変換しないよう、直前が空白/行頭の場合のみ反応
+する形にした。既存のAUTOLINK設定でON/OFFを共有する。
+
+バージョン表記をRC8[20260720]からRC9[20260725]、ビルド識別子を
+ksphp-rc9-2026-07-25-01へ更新。
+
+実機（qptns.com）への導入・動作確認は未実施。
+
+============================================================
+2026-08-01T00:02 UTC
+------------------------------------------------------------
+【未使用patTemplateサブフォルダの削除／ライセンス表記の保全／
+  README ToDo整理】
+対象：newbbs/sub/, newbbs/doc/README.md
+
+sub/patTemplate/（サブフォルダの方）がコードのどこからも参照されて
+いないことを調査で確認（実際に使われているのはsub/patTemplate.php、
+LIB_TEMPLATE経由でrequireされる改修版のみ）。中身は改修前のオリジナル
+配布版そのもの（docs/、旧PHP4形式コンストラクタ・each()使用のinclude/
+patTemplate.php、readme.txt、lgpl.txt）で、実行時には一切関与しない
+ことを確認した。
+
+擬古猫さんの指示（「削除したいんだけどライセンス大事にしよう」）を
+受け、著作権表記・LGPLライセンス全文（readme.txt, lgpl.txt）のみを
+sub/patTemplate-license/へ退避したうえで、sub/patTemplate/サブフォルダ
+本体（docs/一式・オリジナルinclude/含む）を削除した。
+
+READMEのToDo欄を整理。今回の会話中に基さんが破棄を決定した「スレッド
+表示」「UNDO期限設定」の2項目を削除。新規ToDoとして、install.phpに
+conf.php調整機能（移行時に既存conf.phpの値を読み取り、選択的に引き
+継げるようにする。現状は全部か無かのconf-mergeのみ）を追加。あわせて、
+掲示板で挙がった機能要望（LaTeX数式レンダリング、未読スレッド削除）は
+JavaScript側で対応する方針、NGワード判定のWebAssembly高速化案は
+「まず試作・速度検証してから実装可否を判断（NGワード数自体がボトル
+ネックの可能性を疑っている）」で保留、と基さんが掲示板上で回答済み
+（ksphp-plus側での対応は無し）であることを記録した。
+
+バージョン表記の日付更新：[20260725]→[20260801]、ビルド識別子を
+ksphp-rc9-2026-08-01-01へ更新（機能変更なし、日付更新のみ）。
+
+
+============================================================
+2026-08-01T21:00 UTC
+------------------------------------------------------------
+【RC10：install.phpのconf.php調整画面／掲示板側JS機能3件】
+
+■ install.php: conf.php調整確認画面（chatセッション ksphpfix11）
+既存conf.phpがある導入先に対し、自動マージ結果を編集可能な状態で
+確認・調整してから書き込めるようにした。チェックボックス（真偽値
+0/1キー）・ラジオボタン（0/1/2キー）・リスト（1行1要素、NGWORD等）・
+テキストの4種のフィールドで構成し、必須項目（BBSTITLE・パス系キー）
+は視覚的に強調。サーバー側バリデーション（必須項目の空欄、ラジオの
+不正値、正規表現リストの構文エラー、数値項目の非数値入力）に失敗した
+場合は該当conf.phpのみロールバックし、他ファイルの導入は継続する。
+確認画面自体は個人設定チェックボックスでON/OFF切替可能（既定ON）。
+真偽値/三択キーの判定は、conf.php内のコメント（0:無効/1:有効等）を
+一度だけ目視で棚卸しして固定リスト化。値が0/1だからと自動でチェック
+ボックス化するフォールバックは、SPTIME/DIFFTIME/DIFFSEC等の数値
+設定（既定値がたまたま0なだけ）を誤爆することがテストで判明したため
+撤去し、リストにない新規キーは安全側のテキスト入力欄とした。
+
+テスト中に、既存パーサー(ksphp_conf_parse_entries)の潜在バグを発見：
+HOSTNAME_POSTDENIED・CHECKCOUNT・MINPOSTSEC・MAXPOSTSEC等、直前に
+同名またはキーらしき文字列を含むコメントアウト例があるキーは、エン
+トリ境界の誤認識により誤ったキーへ吸収されることがある。編集を許すと
+保存時に配列を丸ごと消す危険があるため、値の中に入れ子の 'KEY' =>
+パターンが見つかった場合は種別判定より先に編集対象外(raw)として弾く
+防御を追加した。パーサー自体の根本修正は次回以降の課題として残す。
+
+実機（qptns.com）でのテストにより、ZIPDIR（空欄でzip作成を無効化する
+仕様）が誤って必須項目として弾かれるバグを確認。次回対応（RC10以降）
+としてToDoへ記録。あわせて、チェックボックスが分かりづらいとの実機
+フィードバックを受け、次回は全項目ラジオボタン（択一）に統一する方針
+に決定。今回のRC10には未反映（今回は現状の実装のままリリース）。
+
+■ 掲示板側JS機能3件（個人設定・ブラウザローカル、既定すべてOFF）
+掲示板で挙がった要望のうち、JavaScript側で対応する方針だった3件を
+実装（newbbs/js/以下、jsdomでの単体テスト実施済み）。
+  [1] treehide.js（未読ツリー削除）：ツリー表示画面の各スレッドに
+      「消」リンクを追加、クリックでそのブラウザ上だけ非表示に。
+      いつでも個別「復元」または「すべて復元」で戻せる。
+      sub/tmpltree.htmlに配線。
+  [2] longpostfilter.js（長文NGフィルター）：通常表示画面の各投稿に
+      ついて、本文の行数がしきい値（既定30行、個人設定で変更可）を
+      超えていたら折りたたみ表示。「表示」リンクでいつでも展開可能。
+      sub/template.htmlに配線。
+  [3] latexrender.js（LaTeX数式レンダリング）：$...$ / $$...$$ 記法を
+      KaTeXで数式描画。ksphp-plus本体はスタンドアローン設計方針だが、
+      LaTeXの完全自前実装は非現実的なため、この機能に限り有効化時
+      のみCDN（jsDelivr）からKaTeXを読み込む例外とした。無効時は
+      外部通信は一切発生しない。sub/template.htmlに配線。
+いずれも個人設定はlocalStorageに保存（このブラウザのみ、サーバー側
+への影響なし）。7言語（newbbs/language/*.txt）に翻訳キーを追加。
+
+バージョン表記：擬古猫+RC9 [20260801] → 擬古猫+RC10 [20260801]
+（日付は据え置き、ビルド識別子のみ更新）。
+
+■ 新規に報告された未対応項目（次回以降のToDo）
+・ZIPLOGの「無いので作りました」メッセージが、日次/月次の自動ログ
+  ローテーションによる初回作成時にも毎回表示されてしまう。本来は
+  想定外の作成時のみ表示すべきで、その日／月最初の投稿による自動
+  生成の場合は非表示にする必要がある。
+
+
+============================================================
+2026-08-01T22:30 UTC
+------------------------------------------------------------
+【RC11：conf.php調整画面パーサー根本修正／UI改善／bbs.php修正1件】
+
+■ install.php: ksphp_conf_parse_entries() エントリ境界パーサー根本修正
+RC10まで「値の中に入れ子の 'KEY' => パターンが見つかった場合は編集
+対象外(raw)として弾く」防御でしのいでいた根本原因を修正した。原因は
+ksphp_scan_array_block()自体ではなく、その後段のキー抽出用正規表現
+（非貪欲 .*? ）が、エントリ先頭のコメント行内に残る 'KEY' => という
+見た目のテキストを実キーと誤認識していたこと。新設した
+ksphp_conf_entry_code_start() / ksphp_conf_entry_split_lead_comments()
+により、キー抽出前に先頭コメントを切り離してから正規表現を適用する
+方式に変更した。install.php内の該当7箇所（ksphp_conf_merge x2,
+ksphp_conf_build_review x2, ksphp_conf_apply_review,
+ksphp_parse_module_array, および元々問題が報告されていた3関数）すべて
+に適用。HOSTNAME_POSTDENIED/TMPL_MSG再現ケース、CHECKCOUNT/
+MINPOSTSEC/MAXPOSTSEC連続ケースで修正を確認したほか、HANDLENAMES
+ネスト配列での回帰も無いことを確認した。RC10で追加した rawフォール
+バックの防御コードはセーフティネットとしてそのまま残置している。
+
+■ install.php: conf.php確認画面 checkbox→radio統一／必須フラグ修正
+実機フィードバック（RC10時点で記録済み）を反映。真偽値(0/1)キーは
+すべてチェックボックスからラジオボタン（0/1択、既存の3択ラジオと
+表示形式を統一）に変更した（ksphp_conf_field_type()側）。また、
+ZIPDIR・OLDLOGFILEDIR・CNTFILENAMEの3キーを必須項目から除外した。
+いずれもconf.php本文の日英併記コメントに「空欄の場合は当該機能を
+無効化する」と明記されている、正当な"未設定"状態であるため。他の
+手動パス系キー（LOGFILENAME等）は引き続き必須のまま。JS側・PHP側
+双方からチェックボックス分岐を削除した。
+
+■ install.php: 数値式値のクォート付き文字列化バグ修正
+確認画面で編集せず据え置いた項目のうち、MAXOLDLOGSIZE（例：
+4 * 1024 * 1024 のような演算式）が、保存時にクォート付き文字列
+（'1023998976'）として書き出されてしまうバグを修正した。原因は
+apply_review()内の$was_bare_number判定が純粋な数値リテラルのみを
+対象としており、演算式を文字列として扱っていたこと。数字・演算子・
+空白のみで構成される式かどうかを判定する$was_numeric_expr判定を
+追加し、該当する場合はクォート無しで出力するようにした。実機では
+これによりMAXOLDLOGSIZEが文字列として保存され、ログサイズ超過判定
+（数値比較）が毎回誤発火する不具合が発生していたことを確認済み。
+なお、install.php側の修正は今回以降の新規導入・移行分から有効で、
+既存のqptns.comテスト環境conf.phpについては手動で整数値へ書き直す
+対応が別途必要。
+
+■ install.php: conf.php確認画面にキー説明文（原文）を表示
+新機能。conf.php本文に既存で付されている日英併記のコメントを、その
+まま確認画面上のヘルプテキストとして表示するようにした
+（ksphp_conf_entry_comment_text() を新設）。罫線（#---...---）や
+翻訳者向けメモ（## TL note: 等）は表示対象から除外している。今回は
+7言語への翻訳は行わず原文（日本語または英語）表示のみとし、閲覧者の
+ブラウザ翻訳機能に委ねる方針とした。約98キー分の全訳はREADMEのToDo
+に記録し、将来のタスクとした。
+
+■ bbs.php: Func::html_escape() 行頭$削除バグ修正
+LaTeX記法（latexrender.js、RC10で追加）の $...$ デリミタが、投稿本文
+の2行目以降で正しく機能しない不具合を修正した。原因は
+str_replace("\015$", "", $value) という既存コードで、これは文字列中
+の「\015（CR）の直後に$がある」という2文字並びを機械的に削除する
+ため、複数行投稿の2行目以降の行頭にある$が（前行末のCRと結合して）
+巻き込まれて消えていた。当該str_replace行を削除して修正した。
+削除にあたりセキュリティ上の除去根拠（XSS対策等）が無いか調査した
+が、該当する理由は見当たらなかった。
+
+■ バージョン表記
+擬古猫+RC10 [20260801] → 擬古猫+RC11 [20260801]（bbs.php）
+
+■ 実機検証（qptns.com/test/、モデル:fable5による確認）
+下記いずれも正常動作を確認：
+  ・treehide.js（スレッド削除・復元）
+  ・longpostfilter.js（長文折りたたみ）
+  ・latexrender.js（KaTeX CDN読み込み・$...$描画、2行目以降を含む）
+  ・conf.php確認画面（ラジオボタン統一・説明文表示）
+
+■ 残存バグ（次回対応）
+・BBSLINKキーがconf.php確認画面で1行テキストボックスとして表示されて
+  いる。本来は複数行のHTML/テキストブロックを保持する値のため、
+  textarea（複数行入力）にすべき。
+
+============================================================
+2026-08-01T23:15 UTC
+------------------------------------------------------------
+【RC12：BBSLINK textarea化】
+
+■ install.php: conf.php確認画面 BBSLINKキーのtextarea化
+RC11で残存バグとして記録した、BBSLINKキーが確認画面で1行テキスト
+ボックスとして表示される不具合を修正した。BBSLINKはNGWORD等の
+array(...)形式のリストキーとは異なり単一の文字列値であるため、
+既存のksphp_conf_list_keys()（1行1要素のリスト編集用）は流用せず、
+新設のksphp_conf_longtext_keys()と新フィールド種別'longtext'を
+追加する形で対応した。表示（ksphp_conf_review_display_value）・
+保存（ksphp_conf_apply_review）のいずれも既存の'text'種別と同じ
+処理（単純クォート解除／addcslashesでのクォート化）をそのまま
+共用し、確認画面上のウィジェットのみをinput[type=text]から
+textarea（6行）に変更した。
+
+バージョン表記：擬古猫+RC11 [20260801] → 擬古猫+RC12 [20260801]
+（bbs.php、日付据え置き・ビルド識別子のみ更新）
+
+■ 今回未対応（次回以降のToDo、README側に記載）
+・個人用環境設定パネルへのJS設定統合（既存・新規すべてのJSを対象に、
+  ON/OFF切替と各種パラメータ設定を1箇所にまとめる。詳細はREADMEの
+  ToDoを参照）
+
+
+============================================================
+2026-08-01T23:50 UTC
+------------------------------------------------------------
+【RC12-02：conf.php確認画面 数値式値クォート化バグ修正（本実装漏れの是正）】
+
+■ install.php: ksphp_conf_apply_review() $was_numeric_expr判定の追加
+RC11のリリース記録では「数値式値（例: 4 * 1024 * 1024）がクォート
+付き文字列で保存されるバグ」を$was_numeric_expr判定の追加により
+修正済みとしていたが、実際のコードには当該判定が実装されておらず、
+既存の$was_bare_number判定（純粋な数値リテラルのみ対象）のみが残存
+していた。RC11・RC12いずれのリリースにもこの修正は含まれていなかった。
+
+実機（qptns.com/test/）での動作確認中、MAXMSGSIZE（'250*120*128*
+256*128'という演算式）が過去のインストーラー実行で誤ってクォート
+付き文字列として保存されていたことを発見。この状態でbbs.php側の
+文字列×数値の乗算処理（procForm()内、CONTENT_LENGTHとの比較）が
+PHP Warning「A non-numeric value encountered」を発生させ、これが
+HTML本文の出力より前に混入した結果、ブラウザ側でERR_CONTENT_
+DECODING_FAILEDとして表面化していたことを確認した。
+
+今回、$was_numeric_expr判定を実装（数字・演算子・空白のみで構成
+される式かどうかを正規表現で判定）し、ksphp_conf_apply_review()の
+text/longtypeフィールド保存ロジックに組み込んだ。これにより今後の
+新規導入・移行では、MAXOLDLOGSIZE・MAXMSGSIZE等の演算式設定値が
+正しくクォート無しの数値式として保存される。
+
+なお、この修正は「今後の書き込み」を正すのみで、既にクォート付き
+文字列として保存されてしまった既存のconf.php（qptns.com本番含む）
+の値は自動修復されない（確認画面を無編集のまま通しても、フォーム
+上の表示値は既にクォート込みの文字列としてマージされているため）。
+既存の破損値は、conf.php確認画面上で値を打ち直して送信するか、
+conf.phpを直接手動編集する必要がある。qptns.comのMAXMSGSIZEは
+今回の調査中に手動編集で解消済み。
+
+バージョン表記：擬古猫+RC12 [20260801]（据え置き。ビルド識別子を
+ksphp-rc12-2026-08-01-01 → ksphp-rc12-2026-08-01-02 へ更新）
+
+
+============================================================
+2026-08-01T09:15 UTC
+------------------------------------------------------------
+【RC13：JS個人設定パネル統合】
+
+■ 「個人環境設定」画面にJS設定セクションを新設
+これまでtreehide.js/longpostfilter.js/latexrender.jsの3機能は、
+それぞれが独自にページ上部へON/OFFトグルUIを自前生成しており、
+既存のkaomoji.js/upthumb.js/imgthumb.js/vidembed.js/ayashiibreaker.js
+には設定項目自体が存在しなかった。今回、これらすべて（計7機能＋
+ラインブレーカーのパラメータ）を「個人環境設定」画面（m=c）内の
+新規fieldset「JS設定」に統合した。
+
+保存先は既存の設定cookie 'c'（色設定＋8個の真偽値フラグを固定長
+ビット列にエンコードする方式）を拡張するのではなく、新規に独立した
+cookie 'ksphp_js'（JSON文字列、90日有効）を新設した。これは既存の
+'c'の方式が固定長ビット列であり、7項目以上の追加には既存エンコード
+の組み替えが必要で、既存cookieとの互換性リスクが大きいと判断した
+ため。JS機能の定義は1つの定義テーブル（ksphp_js_setting_defs()）に
+集約し、cookie読み込み・保存・フォーム表示のすべてをこのテーブルの
+ループ処理で行う設計とした。今後JS機能を追加する際は、この定義
+テーブルに1行追加するだけで保存・表示・JS側への値渡しすべてに
+反映される。
+
+対象7機能（アルファベット順）：画像サムネイル表示(imgthumb)、
+顔文字パレット表示(kaomoji)、LaTeX数式レンダリング(latex)、長文NG
+フィルター(longpost、しきい値パラメータ付き)、未読ツリー削除機能
+(treehide)、アップロードサムネイル表示(upthumb)、動画埋め込み表示
+(vidembed)。既定値は、既存5機能（画像/顔文字/アップロード/動画）は
+有効、新規3機能（LaTeX/長文フィルター/ツリー削除）は無効のまま
+据え置き、既存ユーザーの体験を変えないようにした。
+
+treehide.js/longpostfilter.js/latexrender.jsの自前トグルUIはすべて
+削除し、window.KSPHP_SETTINGS（bbs.php側でwindow.KSPHP_LANGと並べて
+JSON出力）を参照するだけの形に整理した。旧バージョン（RC10〜RC12）
+でON/OFFがlocalStorageに保存されていた既存ユーザーについては、
+初回のみlocalStorageの値を優先することで設定の引き継ぎを行う
+（以後はcookie側が正となる）。
+
+■ ラインブレーカー（ayashiibreaker.js）のパラメータ化
+無効化はできない（投稿サイズ制限のため必須）仕様の通り、JS設定
+セクションにチェックボックスは設けず、1行の目標文字数のみ調整
+できるようにした。従来ハードコードされていた行長上限（72文字）を
+window.KSPHP_SETTINGS.linebreaker_len経由の可変値に変更。この値の
+上限は、conf.phpのMAXMSGCOL（1行の最大バイト数、投稿時にstrlen()で
+検証される値）を超えて投稿するとサーバー側エラーになるため、
+MAXMSGCOLを超えて設定できないようサーバー側で動的に計算している。
+また、ラインブレーカーは「文字数」で行を区切る一方、MAXMSGCOLは
+「バイト数」の上限であり、日本語（UTF-8で1文字最大3バイト）は
+両者の差が大きいため、日本語を含む行では設定値の約1/3（禁則処理の
+マージンを見込む）を実際の目標文字数として使用するようにした。
+既定値もこれに合わせて自動計算される。
+
+■ 副次的に発見・修正したバグ（longpostfilter.js）
+長文NGフィルターで折りたたまれなかった投稿（しきい値未満）にも、
+「折りたたむ」リンクが常時表示されてしまう不具合を修正。本来は
+実際に折りたたまれた投稿を手動で展開した場合にのみ表示されるべき
+リンクだったが、無条件で表示される実装になっていた。
+
+■ 多言語対応
+新設した9個のテンプレートキー（JS_SETTINGS_LEGEND、JS_IMGTHUMB_
+LABEL、JS_KAOMOJI_LABEL、JS_LATEX_LABEL、JS_LINEBREAKER_LEN_LABEL、
+JS_LINEBREAKER_NOTE、JS_LONGPOST_LABEL、JS_TREEHIDE_LABEL、
+JS_UPTHUMB_LABEL、JS_VIDEMBED_LABEL）について、7言語すべて
+（日本語・英語・韓国語・ポルトガル語・トルコ語・簡体字中国語・
+繁体字中国語）の翻訳を追加した。
+
+バージョン表記：擬古猫+RC12 [20260801] → 擬古猫+RC13 [20260801]
+
+
+============================================================
+2026-08-01T10:30 UTC
+------------------------------------------------------------
+【RC14：RC13のバグ修正3件（顔文字パレット非表示時の余白／
+  ラインブレーカー行長の既定値・日本語行長）】
+
+■ 顔文字パレット非表示時に不自然な余白が残る不具合を修正
+RC13で追加した「JS設定」による顔文字パレットのON/OFFで、無効化
+した際に顔文字ボタン自体は消えるものの、ボタン間に配置されている
+<br>要素が独立して残り、投稿フォームに不自然な空白が生じていた。
+個々の要素（input.kaomoji / a.kaomoji / #kaomoji-alt）を個別に
+非表示にしていたことが原因。template.html側で顔文字パレット一式
+（クイックアクセスボタン＋展開トグル＋展開パネル）を単一の
+コンテナ（div#kaomoji-palette-container）で囲み、kaomoji.js側は
+このコンテナごと非表示にする方式へ変更した。
+
+■ ラインブレーカーの行長既定値が極端に長くなっていた不具合を修正
+RC13で「改行の目標文字数」をconf.phpのMAXMSGCOLから自動計算する
+実装にした際、既定値がMAXMSGCOL/3-4（MAXMSGCOL=1000の設置では
+329文字）となり、従来のハードコード値72文字から大きく乖離して
+いた。329文字での改行は実質的にラインブレーカーが機能しないのと
+同じであるため、既定値は従来通り72文字を踏襲する形に修正した
+（MAXMSGCOLが極端に小さい設置ではそちらに合わせて縮む）。
+
+■ 日本語行の改行位置が短すぎた不具合を修正
+同じくRC13の実装で、日本語を含む行の改行目標を設定値の約1/3
+（既定72文字設定時で22文字）としていた。これはMAXMSGCOLが
+バイト数の上限であるのに対しブレーカー側は文字数で区切るため、
+最も不利な日本語（UTF-8で1文字3バイト）でも確実に収まるように
+した安全策だったが、従来の挙動（日本語行も72文字で改行）から
+大きく外れ、実用上明らかに短すぎた。禁則処理による行の伸び縮み
+分のマージンのみを見込み、設定値-2文字を日本語行の目標値とする
+方式に改めた。あわせて、設定可能な上限値（max）側をMAXMSGCOL/3
+基準に変更し、日本語だけの行であってもサーバー側の桁数検証
+（MAXMSGCOL、strlen()基準）を必ず通せる範囲に収まることを、
+MAXMSGCOL=1000/250/120/60の各設定で検証済み。
+
+■ 補足：旧バージョンからの移行時の注意
+RC10〜RC12で追加された3機能（未読ツリー削除・長文NGフィルター・
+LaTeX数式レンダリング）は、当時ブラウザのlocalStorageに個人設定
+を保存していた。RC13以降はこれらの設定をサーバーcookie側へ統合
+したが、移行のため「localStorageに古い値が残っていればそちらを
+優先する」実装としている。そのため、RC10〜RC12でこれらの機能を
+一度OFFにしたことのあるブラウザでは、新しい「JS設定」画面でONに
+してもlocalStorage側のOFFが優先され、機能が有効にならない。
+この場合は当該ブラウザで一度該当機能をONに切り替え直すか、
+localStorageの古いキー（ksphp_treehide_enabled、
+ksphp_longpost_enabled、ksphp_latex_enabled等）を削除することで
+解消する。新規の設置・新しいブラウザでは発生しない。
+
+バージョン表記：擬古猫+RC13 [20260801] → 擬古猫+RC14 [20260801]
+
+■ RC14-02: ラインブレーカーの改行位置がさらに窮屈だった不具合を修正
+上記「日本語行の改行位置が短すぎた不具合」の修正（設定値-2文字）
+は、実機（qptns.com/test/）での検証で依然として不十分であることが
+判明した。禁則処理による行の伸び縮み分の見積もりが小さすぎたため、
+日本語・英語（ASCII）とも設定値-12文字を目標値とするよう調整した。
+
+あわせて、英語（ASCII）側の単語境界での改行ロジックに別の不具合が
+見つかった。従来の実装は、単語を1行に追加する前ではなく追加した
+「後」に閾値超過を判定していた上、単語そのものが目標文字数より
+長い場合は一切分割しない仕様だったため、"ayashiibreaker.js"や
+"word-boundary"のような長い単語を含む行が改行されずに残ることが
+あった。改行処理を行単位の配列に蓄積する方式へ書き換え、閾値を
+超える単語は強制的に文字単位で分割するようにした。この修正により
+ASCII側の行は理論上常に目標文字数以下に収まる。
+
+バージョン表記：擬古猫+RC14 [20260801]（据え置き、ビルド識別子のみ
+-01→-02）
