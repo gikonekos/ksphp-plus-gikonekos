@@ -37,6 +37,10 @@ $CONF = array(
   // ZIP archive directory for past log files (Please put a / at the end. If empty, or if gzcompress is unavailable, ZIP archives will not be created)
   'ZIPDIR' => './archive/',
 
+  // 擬古猫のことば（占い）データファイル（sub/ではなくgikoneko.php/gikonekoadd.phpで使用）
+  // Gikoneko fortune-message data file (used by gikoneko.php / gikonekoadd.php)
+  'GIKONEKO_KOTOBA_FILE' => './data/gikoneko_kotoba.dat',
+
   #------------------------------ 掲示板名称など ---------------------------------
   #------------------------- Bulletin board name, etc. -------------------------
 
@@ -518,6 +522,75 @@ $CONF = array(
     'しば' => 'shiba',
     'テスト' => 'test'
   ),
+
+  #------------------------------------- 画像アップロード（sub/bbsimage.php） -------------------------------------
+  #------------------------- Image upload (sub/bbsimage.php) -------------------------
+
+  // 画像アップロード先ディレクトリ（書き込み可能にしてください）
+  // Image upload directory (please set it to be writable)
+  'UPLOADDIR' => './upload/',
+
+  // 最新アップロード画像番号を記録するファイル（書き込み可能にしてください）
+  // File containing latest image upload file number (please set it to be writable)
+  'UPLOADIDFILE' => './upload/id.txt',
+
+  // 投稿内容にこの文字列があれば、その位置にアップロード画像を挿入する
+  // If this string is present in the post content, the uploaded image will be inserted into that position
+  'IMAGETEXT' => '%image',
+
+  // アップロード画像用の総容量（KB）
+  // Total space dedicated to uploaded images (KB)
+  'MAX_UPLOADSPACE' => 10000,
+
+  // アップロード画像の最大幅
+  // Maximum width for uploaded images
+  'MAX_IMAGEWIDTH' => 1280,
+
+  // アップロード画像の最大高さ
+  // Maximum height for uploaded images
+  'MAX_IMAGEHEIGHT' => 1600,
+
+  // アップロード画像の最大ファイルサイズ（KB）
+  // Maximum file size for uploaded images (KB)
+  'MAX_IMAGESIZE' => 200,
+
+  // 掲示板表示時の画像縮小率（％）
+  // Image scale factor when displayed on the bulletin board (%)
+  'IMAGE_PREVIEW_RESIZE' => 100,
+
+  #------------------------------------- ツリー表示（sub/bbstree.php） -------------------------------------
+  #------------------------- Tree view (sub/bbstree.php) -------------------------
+
+  // 枝の色
+  // Branch color
+  'C_BRANCH' => '5ff',
+
+  // 更新時刻表示の色
+  // Update time display color
+  'C_UPDATE' => 'ccc',
+
+  // 新着メッセージの色
+  // New message color
+  'C_NEWMSG' => 'fca',
+
+  // ツリー表示件数
+  // Number of trees displayed
+  'TREEDISP' => 32,
+
+  #------------------------------------- ログ検索（sub/bbslog.php） -------------------------------------
+  #------------------------- Log search (sub/bbslog.php) -------------------------
+
+  // 複数の過去ログを横断検索できるようにするか
+  // Whether or not multiple logs can be searched
+  'MULTIPLESEARCH' => 1,
+
+  // 検索キーワードのハイライト色
+  // Search term highlight color
+  'C_QUERY' => 'FF8000',
+
+  // 検索できるキーワードの最大数
+  // Maximum number of keywords that can be searched
+  'MAXKEYWORDS' => 10,
 
   #------------------------------------- 詳細設定（通常は変更不要です） -------------------------------------
   #------------------------- Advanced settings (usually don't require changing) -------------------------

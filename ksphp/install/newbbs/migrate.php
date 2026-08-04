@@ -99,6 +99,7 @@ function ksphp_migrate(): void {
 
 	$log = array();
 	$log[] = gmdate('Y-m-d\TH:i') . ' UTC start: legacy structure detected';
+	$migrated_ok = array();
 
 	foreach ($targets as $name => $dest) {
 		$src = $root . '/' . $name;
@@ -133,6 +134,7 @@ function ksphp_migrate(): void {
 
 			if (@rename($src, $dest_path)) {
 				$log[] = gmdate('Y-m-d\TH:i') . " UTC migrate: {$name}/ -> {$dest}/{$name}/";
+				$migrated_ok[$name] = true;
 			} else {
 				$log[] = gmdate('Y-m-d\TH:i') . " UTC skip: {$name}/ rename failed, left in place";
 			}
@@ -145,8 +147,32 @@ function ksphp_migrate(): void {
 
 			if (@rename($src, $dest_path)) {
 				$log[] = gmdate('Y-m-d\TH:i') . " UTC migrate: {$name} -> {$dest}/{$name}";
+				$migrated_ok[$name] = true;
 			} else {
 				$log[] = gmdate('Y-m-d\TH:i') . " UTC skip: {$name} rename failed, left in place";
+			}
+		}
+	}
+
+	// 移行に成功した対象について、conf.php側のパス設定が旧デフォルト値の
+	// ままであれば、新しい設置先パスへ書き換える（ksphp_migrate_update_conf_value()
+	// 参照。既にカスタマイズされている値には触れない）。
+	$conf_path = $root . '/conf.php';
+	if (file_exists($conf_path)) {
+		$path_fixes = array(
+			'bbs.log' => array('LOGFILENAME',    array('./bbs.log', 'bbs.log'),             './logs/bbs.log'),
+			'log'     => array('OLDLOGFILEDIR',  array('./log/', 'log/'),                   './logs/log/'),
+			'bbs.cnt' => array('CNTFILENAME',    array('./bbs.cnt', 'bbs.cnt'),              './data/bbs.cnt'),
+			'count'   => array('COUNTFILE',      array('./count/count', 'count/count'),     './data/count/count'),
+		);
+		foreach ($path_fixes as $name => $fix) {
+			if (empty($migrated_ok[$name])) {
+				continue;
+			}
+			list($conf_key, $old_defaults, $new_value) = $fix;
+			$old_val = ksphp_migrate_update_conf_value($conf_path, $conf_key, $old_defaults, $new_value);
+			if ($old_val !== null) {
+				$log[] = gmdate('Y-m-d\TH:i') . " UTC conf: {$conf_key} を '{$old_val}' から '{$new_value}' へ更新しました。";
 			}
 		}
 	}
@@ -155,6 +181,47 @@ function ksphp_migrate(): void {
 	@file_put_contents($backup_dir . '/migration.log', implode("\r\n", $log) . "\r\n");
 
 	ksphp_migrate_mark_done($root, $marker);
+}
+
+/**
+ * conf.php内の指定キーの値が、渡された旧デフォルト値のいずれかと
+ * 完全一致する場合のみ、新しい値へ書き換える。
+ * （既に別の値へカスタマイズされている場合は、無関係な設定の
+ * 可能性があるため、確実性を優先して一切変更しない。）
+ *
+ * このプロジェクトのconf.phpは対象キーが全て単一行の
+ * 'KEY' => '値', 形式であることを前提とする。
+ *
+ * @param string[] $old_defaults
+ * @return string|null 書き換えた場合は旧値、書き換えなかった場合はnull
+ */
+function ksphp_migrate_update_conf_value(string $conf_path, string $key, array $old_defaults, string $new_value): ?string {
+	$content = @file_get_contents($conf_path);
+	if ($content === false) {
+		return null;
+	}
+
+	$pattern = "/'" . preg_quote($key, '/') . "'\\s*=>\\s*'((?:[^'\\\\]|\\\\.)*)'\\s*,/u";
+	if (!preg_match($pattern, $content, $m)) {
+		return null;
+	}
+
+	$current = $m[1];
+	if (!in_array($current, $old_defaults, true)) {
+		return null;
+	}
+
+	$escaped_new = str_replace(array('\\', "'"), array('\\\\', "\\'"), $new_value);
+	$replacement = "'" . $key . "' => '" . $escaped_new . "',";
+	$new_content = preg_replace($pattern, $replacement, $content, 1);
+	if ($new_content === null || $new_content === $content) {
+		return null;
+	}
+	if (@file_put_contents($conf_path, $new_content) === false) {
+		return null;
+	}
+
+	return $current;
 }
 
 /**

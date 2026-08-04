@@ -87,7 +87,7 @@ class Imagebbs extends Bbs {
      *
      */
     function __construct() {
-        $GLOBALS['CONF'] = array_merge ($GLOBALS['CONF'], $GLOBALS['CONF_IMAGEBBS']);
+        $GLOBALS['CONF'] = array_merge ($GLOBALS['CONF_IMAGEBBS'], $GLOBALS['CONF']);
         parent::__construct();
     }
 

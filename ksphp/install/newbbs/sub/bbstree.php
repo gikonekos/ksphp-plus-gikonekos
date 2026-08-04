@@ -60,7 +60,7 @@ class Treeview extends Bbs {
      *
      */
     function __construct() {
-        $GLOBALS['CONF'] = array_merge ($GLOBALS['CONF'], $GLOBALS['CONF_TREEVIEW']);
+        $GLOBALS['CONF'] = array_merge ($GLOBALS['CONF_TREEVIEW'], $GLOBALS['CONF']);
         parent::__construct();
         $this->t->readTemplatesFromFile($this->c['TEMPLATE_TREEVIEW']);
     }

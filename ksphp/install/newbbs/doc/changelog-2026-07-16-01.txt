@@ -417,7 +417,7 @@ sub/{ja,en}/lang.phpの内容が新パーサー経由で完全一致すること
     準拠。「Make line breaks」ボタンと同じカテゴリの既存の未対応
     事項）。
 
-  ※パッケージング（zip化）は別途「go」待ち。導入ガイダンス.txtを
+  ※パッケージング（zip化）は別途「go」待ち。InstallGuide.txtを
     同梱予定。
 
 

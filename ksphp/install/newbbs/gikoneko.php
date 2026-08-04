@@ -12,8 +12,10 @@ error_reporting(E_ALL);
 
 function giko_fortune(): string {
 
-	$giko_dir = getenv( 'GIKO_DATA_DIR' ) ?: __DIR__ . '/data';
-	$giko_file = $giko_dir . '/gikoneko_kotoba.dat';
+	global $CONF;
+	$giko_file = ( isset( $CONF['GIKONEKO_KOTOBA_FILE'] ) && $CONF['GIKONEKO_KOTOBA_FILE'] !== '' )
+		? $CONF['GIKONEKO_KOTOBA_FILE']
+		: ( ( getenv( 'GIKO_DATA_DIR' ) ?: __DIR__ . '/data' ) . '/gikoneko_kotoba.dat' );
 
 	// データファイルが存在しない場合は空ファイルを自動生成する。
 	// file_exists()での事前チェックにより、file()の生のPHP警告が

@@ -97,22 +97,14 @@ function ksphp_install_list_files(string $base): array {
 }
 
 /**
- * '$CONF = array( ... );' 形式のPHPソースを、トップレベルの項目
- * （'KEY' => 値, の各エントリ。値が複数行・入れ子配列にまたがる場合も
- * 1エントリとして扱う）単位に分割する。
+ * 開始位置($arr_start：array( の直後)から対応する閉じ括弧までを、
+ * トップレベルの項目（カンマ区切り、複数行・入れ子配列も1項目として
+ * 扱う）に分割する共通コア処理。
+ * コメント（//・#・/* * /）とクォート内は構造解析から除外する。
  *
- * 括弧の深度と文字列リテラル（'...' / "..."）を追跡することで、
- * HANDLENAMES のような入れ子配列（値の中にカンマや改行を含む）も
- * 正しく1エントリとして扱える。
- *
- * @return array{prefix:string, entries:string[], suffix:string}
+ * @return array{entries:string[], suffix:string}
  */
-function ksphp_conf_parse_entries(string $content): array {
-	if (!preg_match('/\$CONF\s*=\s*array\s*\(/', $content, $m, PREG_OFFSET_CAPTURE)) {
-		return array('prefix' => $content, 'entries' => array(), 'suffix' => '');
-	}
-	$arr_start = $m[0][1] + strlen($m[0][0]);
-	$prefix = substr($content, 0, $arr_start);
+function ksphp_scan_array_block(string $content, int $arr_start): array {
 	$len = strlen($content);
 	$depth = 1;
 	$pos = $arr_start;
@@ -122,8 +114,6 @@ function ksphp_conf_parse_entries(string $content): array {
 	while ($pos < $len && $depth > 0) {
 		$ch = $content[$pos];
 
-		// PHPコメント（// ... 、# ... 、/* ... */）はコード構造に無関係なので、
-		// 中のアポストロフィ等に惑わされないよう丸ごと読み飛ばす。
 		if ($ch === '/' && $pos + 1 < $len && $content[$pos + 1] === '/') {
 			$nl = strpos($content, "\n", $pos);
 			$pos = ($nl === false) ? $len : $nl + 1;
@@ -177,7 +167,95 @@ function ksphp_conf_parse_entries(string $content): array {
 	}
 
 	$suffix = substr($content, $pos);
-	return array('prefix' => $prefix, 'entries' => $entries, 'suffix' => $suffix);
+	return array('entries' => $entries, 'suffix' => $suffix);
+}
+
+/**
+ * '$CONF = array( ... );' 形式のPHPソースを、トップレベルの項目
+ * （'KEY' => 値, の各エントリ。値が複数行・入れ子配列にまたがる場合も
+ * 1エントリとして扱う）単位に分割する。
+ *
+ * 括弧の深度と文字列リテラル（'...' / "..."）を追跡することで、
+ * HANDLENAMES のような入れ子配列（値の中にカンマや改行を含む）も
+ * 正しく1エントリとして扱える。
+ *
+ * @return array{prefix:string, entries:string[], suffix:string}
+ */
+function ksphp_conf_parse_entries(string $content): array {
+	if (!preg_match('/\$CONF\s*=\s*array\s*\(/', $content, $m, PREG_OFFSET_CAPTURE)) {
+		return array('prefix' => $content, 'entries' => array(), 'suffix' => '');
+	}
+	$arr_start = $m[0][1] + strlen($m[0][0]);
+	$prefix = substr($content, 0, $arr_start);
+	$scan = ksphp_scan_array_block($content, $arr_start);
+	return array('prefix' => $prefix, 'entries' => $scan['entries'], 'suffix' => $scan['suffix']);
+}
+
+/**
+ * sub/bbsimage.php等、モジュールファイル内の
+ * '$GLOBALS[\'CONF_XXX\'] = array( ... );' から 'KEY' => 値, の
+ * 対応表（KEY => 生の値文字列）を取得する。
+ * 旧設置のモジュールファイルから、conf.phpにまだ存在しない
+ * 新規キーの実際の設定値を引き継ぐために使う。
+ */
+function ksphp_parse_module_array(string $content, string $global_var_name): array {
+	$pattern = '/\$GLOBALS\[[\'"]' . preg_quote($global_var_name, '/') . '[\'"]\]\s*=\s*array\s*\(/';
+	if (!preg_match($pattern, $content, $m, PREG_OFFSET_CAPTURE)) {
+		return array();
+	}
+	$arr_start = $m[0][1] + strlen($m[0][0]);
+	$scan = ksphp_scan_array_block($content, $arr_start);
+
+	$values = array();
+	foreach ($scan['entries'] as $entry) {
+		if (preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'\s*=>\s*(.*),(\s*)$/su', $entry, $em)) {
+			$values[$em[2]] = $em[3];
+		}
+	}
+	return $values;
+}
+
+/**
+ * conf.phpに新規追加されたキーのうち、元々は個別モジュールファイル内の
+ * $GLOBALS['CONF_XXX']配列で設定されていたものについて、
+ * 「モジュールファイルの相対パス」と「$GLOBALSの配列名」の対応。
+ * 旧設置からのアップデート時、conf.phpにまだ無い新規キーの初期値を、
+ * 汎用デフォルトではなく旧モジュールファイルの実際の設定値から
+ * 引き継ぐために使う。
+ */
+function ksphp_legacy_module_key_source(string $key): ?array {
+	static $map = null;
+	if ($map === null) {
+		$map = array(
+			'UPLOADDIR'            => array('sub/bbsimage.php', 'CONF_IMAGEBBS'),
+			'UPLOADIDFILE'         => array('sub/bbsimage.php', 'CONF_IMAGEBBS'),
+			'IMAGETEXT'            => array('sub/bbsimage.php', 'CONF_IMAGEBBS'),
+			'MAX_UPLOADSPACE'      => array('sub/bbsimage.php', 'CONF_IMAGEBBS'),
+			'MAX_IMAGEWIDTH'       => array('sub/bbsimage.php', 'CONF_IMAGEBBS'),
+			'MAX_IMAGEHEIGHT'      => array('sub/bbsimage.php', 'CONF_IMAGEBBS'),
+			'MAX_IMAGESIZE'        => array('sub/bbsimage.php', 'CONF_IMAGEBBS'),
+			'IMAGE_PREVIEW_RESIZE' => array('sub/bbsimage.php', 'CONF_IMAGEBBS'),
+			'C_BRANCH'             => array('sub/bbstree.php', 'CONF_TREEVIEW'),
+			'C_UPDATE'             => array('sub/bbstree.php', 'CONF_TREEVIEW'),
+			'C_NEWMSG'             => array('sub/bbstree.php', 'CONF_TREEVIEW'),
+			'TREEDISP'             => array('sub/bbstree.php', 'CONF_TREEVIEW'),
+			'MULTIPLESEARCH'       => array('sub/bbslog.php', 'CONF_GETLOG'),
+			'C_QUERY'              => array('sub/bbslog.php', 'CONF_GETLOG'),
+			'MAXKEYWORDS'          => array('sub/bbslog.php', 'CONF_GETLOG'),
+		);
+	}
+	return $map[$key] ?? null;
+}
+
+/**
+ * 1エントリ（'KEY' => 値, ）の値部分だけを、指定した生の値文字列に
+ * 差し替える。リード部・トレイル部（コメント等）はそのまま残す。
+ */
+function ksphp_conf_entry_with_value(string $entry, string $raw_value): string {
+	if (!preg_match('/^(.*?)\'([A-Za-z0-9_]+)\'(\s*=>\s*)(.*),(\s*)$/su', $entry, $m)) {
+		return $entry;
+	}
+	return $m[1] . "'" . $m[2] . "'" . $m[3] . $raw_value . ',' . $m[5];
 }
 
 /**
@@ -216,7 +294,21 @@ function ksphp_conf_merge_entry(string $new_entry, ?string $old_entry): array {
  *
  * @return array{content:string, log:array}
  */
-function ksphp_conf_merge(string $old_conf_path, string $new_template_path): array {
+/**
+ * 新版conf.php（テンプレート）をベースに、既存の旧conf.phpの値で上書きマージする。
+ * ・新版に存在し、旧版にも存在するキー → 旧版の値を採用（値が変わっていればlogに記録）
+ *   値が複数行・入れ子配列（HANDLENAMES等）でも、そのエントリ全体を旧版の内容で置き換える。
+ * ・新版のみに存在するキー（新規項目） →
+ *   $legacy_base_dir が指定されており、かつそのキーが元々個別モジュール
+ *   ファイル（sub/bbsimage.php等）の$GLOBALS['CONF_XXX']で設定されていた
+ *   ものであれば、旧設置のそのモジュールファイルから実際の設定値を
+ *   引き継ぐ（旧モジュールファイルが無い／該当キーが無い場合は、
+ *   新版のデフォルト値のまま採用）。logに引き継ぎ元を記録。
+ * ・旧版のみに存在するキー（新版で廃止された項目） → 引き継がない（logに記録）
+ *
+ * @return array{content:string, log:array}
+ */
+function ksphp_conf_merge(string $old_conf_path, string $new_template_path, ?string $legacy_base_dir = null): array {
 	$new_content = @file_get_contents($new_template_path);
 	$old_content = @file_get_contents($old_conf_path);
 	$log = array();
@@ -242,6 +334,10 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path): arr
 		}
 	}
 
+	// 旧モジュールファイル（sub/bbsimage.php等）のパース結果は、同じ
+	// ファイルを何度も読み直さないようにキャッシュする。
+	$module_values_cache = array();
+
 	$seen = array();
 	$merged_entries = array();
 	foreach ($new_parsed['entries'] as $entry) {
@@ -249,13 +345,39 @@ function ksphp_conf_merge(string $old_conf_path, string $new_template_path): arr
 			$key = $km[2];
 			$seen[$key] = true;
 			$old_entry = isset($old_by_key[$key]) ? $old_by_key[$key] : null;
-			$res = ksphp_conf_merge_entry($entry, $old_entry);
-			$merged_entries[] = $res['text'];
+
 			if ($old_entry !== null) {
+				$res = ksphp_conf_merge_entry($entry, $old_entry);
+				$merged_entries[] = $res['text'];
 				if (!empty($res['changed'])) {
 					$log[] = array('ok' => true, 'text' => "conf.php: {$key} は既存の設定値を維持しました。");
 				}
+				continue;
+			}
+
+			// 新規キー：旧モジュールファイルに実際の設定値があれば引き継ぐ。
+			$legacy_val = null;
+			$legacy_rel = null;
+			$source = ($legacy_base_dir !== null) ? ksphp_legacy_module_key_source($key) : null;
+			if ($source !== null) {
+				list($legacy_rel, $legacy_var) = $source;
+				if (!array_key_exists($legacy_rel, $module_values_cache)) {
+					$mod_path = rtrim($legacy_base_dir, '/') . '/' . $legacy_rel;
+					$mod_content = @is_file($mod_path) ? @file_get_contents($mod_path) : false;
+					$module_values_cache[$legacy_rel] = ($mod_content !== false)
+						? ksphp_parse_module_array($mod_content, $legacy_var)
+						: array();
+				}
+				if (array_key_exists($key, $module_values_cache[$legacy_rel])) {
+					$legacy_val = $module_values_cache[$legacy_rel][$key];
+				}
+			}
+
+			if ($legacy_val !== null) {
+				$merged_entries[] = ksphp_conf_entry_with_value($entry, $legacy_val);
+				$log[] = array('ok' => true, 'text' => "conf.php: {$key} は旧 {$legacy_rel} の設定値を引き継ぎました。");
 			} else {
+				$merged_entries[] = $entry;
 				$log[] = array('ok' => true, 'text' => "conf.php: {$key} は新版の新規項目のため追加しました。");
 			}
 		} else {
@@ -337,8 +459,10 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 
 		// conf.phpは設定ファイルのため、既存があれば単純上書きせず、
 		// 項目ごとに旧設定値を維持しつつ新版の新規項目のみ追記するマージを行う。
+		// 新規項目については、旧設置のモジュールファイル（sub/bbsimage.php等、
+		// この時点ではまだ上書きされていない）から実際の設定値があれば引き継ぐ。
 		if ($rel === 'conf.php' && $existed && $backup_target !== null) {
-			$merged = ksphp_conf_merge($backup_target, $src);
+			$merged = ksphp_conf_merge($backup_target, $src, $parent_dir);
 			if (@file_put_contents($dst, $merged['content']) !== false) {
 				$log[] = array('ok' => true, 'text' => "導入: {$dst_rel}（既存設定を維持してマージしました）");
 				foreach ($merged['log'] as $entry) {
@@ -372,19 +496,35 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 
 /**
  * 指定ディレクトリ直下から「本体らしきPHPファイル」を探す。
+/**
  * ファイル名がbbs.phpであればまず採用するが、diary.php等に
  * リネームされているケースに備え、直下のPHPファイルの中身を
  * 軽く確認し、$CONF['VERSION']の特徴的な記述があればそれも候補に
- * 加える（深い再帰走査はしない＝省リソース）。
+ * 加える。
+ *
+ * $depth > 0 の場合、直下のサブディレクトリを $depth 段階まで
+ * 再帰的に確認する（例：public_html/z/ のような1階層下の設置を
+ * 検出するため）。ただし、データ量が多くなりがちなフォルダ
+ * （upload/archive/log/logs/data/backup等）や隠しフォルダは
+ * 除外し、無制限に広く・深く走査してリソースを消費しないようにする。
+ *
+ * ディレクトリによってはopen_basedir制限等で読み取れない場合が
+ * あるため、is_file()/is_dir()の警告は抑制する（@付き）。
  */
-function ksphp_install_scan_dir_for_bbs(string $dir): array {
+function ksphp_install_scan_dir_for_bbs(string $dir, int $depth = 0): array {
+	static $skip_names = array(
+		'upload', 'archive', 'log', 'logs', 'data', 'backup',
+		'install', 'node_modules', '.git', 'vendor', 'cache',
+		'count', 'awstats',
+	);
+
 	$found = array();
-	if (!is_dir($dir)) {
+	if (!@is_dir($dir)) {
 		return $found;
 	}
 
 	$bbs_php = $dir . '/bbs.php';
-	if (file_exists($bbs_php)) {
+	if (@file_exists($bbs_php)) {
 		$found[] = $bbs_php;
 	}
 
@@ -397,11 +537,20 @@ function ksphp_install_scan_dir_for_bbs(string $dir): array {
 			continue;
 		}
 		$path = $dir . '/' . $entry;
-		if (!is_file($path) || substr($entry, -4) !== '.php') {
+
+		if (@is_file($path)) {
+			if (substr($entry, -4) === '.php' && ksphp_install_extract_version($path) !== null) {
+				$found[] = $path;
+			}
 			continue;
 		}
-		if (ksphp_install_extract_version($path) !== null) {
-			$found[] = $path;
+
+		if ($depth > 0 && @is_dir($path) && substr($entry, 0, 1) !== '.'
+			&& !in_array(strtolower($entry), $skip_names, true)
+		) {
+			foreach (ksphp_install_scan_dir_for_bbs($path, $depth - 1) as $p) {
+				$found[] = $p;
+			}
 		}
 	}
 	return $found;
@@ -410,13 +559,14 @@ function ksphp_install_scan_dir_for_bbs(string $dir): array {
 function ksphp_install_find_candidates(string $parent_dir, string $grandparent_dir): array {
 	$candidates = array();
 
-	foreach (ksphp_install_scan_dir_for_bbs($parent_dir) as $p) {
+	// parent_dir（例：public_html）配下は1階層下（例：public_html/z/）まで確認する。
+	foreach (ksphp_install_scan_dir_for_bbs($parent_dir, 1) as $p) {
 		if (!in_array($p, $candidates, true)) {
 			$candidates[] = $p;
 		}
 	}
 
-	if (is_dir($grandparent_dir)) {
+	if (@is_dir($grandparent_dir)) {
 		foreach (ksphp_install_scan_dir_for_bbs($grandparent_dir) as $p) {
 			if (!in_array($p, $candidates, true)) {
 				$candidates[] = $p;
@@ -429,7 +579,7 @@ function ksphp_install_find_candidates(string $parent_dir, string $grandparent_d
 					continue;
 				}
 				$sub = $grandparent_dir . '/' . $entry;
-				if (!is_dir($sub)) {
+				if (!@is_dir($sub)) {
 					continue;
 				}
 				foreach (ksphp_install_scan_dir_for_bbs($sub) as $p) {
@@ -495,16 +645,33 @@ $write_logs   = ksphp_install_check_writable($parent_dir . '/logs');
 $migrated_marker = $parent_dir . '/data/.migrated';
 $migrated = file_exists($migrated_marker) ? trim((string) @file_get_contents($migrated_marker)) : null;
 
-$conf_summary = null;
-if (file_exists($parent_dir . '/conf.php')) {
-	$CONF = array();
-	include $parent_dir . '/conf.php';
-	if (isset($CONF) && is_array($CONF)) {
-		$conf_summary = array(
-			'BBSTITLE'      => $CONF['BBSTITLE'] ?? '(未設定)',
-			'LANGUAGE_FILE' => $CONF['LANGUAGE_FILE'] ?? '(未設定)',
-		);
+/**
+ * 指定パスのconf.phpを読み込み、BBSTITLE/LANGUAGE_FILEの概要を返す。
+ * クロージャ内でincludeすることで、同一リクエスト内で複数の
+ * conf.php（別々の導入先のもの）を安全に読み込めるようにする。
+ */
+function ksphp_install_read_conf_summary(string $conf_path): ?array {
+	if (!@file_exists($conf_path)) {
+		return null;
 	}
+	$loader = function () use ($conf_path) {
+		$CONF = array();
+		include $conf_path;
+		return is_array($CONF) ? $CONF : array();
+	};
+	$conf = $loader();
+	if (empty($conf)) {
+		return null;
+	}
+	return array(
+		'BBSTITLE'      => $conf['BBSTITLE'] ?? '(未設定)',
+		'LANGUAGE_FILE' => $conf['LANGUAGE_FILE'] ?? '(未設定)',
+	);
+}
+
+$conf_summaries = array();
+foreach ($candidates as $i => $path) {
+	$conf_summaries[$i] = ksphp_install_read_conf_summary(dirname($path) . '/conf.php');
 }
 
 function h(string $s): string {
@@ -525,9 +692,11 @@ function h(string $s): string {
 	td, th { padding:0.25em 0.75em; border:1px solid #007f7f; text-align:left; }
 	.ok   { color:#8cff8c; }
 	.ng   { color:#ff8c8c; }
-	a, a:link { color:#8cd9ff; }
-	a:visited { color:#c9a3ff; }
-	a:hover, a:focus { color:#d6f0ff; }
+	a:link { color: #cfe; transition:0.2s; }
+	a:visited { color: #ddd; }
+	a:active { color: #f00; }
+	a:hover { color: #1ee; }
+	a.help { text-decoration-line: underline; }
 	code  { background:#003434; padding:0.1em 0.3em; }
 	button { background:#007f7f; color:#fff; border:none; padding:0.5em 1.2em; font-size:1em; cursor:pointer; }
 	button:disabled { background:#555; cursor:default; }
@@ -588,14 +757,9 @@ function h(string $s): string {
 <p id="migrate-status"><?php echo $migrated !== null ? '<span class="ok">移行済みです（' . h($migrated) . '）。</span>' : 'まだ移行されていません。'; ?></p>
 
 <h2>5. conf.php設定の概要（導入先に既存のものがある場合）</h2>
-<?php if ($conf_summary !== null): ?>
-	<table>
-	<tr><th>BBSTITLE</th><td><?php echo h($conf_summary['BBSTITLE']); ?></td></tr>
-	<tr><th>LANGUAGE_FILE</th><td><?php echo h($conf_summary['LANGUAGE_FILE']); ?></td></tr>
-	</table>
-<?php else: ?>
-	<p>まだconf.phpがありません（新規導入前）。</p>
-<?php endif; ?>
+<div id="conf-summary-container"></div>
+<script id="conf-summaries-data" type="application/json"><?php echo json_encode($conf_summaries, JSON_UNESCAPED_UNICODE); ?></script>
+<script id="conf-summaries-paths" type="application/json"><?php echo json_encode(array_values($candidates), JSON_UNESCAPED_UNICODE); ?></script>
 
 <h2>6. セットアップの実行</h2>
 <p>install/newbbs/ の内容を、上でチェックした導入先へ順番に導入します。上書きされる既存ファイルはすべて事前に、それぞれの導入先ごとの <code>install/backup/targetN/</code> へバックアップされます。</p>
@@ -608,10 +772,62 @@ function h(string $s): string {
 <script>
 document.getElementById('select-all-btn') && document.getElementById('select-all-btn').addEventListener('click', function () {
 	document.querySelectorAll('.target-checkbox').forEach(function (cb) { cb.checked = true; });
+	renderConfSummaries();
 });
 document.getElementById('deselect-all-btn') && document.getElementById('deselect-all-btn').addEventListener('click', function () {
 	document.querySelectorAll('.target-checkbox').forEach(function (cb) { cb.checked = false; });
+	renderConfSummaries();
 });
+document.querySelectorAll('.target-checkbox').forEach(function (cb) {
+	cb.addEventListener('change', renderConfSummaries);
+});
+
+function escapeHtml(s) {
+	var div = document.createElement('div');
+	div.textContent = s;
+	return div.innerHTML;
+}
+
+function renderConfSummaries() {
+	var container = document.getElementById('conf-summary-container');
+	if (!container) { return; }
+
+	var summariesEl = document.getElementById('conf-summaries-data');
+	var pathsEl = document.getElementById('conf-summaries-paths');
+	var summaries = {};
+	var paths = [];
+	try { summaries = JSON.parse(summariesEl.textContent || '{}'); } catch (e) { summaries = {}; }
+	try { paths = JSON.parse(pathsEl.textContent || '[]'); } catch (e) { paths = []; }
+
+	var indices = Array.prototype.slice.call(document.querySelectorAll('.target-checkbox:checked'))
+		.map(function (cb) { return cb.getAttribute('data-index'); });
+
+	if (indices.length === 0) {
+		container.innerHTML = '<p>導入先が選択されていません。</p>';
+		return;
+	}
+
+	var multi = indices.length > 1;
+	var html = '';
+	indices.forEach(function (idx) {
+		var summary = summaries[idx];
+		var path = paths[idx] || ('対象#' + idx);
+		if (multi) {
+			html += '<p><code>' + escapeHtml(path) + '</code></p>';
+		}
+		if (summary) {
+			html += '<table>'
+				+ '<tr><th>BBSTITLE</th><td>' + escapeHtml(summary.BBSTITLE) + '</td></tr>'
+				+ '<tr><th>LANGUAGE_FILE</th><td>' + escapeHtml(summary.LANGUAGE_FILE) + '</td></tr>'
+				+ '</table>';
+		} else {
+			html += '<p>まだconf.phpがありません（新規導入前）。</p>';
+		}
+	});
+	container.innerHTML = html;
+}
+
+renderConfSummaries();
 
 document.getElementById('run-setup-btn').addEventListener('click', function () {
 	var btn = this;

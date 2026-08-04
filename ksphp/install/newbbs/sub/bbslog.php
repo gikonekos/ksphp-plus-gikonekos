@@ -50,7 +50,7 @@ class Getlog extends Webapp {
      *
      */
     function __construct() {
-        $GLOBALS['CONF'] = array_merge ($GLOBALS['CONF'], $GLOBALS['CONF_GETLOG']);
+        $GLOBALS['CONF'] = array_merge ($GLOBALS['CONF_GETLOG'], $GLOBALS['CONF']);
         parent::__construct();
         $this->t->readTemplatesFromFile($this->c['TEMPLATE_LOG']);
     }

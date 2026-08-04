@@ -33,7 +33,7 @@ $CONF['VERSION'] = '[20260717] (<span title="Heyuri Applicable Research & Develo
 // display/branding version and does not change on every build; this constant
 // is for precise build-to-build comparison (e.g. future differential-update
 // tooling). Update this value whenever a new package zip is built.
-define('KSPHP_PLUS_BUILD', 'ksphp-plus-main-rc4-2026-07-19-01');
+define('KSPHP_PLUS_BUILD', 'ksphp-plus-main-rc5-2026-07-19-01');
 
 /* Launch */
 
