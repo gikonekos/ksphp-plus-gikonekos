@@ -210,6 +210,14 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
 * Form does not appear on the new post screen
 * Proper use of multi-byte functions and jcode
 * Setting for UNDO expiration date
+* gikoneko.php / gikonekoadd.php localization (currently hardcoded
+  Japanese-only UI text: page titles, form labels, error messages).
+  Deferred for now (2026-07-18).
+* gikoneko.php: graceful handling when the fortune data file
+  (`../cgi-bin/gikoneko_kotoba.dat` relative to gikoneko.php, or
+  `GIKO_DATA_DIR` env var) is missing. Currently `file()` emits a raw
+  PHP warning into the page output instead of failing silently.
+  Deferred for now (2026-07-18).
 * Have uploader thumbnailing javascript to easily support other instances of Uploader softwares
 * (Decided 2026-07-18, maintainer judgment call) Top-page post form
   intentionally does NOT show the "Post complete" confirmation screen
