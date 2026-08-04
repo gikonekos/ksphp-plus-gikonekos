@@ -41,7 +41,8 @@ function giko_fortune(): string {
 #  末尾に同じ形の要素を1つ足すだけでよい。
 ###############################################################################
 
-$GIKO_FORTUNES = array(
+function ksphp_giko_fortunes(): array {
+	return array(
 	array(
 		'label' => 'GIKO_FORTUNE_SHOKICHI',
 		'aa' => "
@@ -199,14 +200,15 @@ $GIKO_FORTUNES = array(
   UU￣ U  U
 ",
 	),
-);
+	);
+}
 
 ###############################################################################
 #  メイン処理
 ###############################################################################
 
 function giko_display(): void {
-	global $GIKO_FORTUNES;
+	$GIKO_FORTUNES = ksphp_giko_fortunes();
 
 	echo "<BLOCKQUOTE><PRE>
 

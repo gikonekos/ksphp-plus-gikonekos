@@ -1156,3 +1156,111 @@ gikoneko_kotoba.datはテキストベースで軽量なため、引き続き移�
   いない。小規模コミュニティ向けの低トラフィック環境を前提としており、
   競合時もデータ破損は起きない設計だが、厳密な排他が必要な環境では
   別途検討が必要。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【重大バグ修正：gikoneko.phpの$GIKO_FORTUNES変数がクラスメソッド内
+require時にグローバルとして参照できない問題】
+対象：gikoneko.php
+
+実機で500エラー（Fatal error: random_int()のmin>max）が発生し調査。
+原因は、gikoneko.phpがbbs.php側でクラスメソッド内から
+require_once されるため、トップレベルの$GIKO_FORTUNES = array(...)が
+「そのメソッドのローカル変数」になってしまい、giko_display()内の
+global $GIKO_FORTUNES;では参照できず、常にnullになっていたこと
+（PHP標準の挙動：require/includeは呼び出し元のスコープで実行される
+ため）。CLIから直接requireするテストでは問題が再現せず、本番の
+呼び出し文脈で初めて表面化した。
+
+  【修正】
+  $GIKO_FORTUNESをトップレベル変数ではなく、ksphp_giko_fortunes()
+  という関数の戻り値として定義するよう変更した。PHP関数はrequireの
+  スコープに関わらず常にグローバルに登録されるため、この問題を
+  回避できる。giko_display()側もglobal宣言をやめ、関数呼び出しの
+  結果をローカル変数として受け取るよう変更。
+
+  【動作確認】
+  クラスメソッド内からgikoneko.phpをrequire_once・giko_display()を
+  呼び出す実際の文脈を再現し、警告・エラー無く正常に動作すること、
+  および2回目の呼び出し（require_onceの再入）でも問題ないことを
+  確認した。
+
+------------------------------------------------------------
+【500エラーの根本原因判明：sub/フォルダの構成不備】
+
+実機の`ksphp-plus-main/sub/`にpatTemplate.php等のコア依存ファイルが
+一切無く（bbs.php本体は用意されていたが、sub/フォルダ自体が存在
+しなかった）、これが直接の原因だった。
+
+  基さんより提供された`ksphp-plus-main-2026-07-17-04.zip`（07-17時点
+  の完全バックアップ）に、bbs.phpが要求する「sub/直下に統一された
+  構成」（bbsadmin.php・bbsimage.php・bbslog.php・bbstree.php・
+  template.html・tmpladmin.html・tmpllog.html・tmpltree.html・
+  login.html・index.html・patTemplate.php・patTemplate/・
+  phpzip.inc.php）がすでに完備されていることを確認。これに
+  `ksphpfix-2026-0718-04.zip`（07-18差分）のsub/更新分
+  （bbsimage.php・bbslog.php・bbstree.php・template.html・
+  tmpltree.html）を重ねて最終版のsub/を再構成した。
+
+  なお、GitHub公式最新（ksphp-plus-main.zip、07-16時点）は
+  sub/en・sub/jaの分割構成のままで、sub/直下への統一はまだ
+  取り込まれておらず、直接は使えないことも確認した。
+
+  sub/配下のPHPファイル（bbsadmin.php・bbsimage.php・bbslog.php・
+  bbstree.php）はT()/$MSG方式で既に多言語化済みであることも確認
+  した（ハードコードされた日本語文字列は見当たらなかった）。
+
+  【動作確認】
+  再構成したsub/一式・修正済みgikoneko.php・今回のセッションの
+  全変更を合わせた状態で、bbs.phpをクラスメソッド呼び出しの文脈を
+  含めて実行し、警告・Fatal errorが一切無く、ページ全体
+  （KSPHP_LANGへの$MSG全件埋め込みを含む）が正常に出力される
+  ことを確認した。
+
+============================================================
+2026-07-19T (JST、時刻未記録分をまとめて記載)
+------------------------------------------------------------
+【install/install.php を診断専用から実導入ツールへ拡張】
+対象：install/install.php（更新）、install/newbbs/（新設）
+
+「bbs.phpが実質のインストーラーというのは変」というご指摘を受け、
+install.phpに実際の導入処理（ファイル配置）を持たせる方針に変更。
+
+  【構成】
+  install/newbbs/ に、導入する新バージョンの完全な一式
+  （bbs.php・conf.php・migrate.php・gikoneko.php・gikonekoadd.php・
+  css.php・sub/・js/・language/・doc/・README.md）を格納する。
+  data系の実データファイル（bbs.log・bbs.cnt・count/・log/・
+  gikoneko_kotoba.dat）は含めない方針とし、導入処理もこれらの
+  パスには一切触れない。
+
+  【導入処理（ksphp_install_run()）】
+  install/newbbs/ の内容をサイトルート（install/の一つ上）へ
+  コピーする。上書きされる既存ファイルは、コピー前に必ず
+  install/backup/YYYY-MM-DD-NN/ へ退避する（フォルダ分離方式、
+  migrate.phpと同じ考え方）。導入完了後、migrate.php（Migration
+  Engine）を自動的に呼び出し、旧構成データがあればdata/・logs/へ
+  移行する。
+
+  【動的表示（AJAX）】
+  「セットアップを実行する」ボタン押下で、ページ全体を再読み込み
+  せずにfetch()で導入処理を実行し、結果ログを1行ずつ表示する。
+  完了後は書き込み権限・Migration Engine状態も再取得して表示を
+  更新する（?ajax=1&action=run_setup / ?ajax=1&action=status の
+  2エンドポイントをinstall.php自身に持たせた）。
+
+  【bbs.php自動検出との連携（既存機能）】
+  従来通り、install.phpの設置場所から出発してbbs.phpを自動検出し、
+  conf.php・migrate.phpの併存有無から「KSPHP Plus系か無関係の設置か」
+  を判定する機能はそのまま維持。
+
+  【動作確認】
+  1. 新規サイト（bbs.php等が一切無い状態）でセットアップ実行→
+     68ファイルすべてが正しく導入され、bbs.phpが警告・エラー無く
+     正常動作することを確認。
+  2. 導入済みの状態でconf.phpを手動編集した上で再度セットアップ
+     実行→編集済みconf.phpがinstall/backup/へ正しく退避された上で
+     新バージョンに上書きされ、かつdata/・logs/・.migratedマーカー・
+     bbs.log等の実データ・状態には一切影響が無いことを確認
+     （今回のトラブルの再発防止を直接検証）。
