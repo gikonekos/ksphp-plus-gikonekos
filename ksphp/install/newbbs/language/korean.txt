@@ -348,3 +348,15 @@ LONGPOST_COLLAPSE_LINK=접기
 
 # 20260801 Gikoneko: LaTeX math rendering JS feature (KaTeX via CDN)
 LATEX_SETTING_LABEL=LaTeX 수식 렌더링 사용 (개인 설정, 이 브라우저에만 적용, CDN에서 KaTeX를 불러옵니다)
+
+# 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
+JS_SETTINGS_LEGEND=JS 설정
+JS_IMGTHUMB_LABEL=이미지 썸네일 표시
+JS_KAOMOJI_LABEL=이모티콘 팔레트 표시
+JS_LATEX_LABEL=LaTeX 수식 렌더링(CDN에서 KaTeX를 불러옵니다)
+JS_LINEBREAKER_LEN_LABEL=줄바꿈 목표 글자수:
+JS_LINEBREAKER_NOTE=※라인 브레이커 자체는 비활성화할 수 없습니다(게시글 크기 제한 때문). 위 숫자는 줄바꿈 위치의 기준만 변경합니다.
+JS_LONGPOST_LABEL=장문 NG 필터
+JS_TREEHIDE_LABEL=읽지 않은 트리 삭제 기능
+JS_UPTHUMB_LABEL=업로드 썸네일 표시
+JS_VIDEMBED_LABEL=동영상 임베드 표시

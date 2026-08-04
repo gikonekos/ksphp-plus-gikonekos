@@ -296,3 +296,15 @@ LONGPOST_COLLAPSE_LINK=Daralt
 
 # 20260801 Gikoneko: LaTeX math rendering JS feature (KaTeX via CDN)
 LATEX_SETTING_LABEL=LaTeX matematik gösterimini etkinleştir (kişisel ayar, yalnızca bu tarayıcı, KaTeX'i bir CDN'den yükler)
+
+# 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
+JS_SETTINGS_LEGEND=JS Ayarları
+JS_IMGTHUMB_LABEL=Resim küçük resimleri
+JS_KAOMOJI_LABEL=Kaomoji paleti
+JS_LATEX_LABEL=LaTeX matematik gösterimi (KaTeX'i bir CDN'den yükler)
+JS_LINEBREAKER_LEN_LABEL=Hedef satır sonu uzunluğu:
+JS_LINEBREAKER_NOTE=Not: satır bölücünün kendisi devre dışı bırakılamaz (gönderi boyutu sınırı nedeniyle gereklidir). Yukarıdaki sayı yalnızca satırların nerede bölüneceğini ayarlar.
+JS_LONGPOST_LABEL=Uzun gönderi filtresi
+JS_TREEHIDE_LABEL=Okunmamış konu silme
+JS_UPTHUMB_LABEL=Yükleme küçük resimleri
+JS_VIDEMBED_LABEL=Video gömme

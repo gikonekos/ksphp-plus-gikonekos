@@ -6,6 +6,9 @@
    with kinsoku rules applied; other lines keep the original
    space-delimited word-wrap behavior. Multilingual: detection is
    per-line, so mixed-language posts are handled automatically. */
+/* 20260801 Gikoneko: 行長パラメータは「個人環境設定」パネルのJS設定
+   セクションで調整可能（linebreaker_len）。この機能自体は無効化不可
+   （常時有効）。 */
 /*
                                        あやしいブレイク工業
  
@@ -51,6 +54,22 @@ Have you ever seen mighty skills to treat pile heads, rough clenched fists to su
 (function() {
 	'use strict';
 
+	// 2026-08-01 Gikoneko: MAX_LENGTHは「個人環境設定」パネルのJS設定
+	// セクション（window.KSPHP_SETTINGS.linebreaker_len）で調整可能。
+	// この値はconf.php側のMAXMSGCOL（1行の最大バイト数、strlen()基準）
+	// を超えないようサーバー側で上限が絞られている（バイト数=ASCII文字数
+	// の場合を想定した絶対上限）。
+	// ただし本ブレーカーは「文字数」で行を区切っており、日本語（UTF-8で
+	// 1文字最大3バイト）はバイト数と文字数の差が大きいため、日本語を
+	// 含む行ではさらに約1/3の長さで区切る（禁則処理の都合上、フタ文字分
+	// 程度のマージンも加味）。ASCII主体の行はKSPHP_SETTINGSの値を
+	// そのまま使う。
+	var configuredLen = (window.KSPHP_SETTINGS && Number.isFinite(window.KSPHP_SETTINGS.linebreaker_len))
+		? window.KSPHP_SETTINGS.linebreaker_len
+		: 72;
+	var MAX_LENGTH_ASCII = configuredLen;
+	var MAX_LENGTH_JAPANESE = Math.max(10, Math.floor(configuredLen / 3) - 2);
+
 	// 行頭禁則: characters that must not start a line (get pulled back
 	// onto the tail of the previous line instead).
 	const KINSOKU_LEADING = "、。，．,.）」』】〕〉》」〙〗〟)]｝》〕、。！？!?ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮーゝゞ・：；:;";
@@ -93,7 +112,6 @@ Have you ever seen mighty skills to treat pile heads, rough clenched fists to su
 	}
 
 	function breaker() {
-		const MAX_LENGTH = 72;
 		let lines = document.getElementById('contents1').value.split('\n');
 		let newlines = [];
 		for (let i in lines) {
@@ -102,7 +120,7 @@ Have you ever seen mighty skills to treat pile heads, rough clenched fists to su
 				continue;
 			}
 			if (isJapanese(lines[i])) {
-				for (const row of breakJapaneseLine(lines[i], MAX_LENGTH)) {
+				for (const row of breakJapaneseLine(lines[i], MAX_LENGTH_JAPANESE)) {
 					newlines.push(row);
 				}
 				continue;
@@ -111,7 +129,7 @@ Have you ever seen mighty skills to treat pile heads, rough clenched fists to su
 			let words = lines[i].split(' ').filter(w => w.trim() != "");
 			let newline = "";
 			for (let word of words) {
-				if (idx+word.length > MAX_LENGTH) {
+				if (idx+word.length > MAX_LENGTH_ASCII) {
 					newline += '\n';
 					idx = 0;
 				}
@@ -125,7 +143,6 @@ Have you ever seen mighty skills to treat pile heads, rough clenched fists to su
 	}
 
 function checkLineLengths() {
-	const MAX_LENGTH = 72;
 	const lines = document.getElementById('contents1').value.split('\n');
 	let alert = false;
 
@@ -135,16 +152,19 @@ function checkLineLengths() {
 		// skip quote lines (even if they have leading spaces)
 		if (trimmedStart.startsWith('>')) continue;
 
+		const japaneseLine = isJapanese(raw);
+		const limit = japaneseLine ? MAX_LENGTH_JAPANESE : MAX_LENGTH_ASCII;
+
 		// ignore lines that are not too long
-		if (raw.length <= MAX_LENGTH) continue;
+		if (raw.length <= limit) continue;
 
 		// Japanese lines are always breakable per-character, so the
 		// "single unbreakable word" exemption below doesn't apply to them.
-		if (!isJapanese(raw)) {
-			// if any single word is longer than MAX_LENGTH, breaker can't help -> no alert
+		if (!japaneseLine) {
+			// if any single word is longer than limit, breaker can't help -> no alert
 			const words = raw.split(' ').filter(w => w.trim() !== '');
 			// suppress glow ONLY if the entire line is one single long unbreakable word
-			if (words.length === 1 && words[0].length > MAX_LENGTH) continue;
+			if (words.length === 1 && words[0].length > limit) continue;
 		}
 
 		// otherwise, this is a fixable overlong line -> glow

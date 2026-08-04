@@ -50,7 +50,7 @@ if (file_exists($ksphp_local_secrets_file)) {
 unset($ksphp_local_secrets_file, $ksphp_local_secrets);
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '擬古猫+RC12 [20260801] (Heyuri, ヶ, ＠Links, 擬古猫)';
+$CONF['VERSION'] = '擬古猫+RC13 [20260801] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
@@ -175,6 +175,73 @@ if ($ksphp_lang_files !== false) {
 // etc.) can reference the same translations, exposed as
 // window.KSPHP_LANG in the HTML header.
 $MSG_JSON = json_encode($MSG, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP);
+
+// 2026-08-01 Gikoneko: 「個人環境設定」内JS設定セクション。
+// 対象JS機能を1箇所で定義（拡張性重視：新規JS機能は配列に1行足すだけで
+// 保存・表示・JSへの受け渡しすべてに反映される）。
+// type: 'bool'（チェックボックス）または 'int'（数値パラメータ）。
+// 'int'型のみ min/max を持ち、範囲外はデフォルトにフォールバックする。
+function ksphp_js_setting_defs(): array {
+    // ラインブレーカーの1行目標文字数は、投稿バリデーション側の上限
+    // conf.php['MAXMSGCOL']（1行の最大バイト数、strlen()基準）を超えて
+    // 投稿するとエラーになるため、これを超えられないようにする。
+    // ただしMAXMSGCOLはバイト数、ブレーカー側は「文字数」で行を区切って
+    // おり、日本語（UTF-8で1文字最大3バイト）はバイト数と文字数の差が
+    // 大きい。安全のため日本語行の上限はMAXMSGCOL/3を基準にさらに
+    // 少し余裕を持たせる（結合文字・合字等の揺れを吸収するマージン）。
+    $maxmsgcol = isset($GLOBALS['CONF']['MAXMSGCOL']) && is_numeric($GLOBALS['CONF']['MAXMSGCOL'])
+        ? (int) $GLOBALS['CONF']['MAXMSGCOL']
+        : 1000;
+    $linebreaker_max = max(10, $maxmsgcol - 2); // ASCII行の絶対上限（バイト=文字なので余裕2文字のみ）
+    $linebreaker_default = max(10, (int) floor($maxmsgcol / 3) - 4); // 日本語行を見込んだ既定値
+
+    return array(
+        'imgthumb'        => array('type' => 'bool', 'default' => 1),
+        'kaomoji'         => array('type' => 'bool', 'default' => 1),
+        'latex'           => array('type' => 'bool', 'default' => 0),
+        'linebreaker_len' => array('type' => 'int',  'default' => $linebreaker_default, 'min' => 10, 'max' => $linebreaker_max),
+        'longpost'        => array('type' => 'bool', 'default' => 0),
+        'longpost_th'     => array('type' => 'int',  'default' => 10, 'min' => 1, 'max' => 9999),
+        'treehide'        => array('type' => 'bool', 'default' => 0),
+        'upthumb'         => array('type' => 'bool', 'default' => 1),
+        'vidembed'        => array('type' => 'bool', 'default' => 1),
+    );
+}
+
+// cookie 'ksphp_js'（JSON文字列）から現在値を読み込む。壊れている／
+// 未設定のキーはすべて定義済みデフォルト値にフォールバックする。
+function ksphp_js_settings_load(): array {
+    $defs = ksphp_js_setting_defs();
+    $result = array();
+    $raw = isset($_COOKIE['ksphp_js']) ? $_COOKIE['ksphp_js'] : '';
+    $decoded = array();
+    if ($raw !== '') {
+        $tmp = json_decode($raw, true);
+        if (is_array($tmp)) {
+            $decoded = $tmp;
+        }
+    }
+    foreach ($defs as $key => $def) {
+        $val = $decoded[$key] ?? null;
+        if ($def['type'] === 'bool') {
+            $result[$key] = ($val === 1 || $val === '1' || $val === true) ? 1 : 0;
+        } else { // int
+            $n = is_numeric($val) ? (int) $val : $def['default'];
+            if ($n < $def['min'] || $n > $def['max']) {
+                $n = $def['default'];
+            }
+            $result[$key] = $n;
+        }
+        if ($val === null) {
+            $result[$key] = $def['default'];
+        }
+    }
+    return $result;
+}
+
+$ksphp_js_settings = ksphp_js_settings_load();
+$KSPHP_JS_SETTINGS_JSON = json_encode($ksphp_js_settings, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP);
+
 // Translation helper
 function T($key) {
     return $GLOBALS['MSG'][$key] ?? $key;
@@ -315,6 +382,7 @@ function script_run() {
 
         $templateValues = removeArrayValues(array_merge($CONF, $GLOBALS['MSG']));
         $templateValues['JS_LANG_JSON'] = $GLOBALS['MSG_JSON'];
+        $templateValues['JS_SETTINGS_JSON'] = $GLOBALS['KSPHP_JS_SETTINGS_JSON'];
         $templateValues['LANG_OPTIONS_HTML'] = $GLOBALS['ksphp_lang_options_html'];
 
         $t->addGlobalVars($templateValues);
@@ -341,6 +409,7 @@ function script_run() {
             // environment vars for template
             $templateValues = removeArrayValues(array_merge($CONF, $GLOBALS['MSG']));
             $templateValues['JS_LANG_JSON'] = $GLOBALS['MSG_JSON'];
+            $templateValues['JS_SETTINGS_JSON'] = $GLOBALS['KSPHP_JS_SETTINGS_JSON'];
             $templateValues['LANG_OPTIONS_HTML'] = $GLOBALS['ksphp_lang_options_html'];
 
             $t->addGlobalVars($templateValues);
@@ -632,6 +701,7 @@ function tripuse($key) {
         $tmp['FORM_CONTENTS_HELP_IMAGE'] = sprintf($GLOBALS['MSG']['FORM_CONTENTS_HELP_IMAGE'], $this->c['MAXMSGCOL'], $this->c['MAXMSGLINE'], $this->c['IMAGETEXT'] ?? '');
         $tmp['IMAGE_UPLOAD_HELP'] = sprintf($GLOBALS['MSG']['IMAGE_UPLOAD_HELP'], $this->c['MAX_IMAGEWIDTH'] ?? '', $this->c['MAX_IMAGEHEIGHT'] ?? '', $this->c['MAX_IMAGESIZE'] ?? '');
         $tmp['JS_LANG_JSON'] = $GLOBALS['MSG_JSON'];
+        $tmp['JS_SETTINGS_JSON'] = $GLOBALS['KSPHP_JS_SETTINGS_JSON'];
 
         // 20260720 Gikoneko: 言語切替プルダウンのoption HTMLをテンプレート
         // 変数として渡す。グローバルスコープで生成済みの$ksphp_lang_options_html
@@ -1060,6 +1130,26 @@ function tripuse($key) {
                 @$this->f['fw'] ? $this->c['FOLLOWWIN'] = 1 : $this->c['FOLLOWWIN'] = 0;
                 @$this->f['rt'] ? $this->c['RELTYPE'] = 1 : $this->c['RELTYPE'] = 0;
                 @$this->f['cookie'] ? $this->c['COOKIE'] = 1 : $this->c['COOKIE'] = 0;
+
+                // 2026-08-01 Gikoneko: 「個人環境設定」内JS設定セクション。
+                // 定義テーブル(ksphp_js_setting_defs())をループして保存する
+                // ため、新規JS機能追加時もこの箇所は変更不要（定義テーブルに
+                // 1行足すだけで自動的に保存対象になる）。
+                $js_defs = ksphp_js_setting_defs();
+                $js_settings = array();
+                foreach ($js_defs as $js_key => $js_def) {
+                    if ($js_def['type'] === 'bool') {
+                        $js_settings[$js_key] = @$this->f['js_' . $js_key] ? 1 : 0;
+                    } else { // int
+                        $submitted = @$this->f['js_' . $js_key];
+                        $n = is_numeric($submitted) ? (int) $submitted : $js_def['default'];
+                        if ($n < $js_def['min'] || $n > $js_def['max']) {
+                            $n = $js_def['default'];
+                        }
+                        $js_settings[$js_key] = $n;
+                    }
+                }
+                setcookie('ksphp_js', json_encode($js_settings, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), CURRENT_TIME + 7776000); // 90日
             }
         }
         # Special conditions
@@ -1773,6 +1863,25 @@ $msgmore = ob_get_clean();
             : $this->t->addVar('custom', 'CHK_FW_0', ' checked="checked"');
         $this->c['RELTYPE'] ? $this->t->addVar('custom', 'CHK_RT_1', ' checked="checked"')
             : $this->t->addVar('custom', 'CHK_RT_0', ' checked="checked"');
+
+        // 2026-08-01 Gikoneko: 「個人環境設定」内JS設定セクション。
+        // cookie 'ksphp_js' の現在値を読み、フォームのチェック状態/数値欄
+        // へ反映する。定義テーブルをループするため、新規JS機能追加時も
+        // ここは変更不要。
+        $js_current = ksphp_js_settings_load();
+        foreach (ksphp_js_setting_defs() as $js_key => $js_def) {
+            $tmpl_key = 'CHK_JS_' . strtoupper($js_key);
+            if ($js_def['type'] === 'bool') {
+                if ($js_current[$js_key]) {
+                    $this->t->addVar('custom', $tmpl_key, ' checked="checked"');
+                }
+            } else { // int
+                $this->t->addVar('custom', 'VAL_JS_' . strtoupper($js_key), (string) $js_current[$js_key]);
+                // 動的にmax値を計算するキー（linebreaker_len等）用に、
+                // フォームのmax属性へも渡しておく。
+                $this->t->addVar('custom', 'VAL_JS_' . strtoupper($js_key) . '_MAX', (string) $js_def['max']);
+            }
+        }
 
         $this->t->addVar('custom_hide', 'BBSMODE_ADMINONLY', $this->c['BBSMODE_ADMINONLY']);
         $this->t->addVar('custom_a', 'BBSMODE_ADMINONLY', $this->c['BBSMODE_ADMINONLY']);

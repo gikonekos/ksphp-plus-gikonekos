@@ -8,7 +8,7 @@
  * 個人設定機能。非表示にしたツリーは、いつでもパネルから個別に
  * 復元、または「すべて復元」で一括復元できる。
  *
- * 有効/無効は個人設定（チェックボックス）で切り替え可能。
+ * 有効/無効は「個人環境設定」パネルのJS設定セクションで切り替える。
  * 既定は無効（オプトイン）。
  */
 (function () {
@@ -19,21 +19,23 @@
 		return (typeof LANG[key] === 'string') ? LANG[key] : key;
 	}
 
-	var STORAGE_ENABLED = 'ksphp_treehide_enabled';
+	var LEGACY_STORAGE_KEY = 'ksphp_treehide_enabled';
 	var STORAGE_HIDDEN = 'ksphp_treehide_hidden';
 
+	// 2026-08-01 Gikoneko: 設定の保存先を「個人環境設定」パネル（サーバー
+	// cookie 'ksphp_js'、window.KSPHP_SETTINGS.treehide経由）に統合。
+	// 旧バージョンのlocalStorageキーが残っていれば初回のみ優先する
+	// （非表示にしたツリーIDの一覧＝STORAGE_HIDDENは今後もlocalStorage
+	// のまま。これはON/OFF設定ではなくブラウザ固有の作業データのため）。
 	function isEnabled() {
 		try {
-			return window.localStorage.getItem(STORAGE_ENABLED) === '1';
-		} catch (e) {
-			return false;
-		}
-	}
-
-	function setEnabled(v) {
-		try {
-			window.localStorage.setItem(STORAGE_ENABLED, v ? '1' : '0');
-		} catch (e) { /* localStorageが使えない環境では何もしない */ }
+			var legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+			if (legacy !== null) {
+				return legacy === '1';
+			}
+		} catch (e) { /* localStorage無効環境では無視 */ }
+		var s = window.KSPHP_SETTINGS || {};
+		return s.treehide === 1;
 	}
 
 	function loadHiddenSet() {
@@ -203,44 +205,12 @@
 			refreshPanel();
 		}
 
-		// 個人設定トグル（チェックボックス）は常に表示し、ONならツリー削除
-		// 機能一式（消リンク＋復元パネル）を組み立てる。既定は無効。
-		var toggleWrap = document.createElement('div');
-		toggleWrap.id = 'ksphp-treehide-toggle';
-		toggleWrap.className = 'ksphp-treehide-toggle';
-		var label = document.createElement('label');
-		var checkbox = document.createElement('input');
-		checkbox.type = 'checkbox';
-		checkbox.checked = isEnabled();
-		label.appendChild(checkbox);
-		label.appendChild(document.createTextNode(' ' + L('TREE_HIDE_SETTING_LABEL')));
-		toggleWrap.appendChild(label);
-		blocks[0].parentNode.insertBefore(toggleWrap, blocks[0]);
-
-		var applied = false;
-		function ensureApplied() {
-			if (checkbox.checked && !applied) {
-				applyTreeHide();
-				applied = true;
-			}
+		// 2026-08-01 Gikoneko: 有効/無効は「個人環境設定」パネルのJS設定
+		// セクションで切り替える（window.KSPHP_SETTINGS.treehide経由）。
+		// ここでは値を見て、有効な場合のみツリー削除機能一式（消リンク＋
+		// 復元パネル）を組み立てるだけにする。
+		if (isEnabled()) {
+			applyTreeHide();
 		}
-
-		checkbox.addEventListener('change', function () {
-			setEnabled(checkbox.checked);
-			if (checkbox.checked) {
-				ensureApplied();
-			} else {
-				// 無効化時は非表示を解除して見た目を元に戻す（削除履歴自体は
-				// localStorageに残るので、再度有効化すれば復元できる）。
-				blocks.forEach(function (block) { block.style.display = ''; });
-				var panel = document.getElementById('ksphp-treehide-panel');
-				if (panel) {
-					panel.remove();
-				}
-				applied = false;
-			}
-		});
-
-		ensureApplied();
 	});
 })();

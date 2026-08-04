@@ -356,3 +356,15 @@ LONGPOST_COLLAPSE_LINK=Recolher
 
 # 20260801 Gikoneko: LaTeX math rendering JS feature (KaTeX via CDN)
 LATEX_SETTING_LABEL=Ativar renderização de fórmulas LaTeX (configuração pessoal, somente neste navegador, carrega o KaTeX via CDN)
+
+# 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
+JS_SETTINGS_LEGEND=Configurações de JS
+JS_IMGTHUMB_LABEL=Miniaturas de imagens
+JS_KAOMOJI_LABEL=Paleta de emoticons
+JS_LATEX_LABEL=Renderização de fórmulas LaTeX (carrega o KaTeX via CDN)
+JS_LINEBREAKER_LEN_LABEL=Comprimento alvo da quebra de linha:
+JS_LINEBREAKER_NOTE=Nota: o quebrador de linha em si não pode ser desativado (necessário pelo limite de tamanho das mensagens). O número acima só ajusta onde ele quebra as linhas.
+JS_LONGPOST_LABEL=Filtro de mensagens longas
+JS_TREEHIDE_LABEL=Exclusão de tópicos não lidos
+JS_UPTHUMB_LABEL=Miniaturas de upload
+JS_VIDEMBED_LABEL=Incorporação de vídeos

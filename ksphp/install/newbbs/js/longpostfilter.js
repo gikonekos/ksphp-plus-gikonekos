@@ -7,8 +7,8 @@
  * 一切影響しない、完全にクライアント側の個人設定機能。
  * 折りたたまれた投稿は「表示」リンクでいつでも展開できる。
  *
- * 有効/無効・行数しきい値は個人設定で切り替え可能。既定は無効
- * （オプトイン）、しきい値の既定値は30行。
+ * 有効/無効・行数しきい値は「個人環境設定」パネルのJS設定セクションで
+ * 切り替える。既定は無効（オプトイン）、しきい値の既定値は30行。
  */
 (function () {
 	'use strict';
@@ -21,37 +21,37 @@
 		return L(key).replace('{N}', String(n));
 	}
 
-	var STORAGE_ENABLED = 'ksphp_longpost_enabled';
-	var STORAGE_THRESHOLD = 'ksphp_longpost_threshold';
+	var LEGACY_STORAGE_ENABLED = 'ksphp_longpost_enabled';
+	var LEGACY_STORAGE_THRESHOLD = 'ksphp_longpost_threshold';
 	var DEFAULT_THRESHOLD = 30;
 
+	// 2026-08-01 Gikoneko: 設定の保存先を「個人環境設定」パネル（サーバー
+	// cookie 'ksphp_js'、window.KSPHP_SETTINGS経由）に統合。旧バージョン
+	// のlocalStorageキーが残っていれば初回のみ優先する（後方互換）。
 	function isEnabled() {
 		try {
-			return window.localStorage.getItem(STORAGE_ENABLED) === '1';
-		} catch (e) {
-			return false;
-		}
-	}
-
-	function setEnabled(v) {
-		try {
-			window.localStorage.setItem(STORAGE_ENABLED, v ? '1' : '0');
-		} catch (e) { /* ignore */ }
+			var legacy = window.localStorage.getItem(LEGACY_STORAGE_ENABLED);
+			if (legacy !== null) {
+				return legacy === '1';
+			}
+		} catch (e) { /* localStorage無効環境では無視 */ }
+		var s = window.KSPHP_SETTINGS || {};
+		return s.longpost === 1;
 	}
 
 	function getThreshold() {
 		try {
-			var v = parseInt(window.localStorage.getItem(STORAGE_THRESHOLD), 10);
-			return (Number.isFinite(v) && v > 0) ? v : DEFAULT_THRESHOLD;
-		} catch (e) {
-			return DEFAULT_THRESHOLD;
-		}
-	}
-
-	function setThreshold(v) {
-		try {
-			window.localStorage.setItem(STORAGE_THRESHOLD, String(v));
-		} catch (e) { /* ignore */ }
+			var legacy = window.localStorage.getItem(LEGACY_STORAGE_THRESHOLD);
+			if (legacy !== null) {
+				var lv = parseInt(legacy, 10);
+				if (Number.isFinite(lv) && lv > 0) {
+					return lv;
+				}
+			}
+		} catch (e) { /* localStorage無効環境では無視 */ }
+		var s = window.KSPHP_SETTINGS || {};
+		var v = parseInt(s.longpost_th, 10);
+		return (Number.isFinite(v) && v > 0) ? v : DEFAULT_THRESHOLD;
 	}
 
 	function injectStyle() {
@@ -61,8 +61,6 @@
 		var style = document.createElement('style');
 		style.id = 'ksphp-longpost-style';
 		style.textContent =
-			'.ksphp-longpost-toggle{font-size:0.85em;margin:0.3em 0;}' +
-			'.ksphp-longpost-toggle input[type=number]{width:4em;}' +
 			'.ksphp-longpost-collapsed{border:1px dashed #888;padding:0.3em 0.6em;font-size:0.85em;}' +
 			'.ksphp-longpost-collapsed a{margin-left:0.5em;}';
 		document.head.appendChild(style);
@@ -117,15 +115,19 @@
 				collapseLink.style.display = 'none';
 				placeholder.style.display = '';
 			}
-			function expand() {
+			// 20260801 Gikoneko: 折りたたむリンクは「実際に折りたたみ対象と
+			// なった投稿を展開した後」にのみ表示する。しきい値未満の投稿
+			// では一度も折りたたまれないため、このリンクを表示する必要が
+			// ない（常時表示だと閲覧のたびに気疲れするとの指摘を受けて修正）。
+			function expand(showCollapseLink) {
 				pre.style.display = '';
-				collapseLink.style.display = '';
+				collapseLink.style.display = showCollapseLink ? '' : 'none';
 				placeholder.style.display = 'none';
 			}
 
 			expandLink.addEventListener('click', function (ev) {
 				ev.preventDefault();
-				expand();
+				expand(true); // 手動展開時は「折りたたむ」リンクを見せる
 			});
 			collapseLink.addEventListener('click', function (ev) {
 				ev.preventDefault();
@@ -142,49 +144,15 @@
 				if (enabled && entry.lines > threshold) {
 					entry.collapse();
 				} else {
-					entry.expand();
+					// しきい値未満（またはフィルター無効）の投稿は、そもそも
+					// 折りたたまれていないので「折りたたむ」リンクも不要。
+					entry.expand(false);
 				}
 			});
 		}
 
-		// 個人設定バー（有効/無効・しきい値）を先頭投稿の前に挿入する。
-		var toggleWrap = document.createElement('div');
-		toggleWrap.id = 'ksphp-longpost-toggle';
-		toggleWrap.className = 'ksphp-longpost-toggle';
-
-		var label = document.createElement('label');
-		var checkbox = document.createElement('input');
-		checkbox.type = 'checkbox';
-		checkbox.checked = isEnabled();
-		label.appendChild(checkbox);
-		label.appendChild(document.createTextNode(' ' + L('LONGPOST_SETTING_LABEL')));
-		toggleWrap.appendChild(label);
-
-		toggleWrap.appendChild(document.createTextNode(' '));
-
-		var thLabel = document.createElement('label');
-		thLabel.appendChild(document.createTextNode(L('LONGPOST_THRESHOLD_LABEL') + ' '));
-		var thInput = document.createElement('input');
-		thInput.type = 'number';
-		thInput.min = '1';
-		thInput.value = String(getThreshold());
-		thLabel.appendChild(thInput);
-		toggleWrap.appendChild(thLabel);
-
-		checkbox.addEventListener('change', function () {
-			setEnabled(checkbox.checked);
-			applyFilter();
-		});
-		thInput.addEventListener('change', function () {
-			var v = parseInt(thInput.value, 10);
-			if (Number.isFinite(v) && v > 0) {
-				setThreshold(v);
-				applyFilter();
-			}
-		});
-
-		posts[0].parentNode.insertBefore(toggleWrap, posts[0]);
-
+		// 2026-08-01 Gikoneko: 有効/無効・しきい値は「個人環境設定」パネル
+		// のJS設定セクションで切り替える（window.KSPHP_SETTINGS経由）。
 		applyFilter();
 	});
 })();

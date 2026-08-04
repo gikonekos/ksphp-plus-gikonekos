@@ -28,6 +28,19 @@ function insertThisInThere(thisChar, thereId) {
  const SHOW_MORE = isJP ? '［▼ もっと表示］' : '［▼ Show more kaomoji］';
  const SHOW_LESS = isJP ? '［▲ 表示を減らす］' : '［▲ Show fewer kaomoji］';
 
+// 2026-08-01 Gikoneko: 「個人環境設定」パネルのJS設定セクションで
+// 無効化された場合は、投稿フォーム上の顔文字パレット（クイックアクセス
+// ボタン＋展開パネル、いずれもtemplate.html側で静的に出力される）を
+// 非表示にする。insertThisInThere()自体は他機能から呼ばれないため、
+// パレットさえ隠せば実質的に無効化になる。
+document.addEventListener('DOMContentLoaded', function () {
+	if (window.KSPHP_SETTINGS && window.KSPHP_SETTINGS.kaomoji === 0) {
+		document.querySelectorAll('input.kaomoji, a.kaomoji, #kaomoji-alt').forEach(function (el) {
+			el.style.display = 'none';
+		});
+	}
+});
+
 function toggleKaomojiAlt() {
 	var alt = document.getElementById('kaomoji-alt');
 	var btn = document.getElementById('kaomojiAltToggle');

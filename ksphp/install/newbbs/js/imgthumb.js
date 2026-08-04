@@ -11,6 +11,13 @@
 	const STORAGE_EXTENSIONS_KEY = 'imgThumbExtensions';
 
 	function isEnabled() {
+		// 2026-08-01 Gikoneko: 「個人環境設定」パネルのJS設定セクションで
+		// 明示的に無効化されている場合はそちらを優先する。パネル側が未設定
+		// または有効の場合は、imgthumb.js独自のsetup画面での設定
+		// （STORAGE_ENABLED_KEY）に従う（従来通りの挙動）。
+		if (window.KSPHP_SETTINGS && window.KSPHP_SETTINGS.imgthumb === 0) {
+			return false;
+		}
 		return localStorage.getItem(STORAGE_ENABLED_KEY) !== 'false';
 	}
 

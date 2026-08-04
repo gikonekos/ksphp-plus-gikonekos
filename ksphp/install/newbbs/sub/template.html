@@ -586,6 +586,20 @@
         <input type="radio" name="fw" value="0"{CHK_FW_0} id="fw1-1" /><label for="fw1-1">{FOLLOW_NEW_WINDOW_LABEL}</label><br>
         <input type="radio" name="fw" value="1"{CHK_FW_1} id="fw1-2" /><label for="fw1-2">{FOLLOW_SAME_PAGE_LABEL}</label><br>
 </fieldset>
+<br>
+<fieldset>
+        <legend>{JS_SETTINGS_LEGEND}</legend>
+        <input type="checkbox" name="js_imgthumb" value="1"{CHK_JS_IMGTHUMB} id="js1" /> <label for="js1">{JS_IMGTHUMB_LABEL}</label><br>
+        <input type="checkbox" name="js_kaomoji" value="1"{CHK_JS_KAOMOJI} id="js2" /> <label for="js2">{JS_KAOMOJI_LABEL}</label><br>
+        <input type="checkbox" name="js_latex" value="1"{CHK_JS_LATEX} id="js3" /> <label for="js3">{JS_LATEX_LABEL}</label><br>
+        <label for="js3b">{JS_LINEBREAKER_LEN_LABEL}</label> <input type="number" name="js_linebreaker_len" size="4" min="10" max="{VAL_JS_LINEBREAKER_LEN_MAX}" value="{VAL_JS_LINEBREAKER_LEN}" id="js3b" /><br>
+        <p class="ksphp-js-note">{JS_LINEBREAKER_NOTE}</p>
+        <input type="checkbox" name="js_longpost" value="1"{CHK_JS_LONGPOST} id="js4" /> <label for="js4">{JS_LONGPOST_LABEL}</label>
+        <label for="js4th">{LONGPOST_THRESHOLD_LABEL}</label> <input type="number" name="js_longpost_th" size="3" min="1" max="9999" value="{VAL_JS_LONGPOST_TH}" id="js4th" /><br>
+        <input type="checkbox" name="js_treehide" value="1"{CHK_JS_TREEHIDE} id="js5" /> <label for="js5">{JS_TREEHIDE_LABEL}</label><br>
+        <input type="checkbox" name="js_upthumb" value="1"{CHK_JS_UPTHUMB} id="js6" /> <label for="js6">{JS_UPTHUMB_LABEL}</label><br>
+        <input type="checkbox" name="js_vidembed" value="1"{CHK_JS_VIDEMBED} id="js7" /> <label for="js7">{JS_VIDEMBED_LABEL}</label><br>
+</fieldset>
 <!-- <br>
 <fieldset>
 <legend>How to display messages when using 0 post reload</legend>

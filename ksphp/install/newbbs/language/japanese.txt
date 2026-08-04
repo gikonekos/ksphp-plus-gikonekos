@@ -355,3 +355,15 @@ LONGPOST_COLLAPSE_LINK=折りたたむ
 
 # 20260801 Gikoneko: LaTeX math rendering JS feature (KaTeX via CDN)
 LATEX_SETTING_LABEL=LaTeX数式レンダリングを有効にする（個人設定・このブラウザのみ・CDNからKaTeXを読み込みます）
+
+# 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
+JS_SETTINGS_LEGEND=JS設定
+JS_IMGTHUMB_LABEL=画像サムネイル表示
+JS_KAOMOJI_LABEL=顔文字パレット表示
+JS_LATEX_LABEL=LaTeX数式レンダリング（CDNからKaTeXを読み込みます）
+JS_LINEBREAKER_LEN_LABEL=改行の目標文字数：
+JS_LINEBREAKER_NOTE=※ラインブレーカー自体は無効化できません（投稿サイズ制限のため）。上の数値は改行位置の目安のみ変更できます。
+JS_LONGPOST_LABEL=長文NGフィルター
+JS_TREEHIDE_LABEL=未読ツリー削除機能
+JS_UPTHUMB_LABEL=アップロードサムネイル表示
+JS_VIDEMBED_LABEL=動画埋め込み表示

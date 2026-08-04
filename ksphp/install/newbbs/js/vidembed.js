@@ -1,6 +1,12 @@
 (function() {
     'use strict';
 
+    // 2026-08-01 Gikoneko: 「個人環境設定」パネルのJS設定セクションで
+    // 無効化された場合は何もしない（既定は有効＝従来通りの挙動）。
+    if (window.KSPHP_SETTINGS && window.KSPHP_SETTINGS.vidembed === 0) {
+        return;
+    }
+
     // Language detection
     const isJapanese = navigator.language.startsWith('ja');
     const EMBED_TEXT = isJapanese ? '［埋め込み］' : '[Embed]';

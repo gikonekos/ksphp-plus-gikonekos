@@ -348,3 +348,15 @@ LONGPOST_COLLAPSE_LINK=摺疊
 
 # 20260801 Gikoneko: LaTeX math rendering JS feature (KaTeX via CDN)
 LATEX_SETTING_LABEL=啟用 LaTeX 公式渲染（個人設定，僅本瀏覽器，將從 CDN 載入 KaTeX）
+
+# 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
+JS_SETTINGS_LEGEND=JS設定
+JS_IMGTHUMB_LABEL=圖片縮圖顯示
+JS_KAOMOJI_LABEL=顏文字面板顯示
+JS_LATEX_LABEL=LaTeX公式渲染（從CDN載入KaTeX）
+JS_LINEBREAKER_LEN_LABEL=換行目標字數：
+JS_LINEBREAKER_NOTE=※換行工具本身無法停用（因發文大小限制所需）。上方數字僅用於調整換行位置。
+JS_LONGPOST_LABEL=長文過濾器
+JS_TREEHIDE_LABEL=未讀樹狀刪除功能
+JS_UPTHUMB_LABEL=上傳縮圖顯示
+JS_VIDEMBED_LABEL=影片嵌入顯示

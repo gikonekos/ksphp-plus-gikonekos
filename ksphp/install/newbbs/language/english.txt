@@ -356,3 +356,15 @@ LONGPOST_COLLAPSE_LINK=Collapse
 
 # 20260801 Gikoneko: LaTeX math rendering JS feature (KaTeX via CDN)
 LATEX_SETTING_LABEL=Enable LaTeX math rendering (personal setting, this browser only, loads KaTeX from a CDN)
+
+# 20260801 Gikoneko: JS settings panel (個人環境設定 > JS設定 section)
+JS_SETTINGS_LEGEND=JS Settings
+JS_IMGTHUMB_LABEL=Image thumbnails
+JS_KAOMOJI_LABEL=Kaomoji palette
+JS_LATEX_LABEL=LaTeX math rendering (loads KaTeX from a CDN)
+JS_LINEBREAKER_LEN_LABEL=Target line-break length:
+JS_LINEBREAKER_NOTE=Note: the line breaker itself cannot be disabled (post-size limits require it). The number above only adjusts where it breaks lines.
+JS_LONGPOST_LABEL=Long-post filter
+JS_TREEHIDE_LABEL=Unread thread deletion
+JS_UPTHUMB_LABEL=Upload thumbnails
+JS_VIDEMBED_LABEL=Video embedding

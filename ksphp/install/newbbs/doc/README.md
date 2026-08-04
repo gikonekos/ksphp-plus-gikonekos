@@ -391,23 +391,42 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
   (display/save logic identical to the existing `'text'` type; only
   the form widget differs -- a `<textarea>` instead of
   `<input type="text">`) and registered `BBSLINK` under it.
-* Not yet started: integrate all per-browser JS feature toggles
-  (existing -- kaomoji.js, ayashiibreaker.js, upthumb.js, imgthumb.js,
-  vidembed.js -- and new -- longpostfilter.js, latexrender.js,
-  treehide.js) into the existing personal-settings panel
-  (個人用環境設定 in sub/template.html), instead of the three newest
-  toggles floating independently at the top of the page as they do
-  now. Design points from maintainer: each JS individually
-  on/off-able via checkbox except ayashiibreaker.js (line breaker,
-  mandatory -- cannot be disabled, but its parameters should stay
-  configurable from the panel); allow overriding the conf.php-level
-  擬古猫といっしょ setting from this panel too (conf.php can enable
-  it, reader can still turn it off client-side); settings continue
-  to live in localStorage, same as the current per-feature toggles;
-  needs full 7-language translation additions to
-  `newbbs/language/*.txt`.
+* (Implemented 2026-08-01, RC13) All per-browser JS feature toggles
+  (existing -- kaomoji.js, upthumb.js, imgthumb.js, vidembed.js -- and
+  new -- longpostfilter.js, latexrender.js, treehide.js) integrated
+  into a new "JS設定" fieldset inside the personal-settings ("個人環境
+  設定", m=c) page. Settings now save via a new independent cookie
+  `ksphp_js` (JSON, 90-day expiry) instead of localStorage, submitted
+  through the same "登録" button as the page's other settings; a
+  single PHP definition table (`ksphp_js_setting_defs()` in bbs.php)
+  drives cookie load/save/form-rendering, so adding a future JS
+  feature is a one-line addition to that table. The three
+  previously-independent top-of-page toggles (treehide/longpostfilter/
+  latexrender) were removed; those three still fall back to any
+  existing localStorage value once, for users upgrading from RC10-12,
+  before the cookie becomes the source of truth going forward.
+  ayashiibreaker.js (line breaker) has no on/off checkbox as specified
+  (mandatory) but its line-length parameter is now configurable from
+  the panel; the configurable max is computed server-side from
+  conf.php's own `MAXMSGCOL` so it can never be set past what the
+  server will accept, and Japanese-containing lines use roughly 1/3 of
+  the configured value (kinsoku-safe margin) since MAXMSGCOL is a byte
+  limit (`strlen()`-based) while the line breaker counts characters.
+  Full 7-language translations added for the 9 new template keys.
+* Not yet started: allow the personal-settings panel to override the
+  conf.php-level 擬古猫といっしょ setting client-side (conf.php can
+  enable it, but the reader could still turn it off for themselves).
+  This was part of the original JS-panel request but was out of scope
+  for the RC13 pass, which focused on the enumerated JS files above.
 
 ## Known Bugs:
+* (Found and fixed 2026-08-01, RC13) longpostfilter.js's per-post
+  "折りたたむ" (collapse) link was showing on every post regardless of
+  whether it actually exceeded the line-count threshold, because the
+  non-collapsed render path called expand() unconditionally with the
+  link visible. Fixed so the collapse link only appears after a post
+  that was truly folded (i.e. did exceed the threshold) gets manually
+  re-expanded.
 * (Found and fixed 2026-08-01, RC12-02) The RC11 handoff notes claimed
   a `$was_numeric_expr` check had been added to
   `ksphp_conf_apply_review()` to keep numeric-expression config values
