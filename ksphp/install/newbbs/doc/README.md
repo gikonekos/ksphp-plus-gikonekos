@@ -420,6 +420,19 @@ but if it runs as CGI, bbs.php needs to be set to 755 (executable).
   for the RC13 pass, which focused on the enumerated JS files above.
 
 ## Known Bugs:
+* (Migration note, RC13+) The three per-browser JS features added in
+  RC10-RC12 (treehide, longpostfilter, latexrender) originally stored
+  their on/off state in localStorage. RC13 moved these settings to a
+  server cookie (`ksphp_js`), and for migration each of those scripts
+  still prefers an existing localStorage value when one is present. As
+  a result, on a browser where one of those features was explicitly
+  turned OFF back in RC10-RC12, turning it ON in the new JS設定 panel
+  appears to have no effect -- the stale localStorage `0` wins. Fixing
+  it is a one-time action per browser: toggle the feature off and on
+  again in the panel, or delete the old keys
+  (`ksphp_treehide_enabled`, `ksphp_longpost_enabled`,
+  `ksphp_latex_enabled`). Fresh installs and browsers that never ran
+  RC10-RC12 are unaffected.
 * (Found and fixed 2026-08-01, RC13) longpostfilter.js's per-post
   "折りたたむ" (collapse) link was showing on every post regardless of
   whether it actually exceeded the line-count threshold, because the

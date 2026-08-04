@@ -57,18 +57,16 @@ Have you ever seen mighty skills to treat pile heads, rough clenched fists to su
 	// 2026-08-01 Gikoneko: MAX_LENGTHは「個人環境設定」パネルのJS設定
 	// セクション（window.KSPHP_SETTINGS.linebreaker_len）で調整可能。
 	// この値はconf.php側のMAXMSGCOL（1行の最大バイト数、strlen()基準）
-	// を超えないようサーバー側で上限が絞られている（バイト数=ASCII文字数
-	// の場合を想定した絶対上限）。
-	// ただし本ブレーカーは「文字数」で行を区切っており、日本語（UTF-8で
-	// 1文字最大3バイト）はバイト数と文字数の差が大きいため、日本語を
-	// 含む行ではさらに約1/3の長さで区切る（禁則処理の都合上、フタ文字分
-	// 程度のマージンも加味）。ASCII主体の行はKSPHP_SETTINGSの値を
-	// そのまま使う。
+	// を超えないようサーバー側で上限が絞られている。
+	// 日本語を含む行は禁則処理（行頭・行末に置けない文字の追い込み／
+	// 追い出し）で数文字ぶん行が伸び縮みするため、その分の余裕を
+	// 見込んで2文字短くした値を目標値とする（従来のハードコード値
+	// 72文字の挙動をほぼそのまま維持する）。
 	var configuredLen = (window.KSPHP_SETTINGS && Number.isFinite(window.KSPHP_SETTINGS.linebreaker_len))
 		? window.KSPHP_SETTINGS.linebreaker_len
 		: 72;
 	var MAX_LENGTH_ASCII = configuredLen;
-	var MAX_LENGTH_JAPANESE = Math.max(10, Math.floor(configuredLen / 3) - 2);
+	var MAX_LENGTH_JAPANESE = Math.max(10, configuredLen - 2);
 
 	// 行頭禁則: characters that must not start a line (get pulled back
 	// onto the tail of the previous line instead).

@@ -31,6 +31,7 @@
     <meta property="og:site_name" content="{TITLE}">
     <title>{TITLE}</title>
     <script type="text/javascript">window.KSPHP_LANG = {JS_LANG_JSON};</script>
+    <script type="text/javascript">window.KSPHP_SETTINGS = {JS_SETTINGS_JSON};</script>
     <script type="text/javascript" src="js/kaomoji.js"></script>
     <script type="text/javascript" src="js/ayashiibreaker.js" defer></script>
     <script type="text/javascript" src="js/upthumb.js" defer></script>
@@ -209,6 +210,7 @@
             <br>
             <textarea rows="5" cols="70" name="v" accesskey="4" maxlength="10000" placeholder="" title="Alt(+Shift)+4" id="contents1">{DMSG}</textarea>
         </p>
+        <div id="kaomoji-palette-container">
         <!-- Default "Quick Access" kaomoji -->
 		<input type="button" class="kaomoji" onClick="insertThisInThere('ヽ(´ー｀)ノ','contents1')" value="ヽ(´ー｀)ノ" />
 		<input type="button" class="kaomoji" onClick="insertThisInThere('(;´Д`)','contents1')" value="(;´Д`)" />
@@ -354,6 +356,7 @@
 		<input type="button" class="kaomoji" onClick="insertThisInThere('～(ﾟёﾟ～)','contents1')" value="～(ﾟёﾟ～)" />
 	</fieldset>
 </div>
+        </div>
         <p>
             <label for="url1">URL</label>
             <br>

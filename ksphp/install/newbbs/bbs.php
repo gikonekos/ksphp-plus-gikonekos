@@ -50,7 +50,7 @@ if (file_exists($ksphp_local_secrets_file)) {
 unset($ksphp_local_secrets_file, $ksphp_local_secrets);
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '擬古猫+RC13 [20260801] (Heyuri, ヶ, ＠Links, 擬古猫)';
+$CONF['VERSION'] = '擬古猫+RC14 [20260801] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
@@ -185,15 +185,17 @@ function ksphp_js_setting_defs(): array {
     // ラインブレーカーの1行目標文字数は、投稿バリデーション側の上限
     // conf.php['MAXMSGCOL']（1行の最大バイト数、strlen()基準）を超えて
     // 投稿するとエラーになるため、これを超えられないようにする。
-    // ただしMAXMSGCOLはバイト数、ブレーカー側は「文字数」で行を区切って
-    // おり、日本語（UTF-8で1文字最大3バイト）はバイト数と文字数の差が
-    // 大きい。安全のため日本語行の上限はMAXMSGCOL/3を基準にさらに
-    // 少し余裕を持たせる（結合文字・合字等の揺れを吸収するマージン）。
+    // ブレーカー側は「文字数」で行を区切る一方MAXMSGCOLは「バイト数」の
+    // 上限であり、日本語（UTF-8で1文字最大3バイト）が最も不利なので、
+    // 設定可能な上限は MAXMSGCOL/3 を基準にする（日本語だけの行でも
+    // サーバー側の検証を通せる値に必ず収まる）。
     $maxmsgcol = isset($GLOBALS['CONF']['MAXMSGCOL']) && is_numeric($GLOBALS['CONF']['MAXMSGCOL'])
         ? (int) $GLOBALS['CONF']['MAXMSGCOL']
         : 1000;
-    $linebreaker_max = max(10, $maxmsgcol - 2); // ASCII行の絶対上限（バイト=文字なので余裕2文字のみ）
-    $linebreaker_default = max(10, (int) floor($maxmsgcol / 3) - 4); // 日本語行を見込んだ既定値
+    $linebreaker_max = max(10, (int) floor($maxmsgcol / 3) - 2);
+    // 既定値は従来のハードコード値（72文字）を踏襲する。MAXMSGCOLが
+    // 極端に小さい設置ではそちらに合わせて縮める。
+    $linebreaker_default = min(72, $linebreaker_max);
 
     return array(
         'imgthumb'        => array('type' => 'bool', 'default' => 1),
