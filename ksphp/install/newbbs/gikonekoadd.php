@@ -1,14 +1,20 @@
 <?php
 
-// CGIを設置するホストアドレス
-$bbshost = 'qptns.com';
-
 // このスクリプトの名前
 $mycginame = 'gikonekoadd.php';
 
+// スクリプト自身の設置場所（conf.php・language/はここ基準）
+$script_root = __DIR__;
+
 // データファイル名
-$giko_dir = getenv( 'GIKO_DATA_DIR' ) ?: __DIR__;
+$giko_dir = getenv( 'GIKO_DATA_DIR' ) ?: $script_root . '/data';
 $data = $giko_dir . '/gikoneko_kotoba.dat';
+
+// 通常はbbs.php側のMigration Engineがdata/を作成済みだが、本スクリプトが
+// bbs.phpより先に単体で呼ばれた場合に備え、無ければここでも作成する。
+if ( ! is_dir( $giko_dir ) ) {
+	@mkdir( $giko_dir, 0755, true );
+}
 
 // ことばのmax値
 $maxword = 128; # 128なら全角で64文字
@@ -16,9 +22,9 @@ $maxword = 128; # 128なら全角で64文字
 // UI文言（$MSG）の読み込み。bbs.phpと同じlanguage/{LANGUAGE_FILE}.txtを
 // 参照するが、本スクリプトは単体で呼び出されるためbbs.php本体は
 // requireせず、conf.phpのみ読み込んで軽量にロードする。
-require_once( $giko_dir . '/conf.php' );
+require_once( $script_root . '/conf.php' );
 $language_file_name = $CONF['LANGUAGE_FILE'] ?? 'english';
-$langfile = $giko_dir . '/language/' . $language_file_name . '.txt';
+$langfile = $script_root . '/language/' . $language_file_name . '.txt';
 $MSG = array();
 if ( file_exists( $langfile ) ) {
 	$lines = @file( $langfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
@@ -52,11 +58,6 @@ function giko_prterror( string $msg, string $title ): never {
 
 header( 'Content-type: text/html; charset=UTF-8' );
 
-$http_host = $_SERVER['HTTP_HOST'] ?? '';
-if ( $http_host !== '' && stripos( $http_host, $bbshost ) === false ) {
-	giko_prterror( T( 'GIKO_ERR_BAD_HOST' ), $title );
-}
-
 $mode = trim( (string) ( $_POST['mode'] ?? $_GET['mode'] ?? '' ) );
 $text = trim( (string) ( $_POST['text'] ?? $_GET['text'] ?? '' ) );
 $text = str_replace( array( "\n", "\r" ), '', $text );
@@ -64,18 +65,39 @@ $text = htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' );
 
 if ( $mode === 'add' && $text !== '' ) {
 
+	if ( strlen( $text ) > $maxword * 3 ) {
+		giko_prterror( T( 'GIKO_ERR_TOO_LONG' ), $title );
+	}
+
 	$fortunedata = file_exists( $data ) ? file( $data, FILE_IGNORE_NEW_LINES ) : array();
 
-	if ( in_array( $text, $fortunedata, true ) ) {
+	if ( $fortunedata !== false && in_array( $text, $fortunedata, true ) ) {
 		giko_prterror( T( 'GIKO_ERR_DUPLICATE' ), $title );
+	}
+
+	// データファイルが改行で終わっていない場合に備える。
+	$prefix = '';
+	if ( file_exists( $data ) && filesize( $data ) > 0 ) {
+		$fp = @fopen( $data, 'rb' );
+		if ( $fp !== false ) {
+			fseek( $fp, -1, SEEK_END );
+			if ( fread( $fp, 1 ) !== "\n" ) {
+				$prefix = "\n";
+			}
+			fclose( $fp );
+		}
+	}
+
+	$result = @file_put_contents( $data, $prefix . $text . "\n", FILE_APPEND | LOCK_EX );
+
+	if ( $result === false ) {
+		giko_prterror( sprintf( T( 'GIKO_ERR_WRITE_FAILED' ), $data ), $title );
 	}
 
 	echo "<html><head><title>{$title}</title><META http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></head>\n";
 	echo "<BODY bgcolor=\"#004040\" text=\"#ffffff\" link=\"#eeffee\" vlink=\"#dddddd\" alink=\"#ff0000\">\n";
 	echo "<h1><a href=\"{$mycginame}\">" . T( 'GIKO_POST_COMPLETE' ) . "</a><p></h1><a href=\"./bbs.php\">" . T( 'GIKO_BACK_TO_BBS' ) . "</a>\n";
 	echo "</body></html>\n";
-
-	file_put_contents( $data, $text . "\n", FILE_APPEND | LOCK_EX );
 
 } else {
 

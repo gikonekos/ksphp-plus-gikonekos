@@ -12,7 +12,7 @@ error_reporting(E_ALL);
 
 function giko_fortune(): string {
 
-	$giko_dir = getenv( 'GIKO_DATA_DIR' ) ?: __DIR__;
+	$giko_dir = getenv( 'GIKO_DATA_DIR' ) ?: __DIR__ . '/data';
 	$giko_file = $giko_dir . '/gikoneko_kotoba.dat';
 
 	// データファイルが存在しない場合は空ファイルを自動生成する。
@@ -32,146 +32,209 @@ function giko_fortune(): string {
 }
 
 ###############################################################################
-#  メイン処理
+#  運勢データ（$GIKO_FORTUNES）
+#
+#  各要素は 'label'（language/*.txtのTキー）・'weight'（出現しやすさ、
+#  省略時1）・'aa'（AAテンプレート）を持つ。{label}はTキーの訳語に、
+#  {kotoba}はgiko_fortune()の結果に置換される（{kotoba}を複数書けば、
+#  轟吉のようにそれぞれ別のことばが入る）。新しいAAを追加する場合は、
+#  末尾に同じ形の要素を1つ足すだけでよい。
 ###############################################################################
 
-function giko_display(): void {
-
-	$mark = array( 'あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の' );
-
-	$points = random_int( 0, count( $mark ) - 1 );
-		echo "<BLOCKQUOTE><PRE>
-
-" . T('GIKO_TOGETHER') . "　[<A HREF=\"./gikonekoadd.php\" target=\"link\">" . T('GIKO_TEACH_LINK_TEXT') . "</A>]
-
-";
-
-	if ( $points < 1 ) {
-		echo "
-【" . T('GIKO_FORTUNE_SHOKICHI') . "】
+$GIKO_FORTUNES = array(
+	array(
+		'label' => 'GIKO_FORTUNE_SHOKICHI',
+		'aa' => "
+【{label}】
 　　　 ∧ ∧
-～′￣(´Д`)＜" . giko_fortune() . "
+～′￣(´Д`)＜{kotoba}
   UU￣ U  U
-";
-	} elseif ( $points < 2 ) {
-		echo "
-【" . T('GIKO_FORTUNE_CHUKICHI') . "】
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_CHUKICHI',
+		'aa' => "
+【{label}】
 　　　 ∧ ∧
-～′￣(`Д´)＜ﾊｯﾊｰﾝ!  " . giko_fortune() . "
+～′￣(`Д´)＜ﾊｯﾊｰﾝ!  {kotoba}
   UU￣ U  U
-";
-	} elseif ( $points < 3 ) {
-		echo "
-【" . T('GIKO_FORTUNE_KYOU') . "】
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_KYOU',
+		'aa' => "
+【{label}】
 　　　 ∧ ∧
-～′￣(;´Д`)＜" . giko_fortune() . "
+～′￣(;´Д`)＜{kotoba}
   UU￣ U  U
-";
-	} elseif ( $points < 4 ) {
-		echo "
-【" . T('GIKO_FORTUNE_DAIKICHI') . "】
-          ヽ(`ー´)ノ＜" . giko_fortune() . "
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_DAIKICHI',
+		'aa' => "
+【{label}】
+          ヽ(`ー´)ノ＜{kotoba}
        ∧ ∧｜_ ｜
       (`ー´)  < ) ～
         U  U ￣￣UU 
-";
-	} elseif ( $points < 5 ) {
-		echo "
-【" . T('GIKO_FORTUNE_YOUKICHI') . "】
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_YOUKICHI',
+		'aa' => "
+【{label}】
    ∧  ∧    
    ﾉ  ﾊ  ＼  
-  ﾉ ∂.∂)＜" . giko_fortune() . "
+  ﾉ ∂.∂)＜{kotoba}
     (∩∩
 γ～/___|
      U U
-";
-	} elseif ( $points < 6 ) {
-		echo "
-【" . T('GIKO_FORTUNE_GOUKICHI') . "】
-                          *  . .  * (ﾟДﾟ)＜" . giko_fortune() . "
-＼猫ビィィィィム！／    *  .     .    *  (ﾟДﾟ)＜" . giko_fortune() . "
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_GOUKICHI',
+		'aa' => "
+【{label}】
+                          *  . .  * (ﾟДﾟ)＜{kotoba}
+＼猫ビィィィィム！／    *  .     .    *  (ﾟДﾟ)＜{kotoba}
        ∧ ∧       ＿＿＿＿＿※   .              *  
 ～′￣(     )￣￣￣        .     .  *
-  UU￣ U  U                  . .  *              (ﾟДﾟ)＜" . giko_fortune() . "
-";
-	} elseif ( $points < 7 ) {
-		echo "
-【" . T('GIKO_FORTUNE_NEKOKICHI') . "】
+  UU￣ U  U                  . .  *              (ﾟДﾟ)＜{kotoba}
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_NEKOKICHI',
+		'aa' => "
+【{label}】
        ∧ ∧
        ■●■
-      (´ー`)＜" . giko_fortune() . "
+      (´ー`)＜{kotoba}
       (｜ o｜)
       U｜ o｜U
       Ｕ  Ｕ
-";
-	} elseif ( $points < 8 ) {
-		echo "
-【" . T('GIKO_FORTUNE_DOKICHI') . "】
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_DOKICHI',
+		'aa' => "
+【{label}】
   |
   |
   |    ∧ ∧
-  ′￣(`Д´)＜" . giko_fortune() . "
+  ′￣(`Д´)＜{kotoba}
   |  ＿＿  |
   |||    |||
   UU     U U
-";
-	} elseif ( $points < 9 ) {
-		echo "
-【" . T('GIKO_FORTUNE_AIKICHI') . "】
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_AIKICHI',
+		'aa' => "
+【{label}】
        ＿∧ ∧
-     ／（´ー`)＜" . giko_fortune() . "
+     ／（´ー`)＜{kotoba}
    ／  ／U  U∧ ∧
-ノ’（  ￣￣(´ー`)＜" . giko_fortune() . "
+ノ’（  ￣￣(´ー`)＜{kotoba}
   UU  UU￣￣ U  U
-";
-	} elseif ( $points < 10 ) {
-		echo "
-【" . T('GIKO_FORTUNE_INKICHI') . "】
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_INKICHI',
+		'aa' => "
+【{label}】
        ∧ ∧
-    ／(´ー`)＜" . giko_fortune() . "
+    ／(´ー`)＜{kotoba}
 乙／  ) ⊃ ⊃
   ＼⊃＼⊃  ））））））））
-";
-	} elseif ( $points < 11 ) {
-		echo "
-【" . T('GIKO_FORTUNE_KICHI') . "】
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_KICHI',
+		'aa' => "
+【{label}】
    ∧ ∧
-／(´ー`)＜" . giko_fortune() . "
+／(´ー`)＜{kotoba}
 ￣￣￣￣￣|
-";
-	} elseif ( $points < 12 ) {
-		echo "
-【" . T('GIKO_FORTUNE_RAKUKICHI') . "】
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_RAKUKICHI',
+		'aa' => "
+【{label}】
        ∧ ∧
-    ヽ(´ー`)ノ＜" . giko_fortune() . "
+    ヽ(´ー`)ノ＜{kotoba}
       ｜   ｜
       ﾉ  _ ﾉ
 ε≡Ξ∪ ∪
-";
-	} elseif ( $points < 13 ) {
-		echo "
-【" . T('GIKO_FORTUNE_KYOU') . "】
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_KYOU',
+		'aa' => "
+【{label}】
 　 ∧∧
-　/⌒ヽ)＜" . giko_fortune() . "
+　/⌒ヽ)＜{kotoba}
 ～(_＿)
-";
-	} elseif ( $points < 14 ) {
-		echo "
-【" . T('GIKO_FORTUNE_KICHI') . "】
-(" . giko_fortune() . ")
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_KICHI',
+		'aa' => "
+【{label}】
+({kotoba})
 　　 。
 　　。
  ∧ ∧⌒ヽ
 (´ー`)(　)～
 ￣￣￣￣￣￣|
-";
-	} else {
-		echo "
-【" . T('GIKO_FORTUNE_KICHI') . "】
+",
+	),
+	array(
+		'label' => 'GIKO_FORTUNE_KICHI',
+		'weight' => 11,
+		'aa' => "
+【{label}】
 　　　 ∧ ∧
-～′￣(´ー`)＜" . giko_fortune() . "
+～′￣(´ー`)＜{kotoba}
   UU￣ U  U
+",
+	),
+);
+
+###############################################################################
+#  メイン処理
+###############################################################################
+
+function giko_display(): void {
+	global $GIKO_FORTUNES;
+
+	echo "<BLOCKQUOTE><PRE>
+
+" . T('GIKO_TOGETHER') . "　[<A HREF=\"./gikonekoadd.php\" target=\"link\">" . T('GIKO_TEACH_LINK_TEXT') . "</A>]
+
 ";
+
+	$total_weight = 0;
+	foreach ( $GIKO_FORTUNES as $entry ) {
+		$total_weight += $entry['weight'] ?? 1;
 	}
-echo "</PRE></BLOCKQUOTE>\n";
+
+	$pick = random_int( 0, $total_weight - 1 );
+	$chosen = $GIKO_FORTUNES[ count( $GIKO_FORTUNES ) - 1 ]; // フォールバック（理論上到達しない）
+	foreach ( $GIKO_FORTUNES as $entry ) {
+		$w = $entry['weight'] ?? 1;
+		if ( $pick < $w ) {
+			$chosen = $entry;
+			break;
+		}
+		$pick -= $w;
+	}
+
+	$out = str_replace( '{label}', T( $chosen['label'] ), $chosen['aa'] );
+	while ( ( $pos = strpos( $out, '{kotoba}' ) ) !== false ) {
+		$out = substr_replace( $out, giko_fortune(), $pos, strlen( '{kotoba}' ) );
+	}
+	echo $out;
+
+	echo "</PRE></BLOCKQUOTE>\n";
 }
