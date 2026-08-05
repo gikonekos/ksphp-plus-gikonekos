@@ -10,6 +10,15 @@ This repository contains modifications and extensions developed by gikonekos.
 
 ---
 
+
+## Related
+
+- Upstream: [Heyuri/ksphp-plus](https://github.com/Heyuri/ksphp-plus/)
+- Development archive: [ksphp-plus-gikonekos-archive](https://github.com/gikonekos/ksphp-plus-gikonekos-archive)
+- BBS log toolkit: [legacy-bbs-toolkit](https://github.com/gikonekos/legacy-bbs-toolkit)
+- Maintainer profile: [github.com/gikonekos](https://github.com/gikonekos)
+
+---
 # English
 
 ## About
