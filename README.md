@@ -38,14 +38,6 @@ The goals of this project are:
 * Improving compatibility with modern server environments
 * Providing an easier installation experience
 
-## Archive Directory
-
-The `archive/` directory contains historical development materials, old files, and testing files.
-
-These files are preserved as development history and are not intended to represent the current recommended version.
-
-Archive contents are preserved without modification whenever possible.
-
 ## Developer
 
 gikonekos
@@ -86,13 +78,6 @@ KSPHP Plus gikonekos Edition は、KSPHP Plus をベースにした非公式派�
 * 現代のサーバー環境への対応
 * 利用者が導入しやすい配布形態の提供
 
-## archive ディレクトリについて
-
-`archive/` には、開発過程で作成された旧ファイル、検証用ファイル、開発資料などが保存されています。
-
-これらは開発履歴を保存するための資料であり、現在利用する推奨版ではありません。
-
-アーカイブ内容は履歴資料として扱い、可能な限り変更せず保存します。
 
 ## 開発者
 
