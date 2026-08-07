@@ -127,7 +127,7 @@ KuzuhaScript（くずはすくりぷと）PHP移植版的改進版本。
 * bbs.php：日誌寫入語言一致性修正——參考行、自回覆標籤、星期名稱現在一律以留言板預設語言（LANGUAGE_FILE）寫入日誌，不受訪客選擇語言影響（新增TDefault() / getdatestr_default()）
 * bbs.php：移除tripuse()中的mbstring依賴，僅使用iconv()（qptns.com行為不變）
 * install.php：版本升級時新增管理員密碼保留/變更選擇UI（全7種語言）
-* install.php：版本升級時略過內容相同的檔案（備份前進行內容比較）
+* install.php：版本升級時略過內容相同的檔案（SHA-256雜湊比較，不受換行符差異影響）
 * bbs.php：參考行和自我回覆標籤在顯示時跟隨訪客語言（日誌仍以預設語言儲存，僅顯示時轉換，日誌格式不變）
 * bbs.php・sub/*.php：參考行的刪除處理（樹狀顯示・日誌摘要・管理畫面・圖片BBS）從英語硬編碼改為多語言支援
 

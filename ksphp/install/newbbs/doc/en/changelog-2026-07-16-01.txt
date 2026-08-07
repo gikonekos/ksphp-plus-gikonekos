@@ -2939,3 +2939,42 @@ the board's default language was not English. Fixed.
   - Unit-tested: multilingual stripping, legacy-English stripping, and
     no false positives on body text.
 
+============================================================
+2026-08-07T — UTC  擬古猫+RC18 [20260807]
+------------------------------------------------------------
+[RC18: remove mbstring dependency / install.php skip unchanged files /
+  version bump]
+Target: bbs.php, install/install.php
+
+- bbs.php: tripuse() UTF-8→CP932 conversion rewritten to use iconv()
+  only; the mb_convert_encoding()/iconv() two-stage fallback is removed.
+  mbstring dependency is now zero across the entire codebase, satisfying
+  the qptns.com constraint (mbstring prohibited; iconv only).
+
+- install.php: skip overwrite and backup for files whose content is
+  identical to the installed version. Comparison uses SHA-256
+  (hash_file()) on both the source and destination, so the check is
+  exact and independent of line-ending differences. conf.php is always
+  re-processed regardless (it goes through conf-merge). A
+  "Skipped: (content unchanged)" log line is emitted per skipped file.
+  INSTALL_SKIPPED_UNCHANGED key added to all 7 language files.
+
+- Version string bumped to 擬古猫+RC18 [20260807]
+
+============================================================
+2026-08-07T — UTC
+------------------------------------------------------------
+[install.php: replace byte-equality comparison with SHA-256 for skip
+  check]
+Target: install/install.php
+
+The initial RC18 skip implementation used file_get_contents() for a
+byte-equality comparison. This could produce false negatives when
+line endings differed between the ZIP source and the installed file
+(e.g. CRLF introduced on download, LF on the server), causing files
+to be unnecessarily copied or incorrectly kept.
+
+Replaced with hash_file('sha256', ...) on both sides. hash_file()
+reads raw file bytes without any transformation, making the comparison
+exact and unaffected by transfer-time encoding changes.
+

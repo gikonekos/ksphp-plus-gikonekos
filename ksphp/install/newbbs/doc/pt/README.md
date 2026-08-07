@@ -127,7 +127,7 @@ Se o PHP rodar como módulo Apache, bbs.php pode ser somente leitura (644). Se r
 * bbs.php: correção de consistência de idioma no log — linha de referência, tag de auto-resposta e nomes de dia da semana agora são sempre gravados no log no idioma padrão configurado (LANGUAGE_FILE), independentemente do idioma selecionado pelo visitante (TDefault() / getdatestr_default() adicionados)
 * bbs.php: dependência de mbstring removida em tripuse(); apenas iconv() (sem mudança funcional no qptns.com)
 * install.php: opção manter/alterar para senha do administrador no upgrade; todos os 7 idiomas
-* install.php: ignora arquivos inalterados durante upgrade (comparação antes do backup)
+* install.php: ignora arquivos inalterados durante upgrade (comparação SHA-256; não afetado por diferenças de fim de linha)
 * bbs.php: linha de referência e tag de auto-resposta seguem o idioma do visitante na exibição (o log mantém o idioma padrão; tradução apenas na exibição, sem mudança de formato do log)
 * bbs.php + sub/*.php: a remoção da linha de referência (árvore, resumo de log, admin, image BBS) agora reconhece o idioma em vez de usar "Reference: " fixo em inglês
 
