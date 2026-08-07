@@ -1719,7 +1719,8 @@ function ksphp_install_read_conf_summary(string $conf_path): ?array {
 
 $conf_summaries = array();
 foreach ($candidates as $i => $path) {
-	$conf_summaries[$i] = ksphp_install_read_conf_summary(dirname($path) . '/conf.php');
+	// パスをキーにすることで、JS側がスキャン添字に依存せずsummaryを引けるようにする。
+	$conf_summaries[$path] = ksphp_install_read_conf_summary(dirname($path) . '/conf.php');
 }
 
 function h(string $s): string {
@@ -1951,8 +1952,9 @@ function renderConfSummaries() {
 			return;
 		}
 		var idx = cb.getAttribute('data-index');
-		var summary = summaries[idx];
-		var path = paths[idx] || Lf('JS_TARGET_LABEL_FALLBACK', { IDX: idx });
+		var bbs_path = paths[idx] || '';
+		var summary = summaries[bbs_path] || summaries[idx];  // パスキー優先、旧添字キーにフォールバック
+		var path = bbs_path || Lf('JS_TARGET_LABEL_FALLBACK', { IDX: idx });
 		if (multi) {
 			html += '<p><code>' + escapeHtml(path) + '</code></p>';
 		}
@@ -2108,7 +2110,7 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 	for (var t = 0; t < targetsList.length; t++) {
 		var tgt = targetsList[t];
 		if (tgt.kind !== 'index') { continue; }
-		var sum = summaries[tgt.value];
+		var sum = summaries[tgt.path] || summaries[tgt.value];  // パスキー優先
 		if (sum && sum.ADMIN_MIGRATION_NEEDED) {
 			var oldEl = document.querySelector('.admin-old-pass[data-for-index="' + tgt.value + '"]');
 			var newEl = document.querySelector('.admin-new-pass[data-for-index="' + tgt.value + '"]');
