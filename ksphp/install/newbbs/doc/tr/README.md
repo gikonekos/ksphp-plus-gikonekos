@@ -127,6 +127,7 @@ PHP, Apache modülü olarak çalışıyorsa bbs.php salt okunur (644) olabilir. 
 * bbs.php: log yazma dil tutarlılığı düzeltmesi — referans satırı, kendi yanıtı etiketi ve gün adları artık ziyaretçinin seçtiği dilden bağımsız olarak her zaman panonun varsayılan diliyle (LANGUAGE_FILE) loga yazılır (TDefault() / getdatestr_default() eklendi)
 * bbs.php: tripuse() içindeki mbstring bağımlılığı kaldırıldı; yalnızca iconv() kullanılıyor (qptns.com'da işlevsel değişiklik yok)
 * install.php: sürüm yükseltmede yönetici şifresi için tut/değiştir seçeneği eklendi; tüm 7 dil destekleniyor
+* install.php: sürüm yükseltmede değişmeyen dosyalar atlanır (yedeklemeden önce içerik karşılaştırması)
 
 Herhangi bir sürümün tam ayrıntıları için `doc/changelog-2026-07-16-01.txt` dosyasına bakın.
 

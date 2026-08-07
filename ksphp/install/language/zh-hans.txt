@@ -29,6 +29,7 @@ INSTALL_BACKUP_DIR=备份目标: %s
 INSTALL_SKIP_BACKUP_FAIL=已跳过: %s（因将现有文件移至备份失败，未进行覆盖）
 INSTALL_CONF_MERGED=已安装: %s（已合并并保留现有设置）
 INSTALL_CONF_WRITE_FAIL=失败: %s（写入合并结果失败。请检查权限）
+INSTALL_SKIPPED_UNCHANGED=跳过: %s（内容相同，无需更新）
 INSTALL_COPIED=已安装: %s
 INSTALL_COPY_FAIL=失败: %s（无法复制。请检查权限）
 INSTALL_MIGRATE_DONE=已执行 Migration Engine（如有旧版布局的数据，已迁移至 data/ 与 logs/）。

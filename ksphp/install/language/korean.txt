@@ -29,6 +29,7 @@ INSTALL_BACKUP_DIR=백업 대상: %s
 INSTALL_SKIP_BACKUP_FAIL=건너뜀: %s (기존 파일을 백업으로 이동하는 데 실패하여 덮어쓰지 않았습니다)
 INSTALL_CONF_MERGED=설치됨: %s (기존 설정을 유지하면서 병합됨)
 INSTALL_CONF_WRITE_FAIL=실패: %s (병합 결과 쓰기 실패. 권한을 확인하세요)
+INSTALL_SKIPPED_UNCHANGED=건너뜀: %s（내용이 동일하여 업데이트 불필요）
 INSTALL_COPIED=설치됨: %s
 INSTALL_COPY_FAIL=실패: %s (복사할 수 없습니다. 권한을 확인하세요)
 INSTALL_MIGRATE_DONE=Migration Engine을 실행했습니다(이전 레이아웃의 데이터가 있었다면 data/ 및 logs/로 이전되었습니다).

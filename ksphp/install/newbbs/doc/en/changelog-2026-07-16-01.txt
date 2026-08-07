@@ -2873,3 +2873,21 @@ RC18 [20260807] — 2026-08-07T11:49Z UTC
   (previously a new password was always required).
   keep_admin_pass flag; all 7 languages supported.
 
+
+
+============================================================
+2026-08-07T11:57Z UTC
+------------------------------------------------------------
+[install.php: skip unchanged files during version upgrade]
+Target: install/install.php, install/language/*.txt (7 files)
+
+During a version upgrade, if a destination file already exists, its
+content is now compared against the incoming file before any backup or
+overwrite. If they are identical, the file is skipped entirely.
+conf.php is always processed regardless (merge required).
+
+  - Comparison happens before the backup rename, so no rollback needed
+    on skip.
+  - Skipped files are reported via INSTALL_SKIPPED_UNCHANGED (added to
+    all 7 language files).
+

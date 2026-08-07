@@ -253,6 +253,7 @@ If PHP runs as an Apache module, bbs.php can be read-only (644). If it runs as C
 * bbs.php: log-language consistency fix — Reference line, self-reply tag, and day-of-week names are now always written to the log in the board's configured default language (LANGUAGE_FILE), regardless of the visitor's selected language (TDefault() / getdatestr_default() added)
 * bbs.php: removed mbstring dependency in tripuse(); iconv() only (no functional change on qptns.com)
 * install.php: keep/change option for admin password on version upgrade; all 7 languages
+* install.php: skip unchanged files during version upgrade (content comparison before backup)
 
 For full details on any release, see `doc/changelog-2026-07-16-01.txt`.
 

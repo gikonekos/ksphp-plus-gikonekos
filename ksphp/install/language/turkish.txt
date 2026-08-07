@@ -29,6 +29,7 @@ INSTALL_BACKUP_DIR=Yedek hedefi: %s
 INSTALL_SKIP_BACKUP_FAIL=Atlandı: %s (mevcut dosya yedeklemeye taşınamadığı için üzerine yazılmadı)
 INSTALL_CONF_MERGED=Yüklendi: %s (mevcut ayarlar korunarak birleştirildi)
 INSTALL_CONF_WRITE_FAIL=Başarısız: %s (birleştirme sonucu yazılamadı. İzinleri kontrol edin)
+INSTALL_SKIPPED_UNCHANGED=Atlandı: %s (değişiklik yok)
 INSTALL_COPIED=Yüklendi: %s
 INSTALL_COPY_FAIL=Başarısız: %s (kopyalanamadı. İzinleri kontrol edin)
 INSTALL_MIGRATE_DONE=Migration Engine çalıştırıldı (eski düzendeki veriler varsa data/ ve logs/ dizinlerine taşındı).

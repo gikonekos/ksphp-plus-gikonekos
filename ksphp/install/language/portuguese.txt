@@ -29,6 +29,7 @@ INSTALL_BACKUP_DIR=Destino do backup: %s
 INSTALL_SKIP_BACKUP_FAIL=Ignorado: %s (não sobrescrito porque falhou mover o arquivo existente para o backup)
 INSTALL_CONF_MERGED=Instalado: %s (mesclado mantendo as configurações existentes)
 INSTALL_CONF_WRITE_FAIL=Falhou: %s (a gravação do resultado mesclado falhou. Verifique as permissões)
+INSTALL_SKIPPED_UNCHANGED=Ignorado: %s (sem alterações)
 INSTALL_COPIED=Instalado: %s
 INSTALL_COPY_FAIL=Falhou: %s (não foi possível copiar. Verifique as permissões)
 INSTALL_MIGRATE_DONE=Migration Engine executado (quaisquer dados do layout antigo foram migrados para data/ e logs/).

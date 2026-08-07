@@ -28,6 +28,7 @@ INSTALL_BACKUP_DIR=バックアップ先: %s
 INSTALL_SKIP_BACKUP_FAIL=スキップ: %s（既存ファイルの退避（リネーム）に失敗したため上書きしていません）
 INSTALL_CONF_MERGED=導入: %s（既存設定を維持してマージしました）
 INSTALL_CONF_WRITE_FAIL=失敗: %s（マージ結果の書き込みに失敗しました。権限を確認してください）
+INSTALL_SKIPPED_UNCHANGED=スキップ: %s（内容が同一のため更新不要）
 INSTALL_COPIED=導入: %s
 INSTALL_COPY_FAIL=失敗: %s（コピーできませんでした。権限を確認してください）
 INSTALL_MIGRATE_DONE=Migration Engineを実行しました（旧構成データがあれば data/・logs/ へ移行済みです）。

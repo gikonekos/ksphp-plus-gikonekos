@@ -1297,6 +1297,17 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 		$dst_dir = dirname($dst);
 		$existed = file_exists($dst);
 
+		// conf.php以外で既存ファイルと内容が同一なら上書き・バックアップをスキップ。
+		// この時点では$dstはまだ元ファイルのままなので戻す処理が不要。
+		if ($existed && $rel !== 'conf.php') {
+			$src_content = @file_get_contents($src);
+			$dst_content = @file_get_contents($dst);
+			if ($src_content !== false && $dst_content !== false && $src_content === $dst_content) {
+				$log[] = array('ok' => true, 'text' => sprintf(T('INSTALL_SKIPPED_UNCHANGED'), $dst_rel));
+				continue;
+			}
+		}
+
 		if (!is_dir($dst_dir)) {
 			@mkdir($dst_dir, 0755, true);
 		}
