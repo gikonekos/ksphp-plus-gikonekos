@@ -2603,7 +2603,7 @@ if ($result === 3) {
                 $this->prterror ( T('REFERENCE_NOT_FOUND') );
             }
             $refmessage = $this->getmessage($refdata[0]);
-            $refmessage['WDATE'] = Func::getdatestr($refmessage['NDATE'], $this->c['DATEFORMAT']);
+            $refmessage['WDATE'] = Func::getdatestr_default($refmessage['NDATE'], $this->c['DATEFORMAT']);
             $message['MSG'] .= "\r\r<a href=\"m=f&s={$message['REFID']}&r=&\">" . TDefault('REFERENCE_COLON') . " {$refmessage['WDATE']}</a>";
             # Simple self-reply prevention function
             if ($this->c['IPREC'] and $this->c['SHOW_SELFFOLLOW']
@@ -3287,6 +3287,24 @@ class Func {
             if (!isset($wdays)) {
                 $wdays = [ T('SUNDAY'), T('MONDAY'), T('TUESDAY'), T('WEDNESDAY'), T('THURSDAY'), T('FRIDAY'), T('SATURDAY') ];
             }
+            $datestr = str_replace('-', $wdays[date("w", $timestamp)], $datestr);
+        }
+        return $datestr;
+    }
+
+    // Like getdatestr() but always uses the board's default language for
+    // day-of-week names. Use this when generating strings written to the
+    // log file, so that the stored date is independent of the visitor's
+    // language setting.
+    // ログに書き込まれる日付文字列用。曜日名をデフォルト言語（conf.php
+    // のLANGUAGE_FILE）で出力する。TDefault()と対になるもの。
+    public static function getdatestr_default($timestamp, $format = "") {
+        if (!$format) {
+            $format = "Y/m/d(-) H:i:s";
+        }
+        $datestr = date($format, $timestamp);
+        if (strrpos($format, '-') !== FALSE) {
+            $wdays = [ TDefault('SUNDAY'), TDefault('MONDAY'), TDefault('TUESDAY'), TDefault('WEDNESDAY'), TDefault('THURSDAY'), TDefault('FRIDAY'), TDefault('SATURDAY') ];
             $datestr = str_replace('-', $wdays[date("w", $timestamp)], $datestr);
         }
         return $datestr;
