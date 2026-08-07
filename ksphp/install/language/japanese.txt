@@ -40,7 +40,7 @@ ADMIN_MIGRATION_REQUIRED=管理パスワードの移行が必要ですが、新�
 ADMIN_MIGRATION_AUTH_FAIL=旧パスワードの認証に失敗したため、乗っ取り防止のためこの導入先へのファイル設置を含め処理全体を中止しました。もし旧パスワードを失念された場合は、conf.phpのADMINPOSTを手動で空文字にすることで、フレッシュインストール同様に_setup.phpから新規設定できます。
 ADMIN_MIGRATION_DONE=管理パスワードをlocal.phpへ移行しました（管理モードキーワードは旧設定を引き継ぎました）。
 ADMIN_MIGRATION_WRITE_FAIL=local.phpへの書き込みに失敗しました（権限をご確認ください）。導入自体は完了していますが、管理者ログインができない状態です。
-JS_ADMIN_MIGRATION_EMPTY=導入先「{LABEL}」は管理パスワードの移行が必要です。旧パスワードと新しいパスワードの両方を入力してください。
+JS_ADMIN_MIGRATION_EMPTY=導入先「{LABEL}」は管理パスワードの移行が必要です。旧パスワードを入力し、継続または新パスワードへの変更を選択してください。
 ERROR_INVALID_PATH=指定されたパスが不正です（絶対パスや「..」は使えません）。
 ERROR_TARGET_NOT_FOUND=対象が見つかりません（一覧が変わった可能性があります。ページを再読み込みしてください）。
 NOT_SET=(未設定)
@@ -244,3 +244,6 @@ CONF_HELP_MAXKEYWORDS=検索できるキーワードの最大数
 CONF_HELP_SHOW_COUNTER=カウンターの表示有無
 CONF_HELP_DATEFORMAT=時刻表示フォーマット
 CONF_HELP_SHOW_PRCTIME=実行時間の表示
+
+ADMIN_MIGRATION_KEEP_LABEL=旧パスワードをそのまま継続する
+ADMIN_MIGRATION_CHANGE_LABEL=新しいパスワードに変更する

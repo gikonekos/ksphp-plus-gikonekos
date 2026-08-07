@@ -245,3 +245,6 @@ CONF_HELP_MAXKEYWORDS=Aranabilecek maksimum anahtar kelime sayısı
 CONF_HELP_SHOW_COUNTER=Sayacın gösterilip gösterilmeyeceği
 CONF_HELP_DATEFORMAT=Zaman gösterim biçimi
 CONF_HELP_SHOW_PRCTIME=İşlem süresini göster
+
+ADMIN_MIGRATION_KEEP_LABEL=Mevcut şifreyi koru
+ADMIN_MIGRATION_CHANGE_LABEL=Yeni bir şifreyle değiştir

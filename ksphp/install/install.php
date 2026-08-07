@@ -1208,7 +1208,7 @@ function ksphp_install_write_local_secrets(string $path, string $adminpost, stri
 	return $result !== false;
 }
 
-function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backup_root, string $entry_filename = 'bbs.php', string $old_admin_pass = '', string $new_admin_pass = '', ?array $conf_overrides = null): array {
+function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backup_root, string $entry_filename = 'bbs.php', string $old_admin_pass = '', string $new_admin_pass = '', ?array $conf_overrides = null, bool $keep_admin_pass = false): array {
 	$log = array();
 
 	// newbbs_dir は常に {install_dir}/newbbs なので、ここから install_dir を逆算する。
@@ -1227,7 +1227,7 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 	$admin_migration = null;
 	$old_secret = ksphp_install_read_admin_secret($parent_dir . '/conf.php');
 	if ($old_secret['ADMINPOST'] !== '') {
-		if ($new_admin_pass === '') {
+		if (!$keep_admin_pass && $new_admin_pass === '') {
 			$log[] = array('ok' => false, 'text' => T('ADMIN_MIGRATION_REQUIRED'));
 			ksphp_install_log_error($install_dir_check, "admin migration required but no new password submitted: $parent_dir");
 			return $log;
@@ -1237,11 +1237,20 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 			ksphp_install_log_error($install_dir_check, "admin migration auth failed, aborting entire install: $parent_dir");
 			return $log;
 		}
-		$admin_migration = array(
-			'hash' => password_hash($new_admin_pass, PASSWORD_BCRYPT),
-			// ADMINKEYは平文のまま旧設定を引き継ぐ（基さん指示、入力欄は設けない）。
-			'key'  => $old_secret['ADMINKEY'],
-		);
+		if ($keep_admin_pass) {
+			// 旧パスワードをそのまま継続する：旧ハッシュを引き継ぐ。
+			// Keep existing password: reuse the old hash as-is.
+			$admin_migration = array(
+				'hash' => $old_secret['ADMINPOST'],
+				'key'  => $old_secret['ADMINKEY'],
+			);
+		} else {
+			$admin_migration = array(
+				'hash' => password_hash($new_admin_pass, PASSWORD_BCRYPT),
+				// ADMINKEYは平文のまま旧設定を引き継ぐ（基さん指示、入力欄は設けない）。
+				'key'  => $old_secret['ADMINKEY'],
+			);
+		}
 	}
 
 	$files = ksphp_install_list_files($newbbs_dir);
@@ -1594,11 +1603,12 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup_new'
 	// （fresh install）では通常不要だが、同名の仕組みを一応通しておく。
 	$old_admin_pass = (string) ($_POST['old_admin_pass'] ?? '');
 	$new_admin_pass = (string) ($_POST['new_admin_pass'] ?? '');
+	$keep_admin_pass = ($_POST['keep_admin_pass'] ?? '') === '1';
 	$conf_overrides = ksphp_install_decode_conf_overrides((string) ($_POST['conf_overrides'] ?? ''));
 	$backup_root = $install_dir . '/backup/new_' . substr(md5($new_dir), 0, 12);
 	echo json_encode(
 		array(
-			'log' => ksphp_install_run($newbbs_dir, $new_dir, $backup_root, 'bbs.php', $old_admin_pass, $new_admin_pass, $conf_overrides),
+			'log' => ksphp_install_run($newbbs_dir, $new_dir, $backup_root, 'bbs.php', $old_admin_pass, $new_admin_pass, $conf_overrides, $keep_admin_pass),
 			'entry_filename' => 'bbs.php',
 		),
 		JSON_UNESCAPED_UNICODE
@@ -1618,11 +1628,12 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 	$entry_filename = basename($targets[$idx]);
 	$old_admin_pass = (string) ($_POST['old_admin_pass'] ?? '');
 	$new_admin_pass = (string) ($_POST['new_admin_pass'] ?? '');
+	$keep_admin_pass = ($_POST['keep_admin_pass'] ?? '') === '1';
 	$conf_overrides = ksphp_install_decode_conf_overrides((string) ($_POST['conf_overrides'] ?? ''));
 	$backup_root = $install_dir . '/backup/target' . $idx;
 	echo json_encode(
 		array(
-			'log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root, $entry_filename, $old_admin_pass, $new_admin_pass, $conf_overrides),
+			'log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root, $entry_filename, $old_admin_pass, $new_admin_pass, $conf_overrides, $keep_admin_pass),
 			'entry_filename' => $entry_filename,
 		),
 		JSON_UNESCAPED_UNICODE
@@ -1937,16 +1948,35 @@ function renderConfSummaries() {
 			// 表示する。値はrun-setup-btnのクリック時にPOSTボディで
 			// 送信する（GETクエリ文字列に平文パスワードを載せない）。
 			if (summary.ADMIN_MIGRATION_NEEDED) {
+				var ridx = escapeHtml(idx);
 				html += '<p class="ng">' + escapeHtml(L('ADMIN_MIGRATION_LABEL')) + '</p>'
 					+ '<p>' + escapeHtml(L('ADMIN_MIGRATION_NOTE')) + '</p>'
-					+ '<p><label>' + escapeHtml(L('ADMIN_MIGRATION_OLD_LABEL')) + ' <input type="password" class="admin-old-pass" data-for-index="' + escapeHtml(idx) + '" autocomplete="off"></label></p>'
-					+ '<p><label>' + escapeHtml(L('ADMIN_MIGRATION_NEW_LABEL')) + ' <input type="password" class="admin-new-pass" data-for-index="' + escapeHtml(idx) + '" autocomplete="off"></label></p>';
+					+ '<p><label>' + escapeHtml(L('ADMIN_MIGRATION_OLD_LABEL')) + ' <input type="password" class="admin-old-pass" data-for-index="' + ridx + '" autocomplete="off"></label></p>'
+					+ '<p>'
+					+ '<label><input type="radio" class="admin-keep-radio" name="admin-pass-mode-' + ridx + '" data-for-index="' + ridx + '" value="keep" checked> ' + escapeHtml(L('ADMIN_MIGRATION_KEEP_LABEL')) + '</label>'
+					+ ' &nbsp; '
+					+ '<label><input type="radio" class="admin-change-radio" name="admin-pass-mode-' + ridx + '" data-for-index="' + ridx + '" value="change"> ' + escapeHtml(L('ADMIN_MIGRATION_CHANGE_LABEL')) + '</label>'
+					+ '</p>'
+					+ '<p class="admin-new-pass-row" data-for-index="' + ridx + '" style="display:none"><label>' + escapeHtml(L('ADMIN_MIGRATION_NEW_LABEL')) + ' <input type="password" class="admin-new-pass" data-for-index="' + ridx + '" autocomplete="off"></label></p>';
 			}
 		} else {
 			html += '<p>' + escapeHtml(L('JS_NO_CONF_YET')) + '</p>';
 		}
 	});
 	container.innerHTML = html;
+	// ラジオボタン（継続／変更）のchangeイベント：新パス入力欄の表示切替。
+	// Radio button (keep/change) change event: toggle new-password row visibility.
+	container.querySelectorAll('.admin-keep-radio, .admin-change-radio').forEach(function (radio) {
+		radio.addEventListener('change', function () {
+			var idx = this.getAttribute('data-for-index');
+			var row = container.querySelector('.admin-new-pass-row[data-for-index="' + idx + '"]');
+			if (row) {
+				row.style.display = (this.value === 'change') ? '' : 'none';
+				var input = row.querySelector('.admin-new-pass');
+				if (input && this.value !== 'change') { input.value = ''; }
+			}
+		});
+	});
 }
 
 renderConfSummaries();
@@ -2061,9 +2091,11 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 		if (sum && sum.ADMIN_MIGRATION_NEEDED) {
 			var oldEl = document.querySelector('.admin-old-pass[data-for-index="' + tgt.value + '"]');
 			var newEl = document.querySelector('.admin-new-pass[data-for-index="' + tgt.value + '"]');
+			var keepRadio = document.querySelector('.admin-keep-radio[data-for-index="' + tgt.value + '"]');
 			var oldV = oldEl ? oldEl.value : '';
 			var newV = newEl ? newEl.value : '';
-			if (!oldV || !newV) {
+			var keepPass = keepRadio ? keepRadio.checked : false;
+			if (!oldV || (!keepPass && !newV)) {
 				var warnLi = document.createElement('li');
 				warnLi.className = 'ng';
 				warnLi.textContent = Lf('JS_ADMIN_MIGRATION_EMPTY', { LABEL: tgt.label });
@@ -2072,6 +2104,7 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 			}
 			tgt.oldAdminPass = oldV;
 			tgt.newAdminPass = newV;
+			tgt.keepAdminPass = keepPass;
 		}
 	}
 
@@ -2132,6 +2165,7 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 					if (target.oldAdminPass !== undefined) {
 						fd.append('old_admin_pass', target.oldAdminPass);
 						fd.append('new_admin_pass', target.newAdminPass);
+						fd.append('keep_admin_pass', target.keepAdminPass ? '1' : '0');
 					}
 					if (overrides !== null) {
 						fd.append('conf_overrides', JSON.stringify(overrides));

@@ -245,3 +245,6 @@ CONF_HELP_MAXKEYWORDS=Número máximo de palavras-chave que podem ser pesquisada
 CONF_HELP_SHOW_COUNTER=Se o contador é exibido
 CONF_HELP_DATEFORMAT=Formato de exibição de horário
 CONF_HELP_SHOW_PRCTIME=Exibir tempo de processamento
+
+ADMIN_MIGRATION_KEEP_LABEL=Manter a senha existente
+ADMIN_MIGRATION_CHANGE_LABEL=Alterar para uma nova senha
