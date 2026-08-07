@@ -1590,10 +1590,13 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'conf_review') 
 		}
 		$old_conf = $new_dir . '/conf.php';
 	} else {
-		// パスを直接受け取り、スキャン済みリストに含まれるか照合して安全確認する。
-		$bbs_path = (string) ($_GET['path'] ?? '');
+		// パスを直接受け取り、realpathで正規化してからスキャン済みリストと照合する。
+		// realpathを通さないと文字列不一致でin_arrayが失敗する場合がある。
+		$bbs_path_raw = (string) ($_GET['path'] ?? '');
+		$bbs_path = $bbs_path_raw !== '' ? (@realpath($bbs_path_raw) ?: $bbs_path_raw) : '';
 		$targets = ksphp_install_find_candidates($parent_dir, $grandparent_dir);
-		if ($bbs_path === '' || !in_array($bbs_path, $targets, true)) {
+		$targets_real = array_map(function($t) { return @realpath($t) ?: $t; }, $targets);
+		if ($bbs_path === '' || !in_array($bbs_path, $targets_real, true)) {
 			echo json_encode(array('needed' => false), JSON_UNESCAPED_UNICODE);
 			exit;
 		}
@@ -1635,11 +1638,13 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup_new'
 
 if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 	header('Content-Type: application/json; charset=UTF-8');
-	// パスを直接受け取り、スキャン済みリストに含まれるか照合して安全確認する。
-	// スキャン済みリストにないパスは処理しない（ディレクトリトラバーサル防止）。
-	$bbs_path = (string) ($_GET['path'] ?? '');
+	// パスを直接受け取り、realpathで正規化してからスキャン済みリストと照合する。
+	// realpathを通さないと文字列不一致でin_arrayが失敗する場合がある。
+	$bbs_path_raw = (string) ($_GET['path'] ?? '');
+	$bbs_path = $bbs_path_raw !== '' ? (@realpath($bbs_path_raw) ?: $bbs_path_raw) : '';
 	$targets = ksphp_install_find_candidates($parent_dir, $grandparent_dir);
-	if ($bbs_path === '' || !in_array($bbs_path, $targets, true)) {
+	$targets_real = array_map(function($t) { return @realpath($t) ?: $t; }, $targets);
+	if ($bbs_path === '' || !in_array($bbs_path, $targets_real, true)) {
 		echo json_encode(array('log' => array(array('ok' => false, 'text' => T('ERROR_TARGET_NOT_FOUND')))), JSON_UNESCAPED_UNICODE);
 		exit;
 	}
