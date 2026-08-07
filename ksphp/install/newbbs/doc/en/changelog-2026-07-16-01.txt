@@ -2978,3 +2978,28 @@ Replaced with hash_file('sha256', ...) on both sides. hash_file()
 reads raw file bytes without any transformation, making the comparison
 exact and unaffected by transfer-time encoding changes.
 
+
+
+============================================================
+2026-08-07T14:51Z UTC
+------------------------------------------------------------
+[Reference-line translation: DATEFORMAT independence and caching]
+Target: install/newbbs/bbs.php
+
+  (1) The day-of-week replacement in ksphp_translate_reflink_text() no
+      longer assumes the parenthesised "(Fri)" form. It now matches the
+      name in date-like context (surrounded by digits, separators,
+      whitespace or parentheses).
+      DATEFORMAT is admin-configurable and may omit parentheses (e.g.
+      "Y/m/d - H:i:s"), in which case the previous implementation left
+      the day name untranslated. False positives on ordinary words
+      containing the same character are still avoided.
+      If preg_replace_callback returns null, the original text is kept.
+
+  (2) Added a static cache to ksphp_reflink_colon_pattern(), which is
+      called from inside per-message loops (bbslog.php, bbsadmin.php),
+      avoiding a repeated preg_quote on every iteration.
+
+  Verified: ja/zh-hans/ko/en cross-translation, both parenthesised and
+            unparenthesised formats, all seven day names.
+

@@ -341,13 +341,34 @@ function ksphp_translate_reflink_text($text) {
         && $default['REFERENCE_COLON'] !== '' ) {
         $text = str_replace($default['REFERENCE_COLON'], $current['REFERENCE_COLON'], $text);
     }
-    // 曜日名（(金) → (Fri) 等）を差し替え。デフォルト言語の曜日名が
-    // 括弧で囲まれた形（(金)）でログに入っているので、その形で置換する。
+    // 曜日名（(金) → (Fri) 等）を差し替える。DATEFORMATは管理者が自由に
+    // 設定できるため「(金)」の括弧形とは限らない。日付らしい並び（数字・
+    // 区切り記号・空白・括弧）に挟まれた曜日名のみを対象にすることで、
+    // 括弧の有無に依存せず、かつ通常の語（金曜日・金額など）への誤爆も防ぐ。
+    // The day-of-week name is not necessarily wrapped in parentheses, since
+    // DATEFORMAT is admin-configurable. Match only names surrounded by
+    // date-like context so this works regardless of format and never hits
+    // ordinary words that happen to contain the same character.
     $wdaykeys = array('SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY');
+    $wmap = array();
+    $walts = array();
     foreach ($wdaykeys as $wk) {
         if (isset($default[$wk], $current[$wk]) && $default[$wk] !== ''
             && $default[$wk] !== $current[$wk]) {
-            $text = str_replace('(' . $default[$wk] . ')', '(' . $current[$wk] . ')', $text);
+            $wmap[$default[$wk]] = $current[$wk];
+            $walts[] = preg_quote($default[$wk], '/');
+        }
+    }
+    if ($wmap) {
+        $alt = implode('|', $walts);
+        $replaced = preg_replace_callback(
+            '/(?<=[\d\/\-\.\s\(])(' . $alt . ')(?=[\)\s\d:]|$)/u',
+            function ($m) use ($wmap) { return $wmap[$m[1]] ?? $m[1]; },
+            $text
+        );
+        // 不正なUTF-8等でpreg_replace_callbackがnullを返した場合は原文を保つ
+        if ($replaced !== null) {
+            $text = $replaced;
         }
     }
     return $text;
@@ -382,13 +403,20 @@ function ksphp_translate_selfreply_tag($user_html) {
 // Returns a regex alternation matching the reference colon in both the
 // board's default language and English (for legacy logs). Delimiter is '/'.
 function ksphp_reflink_colon_pattern() {
+    // ログ全件ループ内から呼ばれるため、結果を静的にキャッシュする。
+    // Cached: called from inside per-message loops.
+    static $cached = null;
+    if ($cached !== null) {
+        return $cached;
+    }
     $ref_default = $GLOBALS['MSG_DEFAULT']['REFERENCE_COLON'] ?? 'Reference:';
     $patterns = array();
     $patterns[] = preg_quote($ref_default, '/');
     if ($ref_default !== 'Reference:') {
         $patterns[] = preg_quote('Reference:', '/');
     }
-    return '(?:' . implode('|', $patterns) . ')';
+    $cached = '(?:' . implode('|', $patterns) . ')';
+    return $cached;
 }
 
 // Set error output level
