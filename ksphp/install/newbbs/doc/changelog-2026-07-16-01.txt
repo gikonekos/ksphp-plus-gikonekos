@@ -2070,3 +2070,135 @@ ASCII側の行は理論上常に目標文字数以下に収まる。
       REFERENCE_COLON・SELF_REPLY_TAG → TDefault()
       参考行の日付 → Func::getdatestr_default()
 
+
+============================================================
+2026-08-02T07:30 UTC
+------------------------------------------------------------
+[RC15: PHPStan full review / 3 bug fixes / conf.php review screen
+  7-language help text / doc/ per-language subdirectories]
+
+- sub/bbsimage.php: fixed IMAGE_PREVIEW_RESIZE setting having no effect
+  (width/height attributes were hardcoded to original pixel values)
+- bbs.php: fixed PHP 8 warning in Func::threebytehex_base64()
+  (floor() return value used as string offset without int cast)
+- bbs.php: fixed Func::checkiprange() fatal error on PHP 8
+  (string literal "STR_PAD_LEFT" passed where int constant required)
+- sub/bbsimage.php: FILEMSG prefix "画像" hardcode replaced with
+  IMAGE_FILEMSG language key; translations added for all 7 languages
+- install.php: conf.php review screen now shows per-key help text from
+  CONF_HELP_* keys; all 98 keys translated into 7 languages
+  (fallback to raw conf.php comment if key missing)
+  - Fixed: trailing same-line comments were attributed to the next
+    entry's help text, causing 6 color-related keys to show shifted help
+- doc/: reorganized into per-language subdirectories (en, ja, ko, pt,
+  tr, zh-hans, zh-hant); README.md and InstallGuide.txt in 7 languages;
+  changelog and design docs in en/ja
+- PHPStan Level 5: all 12 own-code files reviewed; 3 real bugs fixed,
+  all other hits confirmed as known false positives
+
+============================================================
+2026-08-02T08:10 UTC
+------------------------------------------------------------
+[New feature: client-side GIKONEKO_TOISSHO override in personal
+  settings panel (README ToDo) / 1 bug fix]
+
+- Added 'giko' toggle (bool, default 1) to JS settings fieldset in m=c
+- conf.php GIKONEKO_TOISSHO=0 hides the checkbox entirely (master lock)
+- prtmain(): calls gikoneko.php only when both conf and cookie allow it
+- Bug fix: addVar() scope was targeting 'custom' instead of 'js_giko_row'
+  causing the checkbox to always render unchecked regardless of cookie
+- JS_GIKO_LABEL added to all 7 language files
+- README ToDo item "client-side override of GIKONEKO_TOISSHO" resolved
+
+
+----------------------------------------------------------------------
+2026-08-03T12:00 UTC  擬古猫+RC16 [20260803]
+----------------------------------------------------------------------
+[RC16: JS feature defaults managed via conf.php / admin lock /
+  language selector in main_upper]
+
+- conf.php: JS_DEFAULT_* keys (8 bool, 2 int) added; administrators
+  can set default on/off and lock JS features server-side
+  (0=disabled+locked, 1=default ON user-adjustable, 2=default OFF
+  user-adjustable; unset = preserve previous hardcoded defaults)
+- KSPHP_SETTINGS_LOCKED JSON injected into HEAD; each JS file's
+  isEnabled() checks lock before legacy localStorage, preventing
+  conf.php lock bypass by residual localStorage values
+- prtcustom()/setcustom(): locked keys hidden from UI / ignored on save
+- Language selector added to main_upper (UI language switchable without
+  visiting m=c)
+- CONF_HELP_JS_DEFAULT_* added to all 7 install/language/*.txt files
+  (108 entries, 232 keys verified)
+- Bug fixes: VAL_JS_LONGPOST_TH addVar scope (same pattern as RC15
+  giko fix); locked-flag inconsistency across load/prtcustom/setcustom;
+  unused use($linebreaker_max) and redundant array_values() removed
+- PHPStan Level 5: 64 hits, identical to RC15 baseline (zero new errors)
+
+
+============================================================
+2026-08-03T — UTC  擬古猫+RC17 [20260803]
+------------------------------------------------------------
+[RC17: Tree view rewritten-quote highlight / tree sort toggle /
+  LaTeX $ fix / install.php full 7-language support]
+
+- bbstree.php: rewritten-quote lines highlighted in gold (.qmod);
+  normqline() detects changed lines by comparing normalized text
+  against parent post; unchanged lines still removed as before
+- bbstree.php: sort order toggle (newest/oldest first) added at top
+  of tree view; preference saved in localStorage
+- bbs.php: fixed $ stripping that caused $variable-style tokens to be
+  consumed as LaTeX math delimiters; invalid math now shown as $...
+- install.php: installer UI and CONF_HELP_* entries extended from
+  ja/en (RC15) to all 7 languages
+
+
+============================================================
+2026-08-07T01:18 UTC
+------------------------------------------------------------
+[Log-language consistency fix]
+Target: bbs.php
+
+As a side-effect of the RC17 multilingual support, when a visitor had
+the board UI set to a non-default language (e.g. Traditional Chinese)
+and made a follow-up post, the Reference line (REFERENCE_COLON), the
+self-reply tag (SELF_REPLY_TAG), and day-of-week names were written to
+the log file in the visitor's selected language. Reported by a
+qptns.com user: "週五" (Fri in zh-hant) appeared in the Reference line.
+
+  [1] At startup, load the board's default language file (LANGUAGE_FILE
+      in conf.php) into $MSG_DEFAULT, independently of the cookie-
+      overridden $MSG. Falls back to $MSG if the file is missing.
+  [2] Add TDefault($key): looks up $GLOBALS['MSG_DEFAULT']. Used only
+      for strings that are written to the log. All display-side T()
+      calls are unchanged (personal language settings unaffected).
+  [3] Add Func::getdatestr_default(): same logic as getdatestr() but
+      uses TDefault() for day-of-week names. No static cache.
+  [4] Replace T()/getdatestr() with TDefault()/getdatestr_default() at
+      the three write-time sites:
+      - REFERENCE_COLON  → TDefault()
+      - SELF_REPLY_TAG   → TDefault()
+      - Reference date   → Func::getdatestr_default()
+
+  Verified: follow-up post from pt/zh-hans browser records
+  "参考： 2026/08/07(金) HH:MM:SS" (Japanese default) in log.
+
+============================================================
+2026-08-07T — UTC
+------------------------------------------------------------
+[install.php: keep/change option for admin password on upgrade]
+Target: install/install.php, install/language/*.txt (7 files)
+
+During a version upgrade where ADMINPOST exists in the old conf.php,
+the installer now offers a choice between keeping the existing password
+or setting a new one, instead of always requiring a new password.
+
+  - UI: radio buttons (keep / change, default: keep) shown after the
+    old-password field; new-password input hidden and cleared on 'keep'
+  - JS validation: new password required only when 'change' is selected
+  - POST: keep_admin_pass flag sent alongside old/new_admin_pass
+  - PHP (ksphp_install_run): when keep_admin_pass=true and old password
+    verifies, the existing ADMINPOST hash is reused as-is in local.php
+  - Language: ADMIN_MIGRATION_KEEP_LABEL / ADMIN_MIGRATION_CHANGE_LABEL
+    added to all 7 install/language/*.txt files;
+    JS_ADMIN_MIGRATION_EMPTY updated (ja/en) to reflect the new flow
+
