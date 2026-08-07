@@ -123,8 +123,10 @@ PHP, Apache modülü olarak çalışıyorsa bbs.php salt okunur (644) olabilir. 
 * LaTeX: `$değişken` biçimindeki simgelerin formül sınırlayıcısı olarak yanlış yorumlanması hatası düzeltildi
 * install.php: yükleyici UI ve CONF_HELP_* girişleri için 7 dil desteği genişletildi
 
-### RC17 Sonrası (2026/08/07)
+### RC18 (2026/08/07)
 * bbs.php: log yazma dil tutarlılığı düzeltmesi — referans satırı, kendi yanıtı etiketi ve gün adları artık ziyaretçinin seçtiği dilden bağımsız olarak her zaman panonun varsayılan diliyle (LANGUAGE_FILE) loga yazılır (TDefault() / getdatestr_default() eklendi)
+* bbs.php: tripuse() içindeki mbstring bağımlılığı kaldırıldı; yalnızca iconv() kullanılıyor (qptns.com'da işlevsel değişiklik yok)
+* install.php: sürüm yükseltmede yönetici şifresi için tut/değiştir seçeneği eklendi; tüm 7 dil destekleniyor
 
 Herhangi bir sürümün tam ayrıntıları için `doc/changelog-2026-07-16-01.txt` dosyasına bakın.
 

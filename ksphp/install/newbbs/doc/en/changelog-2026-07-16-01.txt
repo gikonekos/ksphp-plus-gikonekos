@@ -2842,3 +2842,34 @@ to iconv() only.
         new behavioural difference is introduced for environments such
         as qptns.com where mbstring is unavailable.
 
+
+
+============================================================
+RC18 [20260807] — 2026-08-07T11:49Z UTC
+============================================================
+
+[RC18 release: log-language consistency, admin password keep/change UI,
+ mbstring removal]
+
+■ bbs.php
+  (1) Log-language consistency fix (TDefault() / getdatestr_default())
+      Reference line, self-reply tag, and day-of-week names are now
+      always written to the log in the board's configured default
+      language (LANGUAGE_FILE), regardless of the visitor's selected
+      language. Verified with Portuguese and Simplified Chinese browsers.
+  (2) Remove mbstring dependency in tripuse()
+      UTF-8→CP932 conversion in trip calculation simplified from a
+      two-branch mb_convert_encoding()/iconv fallback to iconv() only.
+      No mbstring dependency remains in the codebase.
+      Note: CP932 and SJIS-win differ on some characters (e.g. wave
+      dash); trip results may not exactly match other calculators
+      (pre-existing, unchanged behaviour on qptns.com).
+  (3) Version string updated to RC18 [20260807]
+
+■ install.php
+  Added keep/change option for admin password during version upgrade.
+  When ADMINPOST is detected in the existing conf.php, the installer
+  now offers a choice: keep the existing password or set a new one
+  (previously a new password was always required).
+  keep_admin_pass flag; all 7 languages supported.
+

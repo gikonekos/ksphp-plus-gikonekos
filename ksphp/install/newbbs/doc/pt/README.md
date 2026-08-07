@@ -123,8 +123,10 @@ Se o PHP rodar como módulo Apache, bbs.php pode ser somente leitura (644). Se r
 * LaTeX: corrigido bug onde tokens no formato `$variavel` eram reconhecidos como delimitadores de fórmula
 * install.php: suporte a 7 idiomas expandido para UI do instalador e entradas CONF_HELP_*
 
-### Após RC17 (2026/08/07)
+### RC18 (2026/08/07)
 * bbs.php: correção de consistência de idioma no log — linha de referência, tag de auto-resposta e nomes de dia da semana agora são sempre gravados no log no idioma padrão configurado (LANGUAGE_FILE), independentemente do idioma selecionado pelo visitante (TDefault() / getdatestr_default() adicionados)
+* bbs.php: dependência de mbstring removida em tripuse(); apenas iconv() (sem mudança funcional no qptns.com)
+* install.php: opção manter/alterar para senha do administrador no upgrade; todos os 7 idiomas
 
 Para detalhes completos de qualquer versão, consulte `doc/changelog-2026-07-16-01.txt`.
 

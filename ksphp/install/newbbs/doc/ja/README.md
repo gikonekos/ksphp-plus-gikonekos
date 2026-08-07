@@ -249,8 +249,10 @@ PHPがApacheモジュールとして動作している場合、bbs.phpは644（�
 * LaTeX：`$variable`形式のトークンが数式デリミタとして誤認識されるバグを修正
 * install.php：インストーラUI・CONF_HELP_*エントリの7言語対応を拡充
 
-### RC17以降 (2026/08/07)
+### RC18 (2026/08/07)
 * bbs.php：ログ書き込み言語一貫性修正 — 参考行・自己レスタグ・曜日名を、訪問者の選択言語によらず掲示板のデフォルト言語（LANGUAGE_FILE）で常にログへ書き込むよう修正（TDefault() / getdatestr_default() を追加）
+* bbs.php：tripuse()のmbstring依存を除去、iconv()のみに統一（qptns.comでの動作に変化なし）
+* install.php：バージョンアップ時の管理パスワード継続/変更選択UIを追加（全7言語対応）
 
 詳細は `doc/changelog-2026-07-16-01.txt` を参照してください。
 

@@ -123,8 +123,10 @@ PHP가 Apache 모듈로 동작하는 경우 bbs.php는 644로 설정해도 됩�
 * LaTeX：`$변수` 형식의 토큰이 수식 구분자로 오인식되던 버그 수정
 * install.php：설치 프로그램 UI・CONF_HELP_* 항목의 7개 언어 지원
 
-### RC17 이후 (2026/08/07)
+### RC18 (2026/08/07)
 * bbs.php：로그 쓰기 언어 일관성 수정——참고 행, 자기 답글 태그, 요일 이름이 방문자의 선택 언어에 관계없이 게시판 기본 언어（LANGUAGE_FILE）로 항상 로그에 기록되도록 수정（TDefault() / getdatestr_default() 추가）
+* bbs.php: tripuse()의 mbstring 의존성 제거, iconv()만 사용 (qptns.com 동작 변경 없음)
+* install.php: 버전 업그레이드 시 관리자 비밀번호 유지/변경 선택 UI 추가 (전 7개 언어 지원)
 
 자세한 내용은 `doc/changelog-2026-07-16-01.txt` 를 참조하세요.
 

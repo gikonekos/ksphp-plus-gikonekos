@@ -123,8 +123,10 @@ KuzuhaScript（くずはすくりぷと）PHP移植版的改进版本。
 * LaTeX：修正`$变量`形式的符号被误认为数式分隔符的问题
 * install.php：安装程序UI・CONF_HELP_*条目的7语言支持
 
-### RC17之后 (2026/08/07)
+### RC18 (2026/08/07)
 * bbs.php：日志写入语言一致性修正——参考行、自回复标签、星期名称现在一律以留言板默认语言（LANGUAGE_FILE）写入日志，不受访客选择语言影响（新增TDefault() / getdatestr_default()）
+* bbs.php：删除tripuse()中的mbstring依赖，仅使用iconv()（qptns.com行为不变）
+* install.php：版本升级时新增管理员密码保留/变更选择UI（全7种语言）
 
 详细内容请参阅 `doc/changelog-2026-07-16-01.txt`。
 
