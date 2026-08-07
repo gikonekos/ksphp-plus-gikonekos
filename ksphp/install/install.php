@@ -1308,7 +1308,7 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 			$src_hash = @hash_file('sha256', $src);
 			$dst_hash = @hash_file('sha256', $dst);
 			if ($src_hash !== false && $dst_hash !== false && $src_hash === $dst_hash) {
-				$log[] = array('ok' => true, 'text' => sprintf(T('INSTALL_SKIPPED_UNCHANGED'), $dst_rel));
+				$log[] = array('ok' => true, 'skipped' => true, 'text' => sprintf(T('INSTALL_SKIPPED_UNCHANGED'), $dst_rel));
 				continue;
 			}
 		}
@@ -1590,13 +1590,13 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'conf_review') 
 		}
 		$old_conf = $new_dir . '/conf.php';
 	} else {
-		$targets = ksphp_install_find_candidates($parent_dir, $grandparent_dir);
-		$idx = (int) ($_GET['target'] ?? -1);
-		if (!isset($targets[$idx])) {
+		// スキャン再実行による添字ズレを避けるため、パスを直接受け取る。
+		$bbs_path = (string) ($_GET['path'] ?? '');
+		if ($bbs_path === '' || !ksphp_install_is_safe_target_dir(dirname($bbs_path), dirname($install_dir))) {
 			echo json_encode(array('needed' => false), JSON_UNESCAPED_UNICODE);
 			exit;
 		}
-		$old_conf = dirname($targets[$idx]) . '/conf.php';
+		$old_conf = dirname($bbs_path) . '/conf.php';
 	}
 	if (!@file_exists($old_conf)) {
 		echo json_encode(array('needed' => false), JSON_UNESCAPED_UNICODE);
@@ -1634,19 +1634,20 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup_new'
 
 if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 	header('Content-Type: application/json; charset=UTF-8');
-	$targets = ksphp_install_find_candidates($parent_dir, $grandparent_dir);
-	$idx = (int) ($_GET['target'] ?? -1);
-	if (!isset($targets[$idx])) {
+	// スキャン再実行による添字ズレを避けるため、パスを直接受け取る。
+	// ksphp_install_is_safe_target_dir()でディレクトリトラバーサルを防ぐ。
+	$bbs_path = (string) ($_GET['path'] ?? '');
+	if ($bbs_path === '' || !ksphp_install_is_safe_target_dir(dirname($bbs_path), dirname($install_dir))) {
 		echo json_encode(array('log' => array(array('ok' => false, 'text' => T('ERROR_TARGET_NOT_FOUND')))), JSON_UNESCAPED_UNICODE);
 		exit;
 	}
-	$target_dir = dirname($targets[$idx]);
-	$entry_filename = basename($targets[$idx]);
+	$target_dir = dirname($bbs_path);
+	$entry_filename = basename($bbs_path);
 	$old_admin_pass = (string) ($_POST['old_admin_pass'] ?? '');
 	$new_admin_pass = (string) ($_POST['new_admin_pass'] ?? '');
 	$keep_admin_pass = ($_POST['keep_admin_pass'] ?? '') === '1';
 	$conf_overrides = ksphp_install_decode_conf_overrides((string) ($_POST['conf_overrides'] ?? ''));
-	$backup_root = $install_dir . '/backup/target' . $idx;
+	$backup_root = $install_dir . '/backup/' . substr(md5($bbs_path), 0, 12);
 	echo json_encode(
 		array(
 			'log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root, $entry_filename, $old_admin_pass, $new_admin_pass, $conf_overrides, $keep_admin_pass),
@@ -1737,8 +1738,9 @@ function h(string $s): string {
 	h2 { font-size:1em; border-bottom:1px solid #007f7f; padding-bottom:0.25em; margin-top:1.5em; }
 	table { border-collapse:collapse; margin:0.5em 0; }
 	td, th { padding:0.25em 0.75em; border:1px solid #007f7f; text-align:left; }
-	.ok   { color:#8cff8c; }
-	.ng   { color:#ff8c8c; }
+	.ok      { color:#8cff8c; }
+	.ng      { color:#ff8c8c; }
+	.skipped { color:#7fd4d4; }
 	a:link { color: #cfe; transition:0.2s; }
 	a:visited { color: #ddd; }
 	a:active { color: #f00; }
@@ -2002,7 +2004,7 @@ function fetchConfReview(target) {
 	var langParam = '&lang=' + encodeURIComponent(<?php echo json_encode($lang); ?>);
 	var url = (target.kind === 'new')
 		? '?ajax=1&action=conf_review&kind=new&dir=' + encodeURIComponent(target.value) + langParam
-		: '?ajax=1&action=conf_review&kind=index&target=' + encodeURIComponent(target.value) + langParam;
+		: '?ajax=1&action=conf_review&kind=index&path=' + encodeURIComponent(target.path || '') + langParam;
 	return fetch(url)
 		.then(function (res) { return res.json(); })
 		.catch(function () { return { needed: false }; });
@@ -2081,7 +2083,10 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 				return { kind: 'new', value: newDir, label: newDir + L('JS_NEW_DIR_TAG') };
 			}
 			var idx = cb.getAttribute('data-index');
-			return { kind: 'index', value: idx, label: '#' + idx };
+			// パスをindexではなく実際のパス文字列で渡す。
+			// スキャン再実行による添字ズレを防ぐため。
+			var bbs_path = paths[idx] || '';
+			return { kind: 'index', value: idx, path: bbs_path, label: bbs_path || ('#' + idx) };
 		});
 
 	logList.innerHTML = '';
@@ -2168,7 +2173,7 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 				var langParam = '&lang=' + encodeURIComponent(<?php echo json_encode($lang); ?>);
 				var url = (target.kind === 'new')
 					? '?ajax=1&action=run_setup_new&dir=' + encodeURIComponent(target.value) + langParam
-					: '?ajax=1&action=run_setup&target=' + encodeURIComponent(target.value) + langParam;
+					: '?ajax=1&action=run_setup&path=' + encodeURIComponent(target.path || '') + langParam;
 
 				// 20260720 Gikoneko: 管理パスワード移行が必要な対象のみ、
 				// 平文パスワードをPOSTボディで送信する（GETクエリ文字列に
@@ -2206,7 +2211,7 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 								return;
 							}
 							var li = document.createElement('li');
-							li.className = lines[i].ok ? 'ok' : 'ng';
+							li.className = lines[i].skipped ? 'skipped' : (lines[i].ok ? 'ok' : 'ng');
 							if (!lines[i].ok) {
 								hadFailure = true;
 							}
