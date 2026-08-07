@@ -50,7 +50,7 @@ if (file_exists($ksphp_local_secrets_file)) {
 unset($ksphp_local_secrets_file, $ksphp_local_secrets);
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '擬古猫+RC16 [20260803] (Heyuri, ヶ, ＠Links, 擬古猫)';
+$CONF['VERSION'] = '擬古猫+RC17 [20260803] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
@@ -140,6 +140,19 @@ if (file_exists($langfile)) {
     $MSG = loadLanguageFile($langfile);
 } else {
     die("Language file not found: $langfile");
+}
+
+// Load the board's default language separately so that strings written
+// to the log (Reference line, self-reply tag) are always stored in the
+// configured default language, not in the visitor's selected language.
+// 掲示板のデフォルト言語（conf.phpのLANGUAGE_FILE）を別途読み込み、
+// ログに書き込まれる文字列（参考行・自己レスタグ）を常にデフォルト
+// 言語で保存するために使用する。
+$default_langfile = './language/' . ($CONF['LANGUAGE_FILE'] ?? 'english') . '.txt';
+if (file_exists($default_langfile)) {
+    $MSG_DEFAULT = loadLanguageFile($default_langfile);
+} else {
+    $MSG_DEFAULT = $MSG;  // fallback to current language
 }
 
 // 2026-07-20：language/ディレクトリを動的スキャンし、利用可能な言語
@@ -299,6 +312,16 @@ $KSPHP_JS_LOCKED_JSON = json_encode($ksphp_js_locked, JSON_UNESCAPED_UNICODE | J
 // Translation helper
 function T($key) {
     return $GLOBALS['MSG'][$key] ?? $key;
+}
+
+// Default-language translation helper: always returns strings from the
+// board's configured default language (LANGUAGE_FILE in conf.php).
+// Use this for strings written to the log file so that they are stored
+// in a consistent language regardless of the visitor's language setting.
+// ログファイルに書き込まれる文字列用。訪問者の言語設定によらず、
+// conf.phpのLANGUAGE_FILEで指定したデフォルト言語で返す。
+function TDefault($key) {
+    return $GLOBALS['MSG_DEFAULT'][$key] ?? $key;
 }
 
 // Set error output level
@@ -2581,11 +2604,11 @@ if ($result === 3) {
             }
             $refmessage = $this->getmessage($refdata[0]);
             $refmessage['WDATE'] = Func::getdatestr($refmessage['NDATE'], $this->c['DATEFORMAT']);
-            $message['MSG'] .= "\r\r<a href=\"m=f&s={$message['REFID']}&r=&\">" . T('REFERENCE_COLON') . " {$refmessage['WDATE']}</a>";
+            $message['MSG'] .= "\r\r<a href=\"m=f&s={$message['REFID']}&r=&\">" . TDefault('REFERENCE_COLON') . " {$refmessage['WDATE']}</a>";
             # Simple self-reply prevention function
             if ($this->c['IPREC'] and $this->c['SHOW_SELFFOLLOW']
                 and $refmessage['PHOST'] != '' and $refmessage['PHOST'] == $message['PHOST']) {
-                $message['USER'] .= '<span class="muh">' . T('SELF_REPLY_TAG') . '</span>';
+                $message['USER'] .= '<span class="muh">' . TDefault('SELF_REPLY_TAG') . '</span>';
             }
         }
         # Check
