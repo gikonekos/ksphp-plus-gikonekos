@@ -1590,9 +1590,10 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'conf_review') 
 		}
 		$old_conf = $new_dir . '/conf.php';
 	} else {
-		// スキャン再実行による添字ズレを避けるため、パスを直接受け取る。
+		// パスを直接受け取り、スキャン済みリストに含まれるか照合して安全確認する。
 		$bbs_path = (string) ($_GET['path'] ?? '');
-		if ($bbs_path === '' || !ksphp_install_is_safe_target_dir(dirname($bbs_path), dirname($install_dir))) {
+		$targets = ksphp_install_find_candidates($parent_dir, $grandparent_dir);
+		if ($bbs_path === '' || !in_array($bbs_path, $targets, true)) {
 			echo json_encode(array('needed' => false), JSON_UNESCAPED_UNICODE);
 			exit;
 		}
@@ -1634,10 +1635,11 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup_new'
 
 if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 	header('Content-Type: application/json; charset=UTF-8');
-	// スキャン再実行による添字ズレを避けるため、パスを直接受け取る。
-	// ksphp_install_is_safe_target_dir()でディレクトリトラバーサルを防ぐ。
+	// パスを直接受け取り、スキャン済みリストに含まれるか照合して安全確認する。
+	// スキャン済みリストにないパスは処理しない（ディレクトリトラバーサル防止）。
 	$bbs_path = (string) ($_GET['path'] ?? '');
-	if ($bbs_path === '' || !ksphp_install_is_safe_target_dir(dirname($bbs_path), dirname($install_dir))) {
+	$targets = ksphp_install_find_candidates($parent_dir, $grandparent_dir);
+	if ($bbs_path === '' || !in_array($bbs_path, $targets, true)) {
 		echo json_encode(array('log' => array(array('ok' => false, 'text' => T('ERROR_TARGET_NOT_FOUND')))), JSON_UNESCAPED_UNICODE);
 		exit;
 	}
