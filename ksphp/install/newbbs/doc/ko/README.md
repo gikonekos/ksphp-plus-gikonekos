@@ -129,9 +129,7 @@ PHP가 Apache 모듈로 동작하는 경우 bbs.php는 644로 설정해도 됩�
 자세한 내용은 `doc/changelog-2026-07-16-01.txt` 를 참조하세요.
 
 ## 할 일
-* **멀티바이트 함수・jcode 정리** — mbstring 사용 금지（qptns.com 환경）, iconv만 사용
 * **업로더 썸네일 JS** — upthumb.js를 Uploader@Heyuri 이외의 Uploader 인스턴스에도 쉽게 대응할 수 있도록 정비
-* **ADMINKEY 해시화** — ADMINKEY는 현재 평문 저장・비교. 향후 버전에서 ADMINPOST（bcrypt）와 동일한 방식으로 변경 검토
 * **새 게시물 화면에 폼이 표시되지 않음** — 간헐적 발생, 재현 조건 불명
 
 ## 알려진 버그

@@ -129,9 +129,8 @@ PHP, Apache modülü olarak çalışıyorsa bbs.php salt okunur (644) olabilir. 
 Herhangi bir sürümün tam ayrıntıları için `doc/changelog-2026-07-16-01.txt` dosyasına bakın.
 
 ## Yapılacaklar
-* **Çok baytlı fonksiyon / jcode temizliği** — mbstring yasak (qptns.com ortamı); yalnızca iconv kullanılacak
+
 * **Yükleyici küçük resim JS** — upthumb.js'yi Uploader@Heyuri dışındaki Uploader örnekleri için kolayca yapılandırılabilir hale getir
-* **ADMINKEY hash'leme** — ADMINKEY şu anda düz metin olarak saklanır ve karşılaştırılır; gelecekteki bir sürümde ADMINPOST (bcrypt) ile aynı yöntem kullanılmalı
 * **Yeni gönderi ekranında form görünmüyor** — aralıklı olarak gerçekleşiyor; yeniden üretme koşulları bilinmiyor
 
 ## Bilinen Hatalar

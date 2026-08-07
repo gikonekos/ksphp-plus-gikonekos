@@ -2384,3 +2384,24 @@ bbstree.phpのnormqline()が行う（前後の空白・HTMLエンティティを
     ADMIN_MIGRATION_CHANGE_LABELを全7言語ファイルに追加。
     JS_ADMIN_MIGRATION_EMPTY（ja/en）を新フローに合わせて更新。
 
+
+
+============================================================
+2026-08-07T11:43Z UTC
+------------------------------------------------------------
+【bbs.php：tripuse()のmbstring依存を除去、iconv一本化】
+対象：install/newbbs/bbs.php
+
+tripuse()（2chトリップ計算）のUTF-8→CP932変換処理を
+mb_convert_encoding()とiconv()の二段構えから、iconv()のみに統一した。
+
+  変更前：function_exists('mb_convert_encoding')でmbstringを優先し、
+          mbstring不在時のみiconvにフォールバックする構造だった。
+  変更後：iconv('UTF-8', 'CP932//IGNORE', $key)のみ使用。
+          mbstringへの依存を完全に除去。
+
+  注意：CP932はSJIS-winと一部文字（波ダッシュ等）の扱いが異なるため、
+        他サイトのトリップ計算機と結果が完全一致しない場合がある。
+        この挙動は変更前のiconvフォールバック時と同じであり、新規の差異ではない。
+        qptns.comのようにmbstringが使用できない環境では従来と結果が変わらない。
+

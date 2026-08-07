@@ -255,9 +255,7 @@ If PHP runs as an Apache module, bbs.php can be read-only (644). If it runs as C
 For full details on any release, see `doc/changelog-2026-07-16-01.txt`.
 
 ## ToDo
-* **Multibyte / jcode cleanup** — proper use of multibyte functions; remove residual jcode references
 * **Uploader thumbnail JS** — make upthumb.js easily configurable for Uploader software instances other than Uploader@Heyuri
-* **ADMINKEY hashing** — ADMINKEY is currently stored and matched as plaintext, unlike ADMINPOST (bcrypt). Should be hashed the same way in a future version.
 * **New-post form not appearing** — intermittent; reproduction conditions unknown
 
 ## Known Bugs

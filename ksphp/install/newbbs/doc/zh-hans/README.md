@@ -129,9 +129,7 @@ KuzuhaScript（くずはすくりぷと）PHP移植版的改进版本。
 详细内容请参阅 `doc/changelog-2026-07-16-01.txt`。
 
 ## 待办事项
-* **多字节函数・jcode清理** — mbstring禁止使用（qptns.com环境），仅使用iconv
 * **上传器缩略图JS** — 使upthumb.js易于支持Uploader@Heyuri以外的Uploader实例
-* **ADMINKEY哈希化** — ADMINKEY目前以明文存储和比对，未来版本应与ADMINPOST（bcrypt）采用相同方式
 * **新发帖画面不显示表单** — 间歇性发生，重现条件不明
 
 ## 已知问题

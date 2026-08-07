@@ -2818,3 +2818,27 @@ or setting a new one, instead of always requiring a new password.
     added to all 7 install/language/*.txt files;
     JS_ADMIN_MIGRATION_EMPTY updated (ja/en) to reflect the new flow
 
+
+
+============================================================
+2026-08-07T11:43Z UTC
+------------------------------------------------------------
+[bbs.php: remove mbstring dependency in tripuse(); iconv only]
+Target: install/newbbs/bbs.php
+
+Simplified the UTF-8→CP932 conversion in tripuse() (2ch-compatible
+trip calculation) from a two-branch mb_convert_encoding/iconv fallback
+to iconv() only.
+
+  Before: function_exists('mb_convert_encoding') check, with iconv as
+          fallback when mbstring was unavailable.
+  After:  iconv('UTF-8', 'CP932//IGNORE', $key) used unconditionally.
+          No mbstring dependency remains in the codebase.
+
+  Note: CP932 and SJIS-win differ in how some characters are encoded
+        (e.g. the wave dash / fullwidth tilde). Trip results may not
+        exactly match other sites' trip calculators as a result.
+        This was already the case for the iconv fallback path, so no
+        new behavioural difference is introduced for environments such
+        as qptns.com where mbstring is unavailable.
+

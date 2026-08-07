@@ -255,9 +255,7 @@ PHPがApacheモジュールとして動作している場合、bbs.phpは644（�
 詳細は `doc/changelog-2026-07-16-01.txt` を参照してください。
 
 ## ToDo
-* **マルチバイト関数・jcodeのクリーンアップ** — mbstringは使用禁止（qptns.com環境）、icovnのみ使用
 * **アップローダーサムネイルJS** — upthumb.jsをUploader@Heyuri以外のUploaderインスタンスにも簡単に対応できるよう整備
-* **ADMINKEYのハッシュ化** — ADMINKEYは現在平文保存・平文照合。将来のバージョンでADMINPOST（bcrypt）と同様のハッシュ化を検討すべき
 * **新規投稿画面にフォームが表示されない** — 断続的に発生、再現条件不明
 
 ## 既知の不具合

@@ -129,9 +129,7 @@ Se o PHP rodar como módulo Apache, bbs.php pode ser somente leitura (644). Se r
 Para detalhes completos de qualquer versão, consulte `doc/changelog-2026-07-16-01.txt`.
 
 ## A fazer
-* **Limpeza de funções multibyte / jcode** — mbstring proibido (ambiente qptns.com); usar apenas iconv
 * **JS de miniatura do uploader** — tornar upthumb.js facilmente configurável para instâncias de software Uploader além do Uploader@Heyuri
-* **Hash de ADMINKEY** — ADMINKEY atualmente armazenado e comparado como texto simples, ao contrário do ADMINPOST (bcrypt). Deve ser hash no mesmo formato em uma versão futura.
 * **Formulário não aparece na tela de novo post** — intermitente; condições de reprodução desconhecidas
 
 ## Bugs conhecidos

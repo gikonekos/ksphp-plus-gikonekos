@@ -631,23 +631,15 @@ class Webapp {
 
 function tripuse($key) {
     #$tripkey = '#istrip';? // String to be used as password (with #)
-            if (function_exists('mb_convert_encoding')) {
-                $key = mb_convert_encoding($key, "SJIS-win", "UTF-8,SJIS-win");	// to, from
-            } else {
-                // mbstringが無効な環境向けのフォールバック（iconv）。
-                // SJIS-winとCP932は一部文字（波ダッシュ等）の扱いが異なるため、
-                // 他サイトのトリップ計算機と結果が完全一致しない可能性はあるが、
-                // mbstring不在による500エラーで投稿自体ができなくなるよりは
-                // 望ましいための代替措置（2026-07-19）。
-                // Fallback (iconv) for environments without mbstring. SJIS-win
-                // and CP932 differ in how they handle some characters (e.g.
-                // the wave dash), so the resulting trip may not exactly match
-                // other sites' trip calculators, but this is preferable to
-                // posting being entirely broken by a 500 error from a
-                // missing mbstring (2026-07-19).
-                $converted = @iconv('UTF-8', 'CP932//IGNORE', $key);
-                $key = ($converted !== false) ? $converted : $key;
-            }
+            // iconv（mbstring不要）でUTF-8→CP932変換。
+            // CP932はSJIS-winと一部文字（波ダッシュ等）の扱いが異なるため、
+            // 他サイトのトリップ計算機と結果が完全一致しない可能性がある。
+            // Convert UTF-8 to CP932 via iconv (no mbstring required).
+            // CP932 and SJIS-win differ in how they handle some characters
+            // (e.g. the wave dash), so the result may not exactly match
+            // other sites' trip calculators.
+            $converted = @iconv('UTF-8', 'CP932//IGNORE', $key);
+            $key = ($converted !== false) ? $converted : $key;
     #		$key = '#'.substr($key, strpos($key, '#'));
     
     # Trip
