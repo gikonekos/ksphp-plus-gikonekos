@@ -2076,6 +2076,9 @@ function showConfReviewAndWait(fields) {
 document.getElementById('run-setup-btn').addEventListener('click', function () {
 	var btn = this;
 	var logList = document.getElementById('setup-log');
+	var pathsEl = document.getElementById('conf-summaries-paths');
+	var paths = [];
+	try { paths = JSON.parse(pathsEl ? pathsEl.textContent || '[]' : '[]'); } catch (e) { paths = []; }
 	// 20260719 Gikoneko: data-index（近隣スキャン検出分）と
 	// data-new-dir（新規フォルダ追加分）の両方に対応する。
 	var targetsList = Array.prototype.slice.call(document.querySelectorAll('.target-checkbox:checked'))
