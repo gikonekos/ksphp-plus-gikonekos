@@ -239,8 +239,9 @@ class Imagebbs extends Bbs {
                 $message['MSG'] = preg_replace("/\Q{$this->c['IMAGETEXT']}\E/", '', $message['MSG']);
             }
             else {
-                if (preg_match("/\r\r<a href=[^<]+>Reference: [^<]+<\/a>$/", $message['MSG'])) {
-                    $message['MSG'] = preg_replace("/(\r\r<a href=[^<]+>Reference: [^<]+<\/a>)$/", "\r\r{$message['FILETAG']}$1", $message['MSG'], 1);
+                $ref_colon = ksphp_reflink_colon_pattern();
+                if (preg_match("/\r\r<a href=[^<]+>{$ref_colon}[^<]+<\/a>$/", $message['MSG'])) {
+                    $message['MSG'] = preg_replace("/(\r\r<a href=[^<]+>{$ref_colon}[^<]+<\/a>)$/", "\r\r{$message['FILETAG']}$1", $message['MSG'], 1);
                 }
                 else {
                     $message['MSG'] .= "\r\r" . $message['FILETAG'];

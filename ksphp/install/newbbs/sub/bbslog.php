@@ -732,7 +732,8 @@ class Getlog extends Webapp {
                 $tcount[$message['POSTID']] = 0;
 
                 $msg = ltrim($message['MSG']);
-                $msg = preg_replace("/<a href=[^>]+>Reference: [^<]+<\/a>/i", "", $msg, 1);
+                $ref_colon = ksphp_reflink_colon_pattern();
+                $msg = preg_replace("/<a href=[^>]+>{$ref_colon}[^<]+<\/a>/i", "", $msg, 1);
                 $msg = preg_replace("/<[^>]+>/", "", $msg);
                 $msgsplit = explode("\r", $msg);
                 $msgdigest = $msgsplit[0];

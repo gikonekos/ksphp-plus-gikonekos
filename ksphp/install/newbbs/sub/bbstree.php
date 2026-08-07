@@ -429,7 +429,10 @@ class Treeview extends Bbs {
             if ($treemsg['POSTID'] == $parentid) {
 
                 # Delete reference
-                $treemsg['MSG'] = preg_replace("/<a href=[^>]+>Reference: [^<]+<\/a>/i", "", $treemsg['MSG'], 1);
+                # 参考行はログにデフォルト言語で焼き込まれているため、
+                # デフォルト言語＋英語（過去ログ互換）のREFERENCE_COLONで除去する。
+                $ref_colon = ksphp_reflink_colon_pattern();
+                $treemsg['MSG'] = preg_replace("/<a href=[^>]+>{$ref_colon}[^<]+<\/a>/i", "", $treemsg['MSG'], 1);
 
                 # Delete or highlight quotes.
                 # 2026-08-03 Gikoneko: 「書き換え引用」（引用文を改変したネタ）は

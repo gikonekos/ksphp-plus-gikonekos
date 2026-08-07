@@ -2916,3 +2916,26 @@ format is unchanged.
     preg_replace_callback so the helper can be applied to the link text;
     the self-reply helper is applied to USER at the top of setmessage().
 
+
+
+============================================================
+2026-08-07T12:27Z UTC
+------------------------------------------------------------
+[Reference-line stripping: replace English hardcode with i18n]
+Target: bbs.php, sub/bbstree.php, sub/bbslog.php, sub/bbsadmin.php,
+        sub/bbsimage.php
+
+The regexes that strip (or detect) the reference link from the body in
+tree view, log digests, the admin screen, and the image BBS were
+hardcoded to "Reference: ", so the reference line was not stripped when
+the board's default language was not English. Fixed.
+
+  - Added ksphp_reflink_colon_pattern() to bbs.php: returns a regex
+    fragment matching both the default-language REFERENCE_COLON and the
+    English "Reference:" (legacy-log compatibility).
+  - Replaced the "Reference: " hardcode in the 4 files above with calls
+    to this helper. sub/*.php are require'd from bbs.php in the same
+    process, so the global function is reachable.
+  - Unit-tested: multilingual stripping, legacy-English stripping, and
+    no false positives on body text.
+

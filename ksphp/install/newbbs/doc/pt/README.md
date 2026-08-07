@@ -129,6 +129,7 @@ Se o PHP rodar como módulo Apache, bbs.php pode ser somente leitura (644). Se r
 * install.php: opção manter/alterar para senha do administrador no upgrade; todos os 7 idiomas
 * install.php: ignora arquivos inalterados durante upgrade (comparação antes do backup)
 * bbs.php: linha de referência e tag de auto-resposta seguem o idioma do visitante na exibição (o log mantém o idioma padrão; tradução apenas na exibição, sem mudança de formato do log)
+* bbs.php + sub/*.php: a remoção da linha de referência (árvore, resumo de log, admin, image BBS) agora reconhece o idioma em vez de usar "Reference: " fixo em inglês
 
 Para detalhes completos de qualquer versão, consulte `doc/changelog-2026-07-16-01.txt`.
 

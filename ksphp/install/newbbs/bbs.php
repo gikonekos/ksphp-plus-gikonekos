@@ -375,6 +375,22 @@ function ksphp_translate_selfreply_tag($user_html) {
     return $user_html;
 }
 
+// 参考リンク（<a ...>参考： 日付</a>）を本文から除去する正規表現パターンを
+// 返す。参考行はログにデフォルト言語（TDefault）で焼き込まれているため、
+// デフォルト言語のREFERENCE_COLONでマッチさせる。過去ログ互換のため
+// 英語("Reference: ")もマッチ対象に含める。区切り文字はスラッシュ前提。
+// Returns a regex alternation matching the reference colon in both the
+// board's default language and English (for legacy logs). Delimiter is '/'.
+function ksphp_reflink_colon_pattern() {
+    $ref_default = $GLOBALS['MSG_DEFAULT']['REFERENCE_COLON'] ?? 'Reference:';
+    $patterns = array();
+    $patterns[] = preg_quote($ref_default, '/');
+    if ($ref_default !== 'Reference:') {
+        $patterns[] = preg_quote('Reference:', '/');
+    }
+    return '(?:' . implode('|', $patterns) . ')';
+}
+
 // Set error output level
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 

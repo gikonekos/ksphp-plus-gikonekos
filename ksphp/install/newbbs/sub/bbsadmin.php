@@ -154,7 +154,8 @@ class Bbsadmin extends Webapp {
         $messages = array();
         foreach ($logdata as $logline) {
             $message = $this->getmessage($logline);
-            $message['MSG'] = preg_replace("/<a href=[^>]+>Reference: [^<]+<\/a>/i", "", $message['MSG'], 1);
+            $ref_colon = ksphp_reflink_colon_pattern();
+            $message['MSG'] = preg_replace("/<a href=[^>]+>{$ref_colon}[^<]+<\/a>/i", "", $message['MSG'], 1);
             $message['MSG'] = preg_replace("/<[^>]+>/", "", ltrim($message['MSG']));
             $msgsplit = explode("\r", $message['MSG']);
             $message['MSGDIGEST'] = $msgsplit[0];
