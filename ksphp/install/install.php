@@ -1298,11 +1298,16 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 		$existed = file_exists($dst);
 
 		// conf.php以外で既存ファイルと内容が同一なら上書き・バックアップをスキップ。
-		// この時点では$dstはまだ元ファイルのままなので戻す処理が不要。
+		// SHA-256ハッシュで比較することで、改行コード変換等の影響を受けず
+		// 正確に同一性を判定する。この時点では$dstはまだ元ファイルのままなので
+		// 戻す処理が不要。
+		// Skip overwrite and backup for non-conf.php files that are identical
+		// to the installed version. SHA-256 comparison avoids false negatives
+		// caused by line-ending conversion (e.g. CRLF vs LF on download).
 		if ($existed && $rel !== 'conf.php') {
-			$src_content = @file_get_contents($src);
-			$dst_content = @file_get_contents($dst);
-			if ($src_content !== false && $dst_content !== false && $src_content === $dst_content) {
+			$src_hash = @hash_file('sha256', $src);
+			$dst_hash = @hash_file('sha256', $dst);
+			if ($src_hash !== false && $dst_hash !== false && $src_hash === $dst_hash) {
 				$log[] = array('ok' => true, 'text' => sprintf(T('INSTALL_SKIPPED_UNCHANGED'), $dst_rel));
 				continue;
 			}
