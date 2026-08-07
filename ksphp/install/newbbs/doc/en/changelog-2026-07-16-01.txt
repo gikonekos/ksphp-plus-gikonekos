@@ -2651,3 +2651,38 @@ needed no changes since the existing loop logic already handles it.
   CONF_HELP_JS_DEFAULT_* added to install/language for all 7 languages
   (98 → 108 CONF_HELP entries; 232-key equality verified across files).
 
+
+============================================================
+2026-08-07T01:18 UTC
+------------------------------------------------------------
+[Log-language consistency fix]
+Target: bbs.php
+
+As a side-effect of the RC17 multilingual support, when a visitor had
+the board UI set to a non-default language (e.g. Traditional Chinese)
+and made a follow-up post, the Reference line (REFERENCE_COLON), the
+self-reply tag (SELF_REPLY_TAG), and day-of-week names were written to
+the log file in the visitor's selected language. Reported by a
+qptns.com user: "週五" (Fri in zh-hant) appeared in the Reference line.
+
+  [1] At startup, load the board's default language file (LANGUAGE_FILE
+      in conf.php) into $MSG_DEFAULT, independently of the cookie-
+      overridden $MSG. Falls back to $MSG if the file is missing.
+  [2] Add TDefault($key): looks up $GLOBALS['MSG_DEFAULT']. Used only
+      for strings that are written to the log. All display-side T()
+      calls are unchanged (personal language settings unaffected).
+  [3] Add Func::getdatestr_default(): same logic as getdatestr() but
+      uses TDefault() for day-of-week names. No static cache (default
+      language is fixed, but clarity is preferred over micro-optimisation).
+  [4] Replace T()/getdatestr() with TDefault()/getdatestr_default() at
+      the three write-time sites:
+      - REFERENCE_COLON  → TDefault()
+      - SELF_REPLY_TAG   → TDefault()
+      - Reference date   → Func::getdatestr_default()
+
+  [Verification]
+  After a follow-up post from a zh-hant browser, the Reference line in
+  the log reads "参考： 2026/08/07(金) HH:MM:SS" (Japanese default).
+  Pending live confirmation on qptns.com/test.
+  Display-side personal language settings verified unaffected.
+
