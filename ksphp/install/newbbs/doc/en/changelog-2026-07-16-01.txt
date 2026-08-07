@@ -2891,3 +2891,28 @@ conf.php is always processed regardless (merge required).
   - Skipped files are reported via INSTALL_SKIPPED_UNCHANGED (added to
     all 7 language files).
 
+
+
+============================================================
+2026-08-07T12:22Z UTC
+------------------------------------------------------------
+[bbs.php: reference line / self-reply tag follow visitor's language on display]
+Target: install/newbbs/bbs.php
+
+The reference line (REFERENCE_COLON + day-of-week name) and the
+self-reply tag remain baked into the log in the board's default
+language (log consistency preserved), but are now translated to the
+visitor's selected language at display time only. The stored log
+format is unchanged.
+
+  - ksphp_translate_reflink_text(): rewrites REFERENCE_COLON and the
+    day-of-week name (e.g. (金)->(Fri)) inside the reference link text.
+    Scoped to the m=f reference link, so it never touches identical
+    characters in body text.
+  - ksphp_translate_selfreply_tag(): rewrites <span class="muh">(tag)</span>
+    only when it exactly matches the default-language self-reply string;
+    admin-name and other muh spans are left alone.
+  - The reference-link rewrite in setmessage() was converted to
+    preg_replace_callback so the helper can be applied to the link text;
+    the self-reply helper is applied to USER at the top of setmessage().
+

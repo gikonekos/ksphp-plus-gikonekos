@@ -128,6 +128,7 @@ PHP, Apache modülü olarak çalışıyorsa bbs.php salt okunur (644) olabilir. 
 * bbs.php: tripuse() içindeki mbstring bağımlılığı kaldırıldı; yalnızca iconv() kullanılıyor (qptns.com'da işlevsel değişiklik yok)
 * install.php: sürüm yükseltmede yönetici şifresi için tut/değiştir seçeneği eklendi; tüm 7 dil destekleniyor
 * install.php: sürüm yükseltmede değişmeyen dosyalar atlanır (yedeklemeden önce içerik karşılaştırması)
+* bbs.php: referans satırı ve kendi yanıtı etiketi görüntülemede ziyaretçinin dilini takip eder (log varsayılan dilde saklanır; yalnızca görüntülemede çeviri, log biçimi değişmez)
 
 Herhangi bir sürümün tam ayrıntıları için `doc/changelog-2026-07-16-01.txt` dosyasına bakın.
 

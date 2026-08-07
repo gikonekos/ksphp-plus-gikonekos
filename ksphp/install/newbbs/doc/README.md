@@ -254,6 +254,7 @@ If PHP runs as an Apache module, bbs.php can be read-only (644). If it runs as C
 * bbs.php: removed mbstring dependency in tripuse(); iconv() only (no functional change on qptns.com)
 * install.php: keep/change option for admin password on version upgrade; all 7 languages
 * install.php: skip unchanged files during version upgrade (content comparison before backup)
+* bbs.php: reference line and self-reply tag now follow the visitor's language on display (log still stores the default language; display-only translation, no log format change)
 
 For full details on any release, see `doc/changelog-2026-07-16-01.txt`.
 

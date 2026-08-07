@@ -324,6 +324,57 @@ function TDefault($key) {
     return $GLOBALS['MSG_DEFAULT'][$key] ?? $key;
 }
 
+// 表示専用：ログにデフォルト言語で焼き込まれた参考リンクのテキスト
+// （REFERENCE_COLON・曜日名）を、閲覧者の選択言語へ差し替える。ログ
+// 本体は書き換えず、表示時のみ置換する。参考リンク（m=f）という限定
+// された場所だけを対象にするため、本文中の同一文字への誤爆を避けられる。
+// Display-only: rewrites the reference-link text (REFERENCE_COLON and
+// day-of-week name), which is baked into the log in the board's default
+// language, into the visitor's selected language. The log itself is left
+// untouched; only the on-screen output is translated. Scoped to the
+// reference link (m=f) so it never touches identical characters in body text.
+function ksphp_translate_reflink_text($text) {
+    $default = $GLOBALS['MSG_DEFAULT'] ?? array();
+    $current = $GLOBALS['MSG'] ?? array();
+    // REFERENCE_COLON（参考：）を差し替え
+    if (isset($default['REFERENCE_COLON'], $current['REFERENCE_COLON'])
+        && $default['REFERENCE_COLON'] !== '' ) {
+        $text = str_replace($default['REFERENCE_COLON'], $current['REFERENCE_COLON'], $text);
+    }
+    // 曜日名（(金) → (Fri) 等）を差し替え。デフォルト言語の曜日名が
+    // 括弧で囲まれた形（(金)）でログに入っているので、その形で置換する。
+    $wdaykeys = array('SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY');
+    foreach ($wdaykeys as $wk) {
+        if (isset($default[$wk], $current[$wk]) && $default[$wk] !== ''
+            && $default[$wk] !== $current[$wk]) {
+            $text = str_replace('(' . $default[$wk] . ')', '(' . $current[$wk] . ')', $text);
+        }
+    }
+    return $text;
+}
+
+// 表示専用：ログにデフォルト言語で焼き込まれた自己レスタグ
+// （SELF_REPLY_TAG）を、閲覧者の選択言語へ差し替える。$message['USER']
+// 内の <span class="muh">（自己レス）</span> を対象にする。muhクラスは
+// 管理者名等でも使われるため、デフォルト言語の自己レス文字列そのものを
+// 含む場合のみ置換し、他用途への誤爆を避ける。
+// Display-only: rewrites the self-reply tag baked into the log in the
+// board's default language into the visitor's selected language.
+function ksphp_translate_selfreply_tag($user_html) {
+    $default = $GLOBALS['MSG_DEFAULT'] ?? array();
+    $current = $GLOBALS['MSG'] ?? array();
+    if (isset($default['SELF_REPLY_TAG'], $current['SELF_REPLY_TAG'])
+        && $default['SELF_REPLY_TAG'] !== ''
+        && $default['SELF_REPLY_TAG'] !== $current['SELF_REPLY_TAG']) {
+        $user_html = str_replace(
+            '<span class="muh">' . $default['SELF_REPLY_TAG'] . '</span>',
+            '<span class="muh">' . $current['SELF_REPLY_TAG'] . '</span>',
+            $user_html
+        );
+    }
+    return $user_html;
+}
+
 // Set error output level
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
@@ -917,6 +968,8 @@ function tripuse($key) {
             return;
         }
         $message['WDATE'] = Func::getdatestr($message['NDATE'], $this->c['DATEFORMAT']);
+        # 表示専用：ログにデフォルト言語で焼き込まれた自己レスタグを閲覧者言語へ差し替え
+        $message['USER'] = ksphp_translate_selfreply_tag($message['USER']);
 		#20181102 Gikoneko: Escape special characters
 		$message['MSG'] = preg_replace("/{/i","&#123;", $message['MSG'], -1);
         $message['MSG'] = preg_replace("/}/i","&#125;", $message['MSG'], -1);
@@ -927,15 +980,23 @@ function tripuse($key) {
 
         # "Reference"
         if (!$mode) {
-            $message['MSG'] = preg_replace("/<a href=\"m=f&s=(\d+)[^>]+>([^<]+)<\/a>$/i",
-                "<a href=\"{$this->c['CGIURL']}?m=f&amp;s=$1&amp;{$this->s['QUERY']}\">$2</a>", $message['MSG'], 1);
-            $message['MSG'] = preg_replace("/<a href=\"mode=follow&search=(\d+)[^>]+>([^<]+)<\/a>$/i",
-                "<a href=\"{$this->c['CGIURL']}?m=f&amp;s=$1&amp;{$this->s['QUERY']}\">$2</a>", $message['MSG'], 1);
+            $message['MSG'] = preg_replace_callback("/<a href=\"m=f&s=(\d+)[^>]+>([^<]+)<\/a>$/i",
+                function ($m) {
+                    return "<a href=\"{$this->c['CGIURL']}?m=f&amp;s={$m[1]}&amp;{$this->s['QUERY']}\">" . ksphp_translate_reflink_text($m[2]) . "</a>";
+                }, $message['MSG'], 1);
+            $message['MSG'] = preg_replace_callback("/<a href=\"mode=follow&search=(\d+)[^>]+>([^<]+)<\/a>$/i",
+                function ($m) {
+                    return "<a href=\"{$this->c['CGIURL']}?m=f&amp;s={$m[1]}&amp;{$this->s['QUERY']}\">" . ksphp_translate_reflink_text($m[2]) . "</a>";
+                }, $message['MSG'], 1);
         } else {
-            $message['MSG'] = preg_replace("/<a href=\"m=f&s=(\d+)[^>]+>([^<]+)<\/a>$/i",
-                "<a href=\"#a$1\">$2</a>", $message['MSG'], 1);
-            $message['MSG'] = preg_replace("/<a href=\"mode=follow&search=(\d+)[^>]+>([^<]+)<\/a>$/i",
-                "<a href=\"#a$1\">$2</a>", $message['MSG'], 1);
+            $message['MSG'] = preg_replace_callback("/<a href=\"m=f&s=(\d+)[^>]+>([^<]+)<\/a>$/i",
+                function ($m) {
+                    return "<a href=\"#a{$m[1]}\">" . ksphp_translate_reflink_text($m[2]) . "</a>";
+                }, $message['MSG'], 1);
+            $message['MSG'] = preg_replace_callback("/<a href=\"mode=follow&search=(\d+)[^>]+>([^<]+)<\/a>$/i",
+                function ($m) {
+                    return "<a href=\"#a{$m[1]}\">" . ksphp_translate_reflink_text($m[2]) . "</a>";
+                }, $message['MSG'], 1);
         }
         if ($mode == 0 or ($mode == 1 and $this->c['OLDLOGBTN'])) {
 

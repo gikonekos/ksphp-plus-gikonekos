@@ -128,6 +128,7 @@ KuzuhaScript（くずはすくりぷと）PHP移植版的改进版本。
 * bbs.php：删除tripuse()中的mbstring依赖，仅使用iconv()（qptns.com行为不变）
 * install.php：版本升级时新增管理员密码保留/变更选择UI（全7种语言）
 * install.php：版本升级时跳过内容相同的文件（备份前进行内容比较）
+* bbs.php：参考行和自我回复标签在显示时跟随访问者语言（日志仍以默认语言保存，仅显示时转换，日志格式不变）
 
 详细内容请参阅 `doc/changelog-2026-07-16-01.txt`。
 

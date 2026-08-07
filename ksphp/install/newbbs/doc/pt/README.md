@@ -128,6 +128,7 @@ Se o PHP rodar como módulo Apache, bbs.php pode ser somente leitura (644). Se r
 * bbs.php: dependência de mbstring removida em tripuse(); apenas iconv() (sem mudança funcional no qptns.com)
 * install.php: opção manter/alterar para senha do administrador no upgrade; todos os 7 idiomas
 * install.php: ignora arquivos inalterados durante upgrade (comparação antes do backup)
+* bbs.php: linha de referência e tag de auto-resposta seguem o idioma do visitante na exibição (o log mantém o idioma padrão; tradução apenas na exibição, sem mudança de formato do log)
 
 Para detalhes completos de qualquer versão, consulte `doc/changelog-2026-07-16-01.txt`.
 
