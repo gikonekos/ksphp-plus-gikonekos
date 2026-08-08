@@ -1408,19 +1408,23 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 		}
 	}
 
-	$migrate_file = $parent_dir . '/migrate.php';
-	if (file_exists($migrate_file)) {
-		require_once $migrate_file;
-		if (function_exists('ksphp_migrate')) {
-			$migrate_marker = $target_dir . '/data/.migrated';
-			$already_migrated = file_exists($migrate_marker);
-			ksphp_migrate();
-			if ($already_migrated) {
-				$log[] = array('ok' => true, 'skipped' => true, 'text' => T('INSTALL_MIGRATE_SKIPPED'));
-			} else {
-				$log[] = array('ok' => true, 'text' => T('INSTALL_MIGRATE_DONE'));
-			}
+	// Migration Engine：data/.migratedマーカーの確認・作成。
+	// ksphp_migrate()はKSPHP_ROOT定数に依存しており、install.phpからの
+	// 複数導入先実行ではdefine再定義不可のため正しく動かない。
+	// ksphp_migrate()の実体は「マーカーが無ければ作成するだけ」なので、
+	// install.php側で同等処理を直接行う。
+	$migrate_marker = $target_dir . '/data/.migrated';
+	$already_migrated = file_exists($migrate_marker);
+	if (!$already_migrated) {
+		if (!is_dir($target_dir . '/data')) {
+			@mkdir($target_dir . '/data', 0755, true);
 		}
+		@file_put_contents($migrate_marker, gmdate('Y-m-d\\TH:i') . " UTC\r\n");
+	}
+	if ($already_migrated) {
+		$log[] = array('ok' => true, 'skipped' => true, 'text' => T('INSTALL_MIGRATE_SKIPPED'));
+	} else {
+		$log[] = array('ok' => true, 'text' => T('INSTALL_MIGRATE_DONE'));
 	}
 
 	// 20260720 Gikoneko: 認証済みの管理パスワード移行があれば、ここで
