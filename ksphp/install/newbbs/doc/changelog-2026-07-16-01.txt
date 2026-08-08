@@ -2980,7 +2980,7 @@ exact and unaffected by transfer-time encoding changes.
 
 
 ============================================================
-2026-08-08T11:54Z UTC
+2026-08-08T11:54Z UTC  [installer only — bbs.php and version string unchanged (擬古猫+RC18 [20260807])]
 ------------------------------------------------------------
 [install.php: multi-target serialisation, UI overhaul, and bug fixes]
 Target: install/install.php, install/language/ (all 7 languages)

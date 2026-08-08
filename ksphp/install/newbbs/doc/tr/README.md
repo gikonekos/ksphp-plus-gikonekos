@@ -131,7 +131,7 @@ PHP, Apache modülü olarak çalışıyorsa bbs.php salt okunur (644) olabilir. 
 * bbs.php: referans satırı ve kendi yanıtı etiketi görüntülemede ziyaretçinin dilini takip eder (log varsayılan dilde saklanır; yalnızca görüntülemede çeviri, log biçimi değişmez)
 * bbs.php + sub/*.php: referans satırı temizleme (ağaç görünümü, log özeti, yönetici, resim BBS) artık İngilizce sabit "Reference: " yerine dile duyarlı
 
-### RC19 (2026/08/08)
+### RC18 sonrası düzeltmeler (2026/08/08) — yalnızca yükleyici, sürüm dizesi değişmedi
 * install.php: çoklu hedef kurulumunu seri hale getirme——özyinelemeli runNextTarget() yerine processSingleTarget()＋sıralı Promise zinciri; etkileşimli istemler (conf, yönetici şifresi) artık her hedef için doğru çalışıyor
 * install.php: conf incelemesi log listesine satır içi taşındı; CGIURL üzerinden dinamik bağlantı; kurulum günlüğü kaydetme özelliği eklendi
 * install.php: adım numaralandırma (NN-S/T formatı), conf atlama nedeni görüntüleme, hedef başlığı gösterimi

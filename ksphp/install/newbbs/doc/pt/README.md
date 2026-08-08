@@ -131,7 +131,7 @@ Se o PHP rodar como módulo Apache, bbs.php pode ser somente leitura (644). Se r
 * bbs.php: linha de referência e tag de auto-resposta seguem o idioma do visitante na exibição (o log mantém o idioma padrão; tradução apenas na exibição, sem mudança de formato do log)
 * bbs.php + sub/*.php: a remoção da linha de referência (árvore, resumo de log, admin, image BBS) agora reconhece o idioma em vez de usar "Reference: " fixo em inglês
 
-### RC19 (2026/08/08)
+### Correções pós-RC18 (2026/08/08) — somente instalador, string de versão inalterada
 * install.php: serialização de instalação multi-alvo——substituiu runNextTarget() recursivo por processSingleTarget()＋cadeia de Promise sequencial; prompts interativos (conf, senha admin) agora processados corretamente por alvo
 * install.php: revisão de conf.php incorporada no log; link dinâmico via CGIURL; função de salvar log de instalação adicionada
 * install.php: numeração de etapas (formato NN-S/T), exibição de motivo de pulo do conf, cabeçalho de instalação por alvo

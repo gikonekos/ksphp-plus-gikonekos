@@ -257,7 +257,7 @@ If PHP runs as an Apache module, bbs.php can be read-only (644). If it runs as C
 * bbs.php: reference line and self-reply tag now follow the visitor's language on display (log still stores the default language; display-only translation, no log format change)
 * bbs.php + sub/*.php: reference-line stripping (tree view, log digest, admin, image BBS) is now language-aware instead of hardcoded to English "Reference: "
 
-### RC19 (2026/08/08)
+### RC18 post-release fixes (2026/08/08) — installer only, version string unchanged
 * install.php: serialise multi-target install — replaced recursive runNextTarget() with processSingleTarget() + sequential Promise chain; interactive prompts (conf overrides, admin-password dialogs) now fire correctly per target
 * install.php: conf review inlined into the log list; dynamic link via CGIURL; install-log save feature added
 * install.php: step numbering (NN-S/T format), conf-skip reason display, per-target install header

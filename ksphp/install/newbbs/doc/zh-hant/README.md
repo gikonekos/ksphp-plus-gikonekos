@@ -131,7 +131,7 @@ KuzuhaScript（くずはすくりぷと）PHP移植版的改進版本。
 * bbs.php：參考行和自我回覆標籤在顯示時跟隨訪客語言（日誌仍以預設語言儲存，僅顯示時轉換，日誌格式不變）
 * bbs.php・sub/*.php：參考行的刪除處理（樹狀顯示・日誌摘要・管理畫面・圖片BBS）從英語硬編碼改為多語言支援
 
-### RC19 (2026/08/08)
+### RC18 後續修正（2026/08/08）——僅安裝程式，版本號不變
 * install.php：多目標安裝串列化——將遞迴的 runNextTarget() 替換為 processSingleTarget()＋順序 Promise 鏈；conf 確認、管理員密碼輸入等互動現在按目標逐一正確執行
 * install.php：conf 確認表單內嵌至記錄列表；透過 CGIURL 產生動態連結；新增安裝記錄儲存功能
 * install.php：步驟編號（NN-S/T 格式）顯示、conf 跳過原因顯示、按目標顯示安裝標題
