@@ -1611,6 +1611,25 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'conf_review') 
 	exit;
 }
 
+// インストールログをbackup/に書き出す。JS側からPOSTで送信される。
+if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'save_install_log') {
+	header('Content-Type: application/json; charset=UTF-8');
+	$log_text = (string) ($_POST['log_text'] ?? '');
+	if ($log_text === '') {
+		echo json_encode(array('ok' => false, 'text' => T('ERROR_NO_LOG')));
+		exit;
+	}
+	$backup_dir = $install_dir . '/backup';
+	if (!is_dir($backup_dir)) {
+		@mkdir($backup_dir, 0755, true);
+	}
+	$log_filename = 'install-log-' . date('Ymd-Hi') . '.txt';
+	$log_path = $backup_dir . '/' . $log_filename;
+	$ok = @file_put_contents($log_path, $log_text) !== false;
+	echo json_encode(array('ok' => $ok, 'filename' => $log_filename));
+	exit;
+}
+
 if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup_new') {
 	header('Content-Type: application/json; charset=UTF-8');
 	$new_dir = ksphp_install_validate_new_dir($grandparent_dir, (string) ($_GET['dir'] ?? ''), $install_dir);
@@ -1658,10 +1677,21 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 	$target_idx_for_backup = array_search($bbs_path, $targets_real, true);
 	if ($target_idx_for_backup === false) { $target_idx_for_backup = 0; }
 	$backup_root = $install_dir . '/backup/target' . $target_idx_for_backup;
+	// 導入先のconf.phpからCGIURLを取得し、レスポンスに含める。
+	// http(s)://で始まる絶対URLの場合のみJS側でリンク化される。
+	$cgiurl = '';
+	$target_conf = $target_dir . '/conf.php';
+	if (file_exists($target_conf)) {
+		$conf_head = @file_get_contents($target_conf, false, null, 0, 16384);
+		if ($conf_head !== false && preg_match("/['\"]CGIURL['\"]\s*=>\s*'([^']*)'/", $conf_head, $cm)) {
+			$cgiurl = $cm[1];
+		}
+	}
 	echo json_encode(
 		array(
 			'log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root, $entry_filename, $old_admin_pass, $new_admin_pass, $conf_overrides, $keep_admin_pass),
 			'entry_filename' => $entry_filename,
+			'cgiurl' => $cgiurl,
 		),
 		JSON_UNESCAPED_UNICODE
 	);
@@ -1764,6 +1794,8 @@ function h(string $s): string {
 	#setup-log li { padding:0.15em 0; }
 	#lang-select-wrap { float:right; }
 	#conf-review-panel { border:2px solid #ffcf5c; background:#003030; padding:0.75em 1em; margin:0.75em 0; }
+	.inline-conf-review { border:2px solid #ffcf5c; background:#003030; padding:0.75em 1em; margin:0.75em 0; list-style:none; }
+	.inline-conf-review.confirmed { opacity:0.6; }
 	.conf-review-table th { vertical-align:top; white-space:nowrap; }
 	.conf-review-table td textarea, .conf-review-table td input[type="text"] { background:#002828; color:#efefef; border:1px solid #007f7f; font-family:inherit; }
 	.conf-desc { font-weight:normal; font-size:0.85em; color:#9fdada; margin-top:0.2em; white-space:normal; }
@@ -1855,6 +1887,7 @@ function h(string $s): string {
 <h2><?php echo h(T('H2_STEP6')); ?></h2>
 <p><?php echo T('STEP6_INTRO'); ?></p>
 <p><label><input type="checkbox" id="conf-review-toggle" checked> <?php echo h(T('CONF_REVIEW_TOGGLE_LABEL')); ?></label></p>
+<p><label><input type="checkbox" id="save-install-log-toggle"> <?php echo h(T('SAVE_INSTALL_LOG_LABEL')); ?></label></p>
 <div id="conf-review-panel" style="display:none"></div>
 <button id="run-setup-btn"><?php echo h(T('BTN_RUN_SETUP')); ?></button>
 <ul id="setup-log"></ul>
@@ -2022,12 +2055,14 @@ function fetchConfReview(target) {
 		.catch(function () { return { needed: false }; });
 }
 
-function renderConfReviewForm(fields) {
-	var panel = document.getElementById('conf-review-panel');
+function renderConfReviewForm(fields, logList) {
+	var li = document.createElement('li');
+	li.className = 'inline-conf-review';
 	var html = '<h3>' + escapeHtml(L('H2_CONF_REVIEW')) + '</h3>';
 	html += '<p>' + escapeHtml(L('CONF_REVIEW_INTRO')) + '</p>';
 	html += '<p class="req-legend"><span class="req-star">*</span> ' + escapeHtml(L('CONF_REVIEW_REQUIRED_MARK')) + '</p>';
 	html += '<table class="conf-review-table">';
+	var uid = 'cr_' + Date.now();
 	fields.forEach(function (f) {
 		var reqMark = f.required ? ' <span class="req-star">*</span>' : '';
 		var newTag = f.is_new ? ' <span class="new-tag">' + escapeHtml(L('CONF_REVIEW_NEW_KEY_TAG')) + '</span>' : '';
@@ -2036,7 +2071,7 @@ function renderConfReviewForm(fields) {
 		if (f.type === 'radio') {
 			(f.options || []).forEach(function (opt) {
 				var checked = (String(f.value) === String(opt.value)) ? ' checked' : '';
-				html += '<label style="display:block"><input type="radio" class="conf-field" name="conf-radio-' + escapeHtml(f.key) + '" data-key="' + escapeHtml(f.key) + '" data-type="radio" value="' + escapeHtml(opt.value) + '"' + checked + '> ' + escapeHtml(opt.label) + '</label>';
+				html += '<label style="display:block"><input type="radio" class="conf-field" name="' + uid + '-radio-' + escapeHtml(f.key) + '" data-key="' + escapeHtml(f.key) + '" data-type="radio" value="' + escapeHtml(opt.value) + '"' + checked + '> ' + escapeHtml(opt.label) + '</label>';
 			});
 		} else if (f.type === 'list') {
 			html += '<textarea class="conf-field" data-key="' + escapeHtml(f.key) + '" data-type="list" rows="4" cols="40">' + escapeHtml(f.value) + '</textarea>'
@@ -2049,35 +2084,38 @@ function renderConfReviewForm(fields) {
 		html += '</td></tr>';
 	});
 	html += '</table>';
-	html += '<button type="button" id="conf-review-confirm-btn">' + escapeHtml(L('CONF_REVIEW_CONFIRM_BTN')) + '</button>';
-	panel.innerHTML = html;
-	panel.style.display = '';
-	panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+	html += '<button type="button" class="conf-review-confirm-btn">' + escapeHtml(L('CONF_REVIEW_CONFIRM_BTN')) + '</button>';
+	li.innerHTML = html;
+	logList.appendChild(li);
+	li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+	return li;
 }
 
-function collectConfOverrides(fields) {
+function collectConfOverrides(fields, container) {
 	var overrides = {};
 	fields.forEach(function (f) {
 		if (f.type === 'radio') {
-			var el = document.querySelector('.conf-field[data-key="' + f.key + '"][data-type="radio"]:checked');
+			var el = container.querySelector('.conf-field[data-key="' + f.key + '"][data-type="radio"]:checked');
 			overrides[f.key] = el ? el.value : String(f.value || '0');
 		} else {
-			var el = document.querySelector('.conf-field[data-key="' + f.key + '"]');
+			var el = container.querySelector('.conf-field[data-key="' + f.key + '"]');
 			overrides[f.key] = el ? el.value : '';
 		}
 	});
 	return overrides;
 }
 
-function showConfReviewAndWait(fields) {
+function showConfReviewAndWait(fields, logList) {
 	return new Promise(function (resolve) {
-		renderConfReviewForm(fields);
-		var btn = document.getElementById('conf-review-confirm-btn');
+		var reviewLi = renderConfReviewForm(fields, logList);
+		var btn = reviewLi.querySelector('.conf-review-confirm-btn');
 		btn.addEventListener('click', function onClick() {
 			btn.removeEventListener('click', onClick);
-			var overrides = collectConfOverrides(fields);
-			document.getElementById('conf-review-panel').style.display = 'none';
-			document.getElementById('conf-review-panel').innerHTML = '';
+			var overrides = collectConfOverrides(fields, reviewLi);
+			// 確認後もパネルを消さず、半透明にしてボタンを無効化するだけ
+			btn.disabled = true;
+			btn.textContent = L('CONF_REVIEW_CONFIRMED_BTN') || '✓';
+			reviewLi.classList.add('confirmed');
 			resolve(overrides);
 		});
 	});
@@ -2170,7 +2208,7 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 
 			reviewFetchPromise.then(function (reviewData) {
 				var overridesPromise = (reviewData && reviewData.needed && reviewData.fields && reviewData.fields.length)
-					? showConfReviewAndWait(reviewData.fields)
+					? showConfReviewAndWait(reviewData.fields, logList)
 					: Promise.resolve(null);
 
 				overridesPromise.then(function (overrides) {
@@ -2208,8 +2246,14 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 							function showNextLogLine() {
 								if (i >= lines.length) {
 									var linkLi = document.createElement('li');
-									var bbsIndexAttr = (target.kind === 'new') ? ('new:' + target.value) : target.value;
-									linkLi.innerHTML = '<a href="?ajax=0" data-bbs-index="' + escapeHtml(bbsIndexAttr) + '" data-entry-filename="' + entryFilename + '" class="bbs-link" target="_blank">' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + '</a>';
+									var cgiurl = data.cgiurl || '';
+									if (/^https?:\/\//i.test(cgiurl)) {
+										// 絶対URLの場合のみリンクにする
+										linkLi.innerHTML = '→ <a href="' + escapeHtml(cgiurl) + '" target="_blank">' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + '</a>';
+									} else {
+										// 相対パスの場合はテキスト表示（リンクしない）
+										linkLi.innerHTML = '→ ' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + ' <code>' + escapeHtml(cgiurl || entryFilename) + '</code>';
+									}
 									logList.appendChild(linkLi);
 									// この導入先の処理とログ表示が終わったら次へ進む
 									resolveNextTarget();
@@ -2260,29 +2304,40 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 			doneLi.textContent = L('JS_DONE_MSG');
 			logList.appendChild(doneLi);
 		}
+		// ログ保存チェックボックスがONなら、ログテキストをbackup/に書き出す
+		var saveToggle = document.getElementById('save-install-log-toggle');
+		if (saveToggle && saveToggle.checked) {
+			var logItems = logList.querySelectorAll('li');
+			var logText = '';
+			logItems.forEach(function (li) {
+				logText += li.textContent + '\n';
+			});
+			var langParam = '&lang=' + encodeURIComponent(<?php echo json_encode($lang); ?>);
+			var fd = new FormData();
+			fd.append('log_text', logText);
+			fetch('?ajax=1&action=save_install_log' + langParam, { method: 'POST', body: fd })
+				.then(function (res) { return res.json(); })
+				.then(function (data) {
+					var saveLi = document.createElement('li');
+					if (data.ok) {
+						saveLi.className = 'ok';
+						saveLi.textContent = Lf('JS_LOG_SAVED', { FILENAME: data.filename || '' });
+					} else {
+						saveLi.className = 'ng';
+						saveLi.textContent = L('JS_LOG_SAVE_FAILED');
+					}
+					logList.appendChild(saveLi);
+				})
+				.catch(function () {
+					var saveLi = document.createElement('li');
+					saveLi.className = 'ng';
+					saveLi.textContent = L('JS_LOG_SAVE_FAILED');
+					logList.appendChild(saveLi);
+				});
+		}
 	});
 });
 
-// 「開く」リンクは、対応するテーブル行のパスから実際のURLを組み立て
-// られないため（ファイルシステムパスのみ保持）、導入先#0（このinstall.php
-// に対応する場所）のみ ../{検出したファイル名} で開けるようにしておく
-// （bbs.php以外にリネームされている場合もそのファイル名を使う）。
-// それ以外の導入先はパスをコピーしてご確認ください。
-document.addEventListener('click', function (e) {
-	if (e.target.classList && e.target.classList.contains('bbs-link')) {
-		var idx = e.target.getAttribute('data-bbs-index');
-		var entryFilename = e.target.getAttribute('data-entry-filename') || 'bbs.php';
-		if (idx === '0') {
-			e.target.href = '../' + entryFilename;
-		} else if (idx && idx.indexOf('new:') === 0) {
-			e.preventDefault();
-			alert(Lf('JS_OPEN_NEW_DIR_ALERT', { PATH: idx.substring(4), ENTRY: entryFilename }));
-		} else {
-			e.preventDefault();
-			alert(Lf('JS_OPEN_SCAN_ALERT', { IDX: idx, ENTRY: entryFilename }));
-		}
-	}
-});
 </script>
 </body>
 </html>
