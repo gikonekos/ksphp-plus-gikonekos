@@ -1412,8 +1412,14 @@ function ksphp_install_run(string $newbbs_dir, string $parent_dir, string $backu
 	if (file_exists($migrate_file)) {
 		require_once $migrate_file;
 		if (function_exists('ksphp_migrate')) {
+			$migrate_marker = $target_dir . '/data/.migrated';
+			$already_migrated = file_exists($migrate_marker);
 			ksphp_migrate();
-			$log[] = array('ok' => true, 'text' => T('INSTALL_MIGRATE_DONE'));
+			if ($already_migrated) {
+				$log[] = array('ok' => true, 'skipped' => true, 'text' => T('INSTALL_MIGRATE_SKIPPED'));
+			} else {
+				$log[] = array('ok' => true, 'text' => T('INSTALL_MIGRATE_DONE'));
+			}
 		}
 	}
 
