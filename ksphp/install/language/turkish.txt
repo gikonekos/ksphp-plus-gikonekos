@@ -109,7 +109,7 @@ INSTALL_ROLLBACK_OK=Daha önce yedeklemeye taşınan orijinal dosya geri yüklen
 INSTALL_ROLLBACK_FAIL=Orijinal dosyanın geri yüklenmesi de başarısız oldu. Yedekten (%s) manuel olarak geri yükleyin.
 
 # 20260801 Gikoneko: conf.php review screen (install.php)
-H2_CONF_REVIEW=Adım 3.5: conf.php Ayarlarını Gözden Geçir
+H2_CONF_REVIEW=conf.php Ayarlarını Gözden Geçir
 CONF_REVIEW_INTRO=Kurulumdan önce, mevcut conf.php dosyanızdan aktarılan ayarları gözden geçirip düzenleyebilirsiniz. Değerler otomatik birleştirme sonucuyla önceden doldurulmuştur.
 CONF_REVIEW_REQUIRED_MARK=Zorunlu alan
 CONF_REVIEW_NEW_KEY_TAG=(yeni)
@@ -258,3 +258,6 @@ JS_LOG_SAVE_FAILED=Günlük kaydedilemedi
 CONF_REVIEW_CONFIRMED_BTN=✓ Onaylandı
 ERROR_NO_LOG=Günlük verisi yok
 INSTALL_MIGRATE_SKIPPED=Migration Engine: zaten taşınmış (atlandı)
+CONF_REVIEW_SKIPPED_BY_TOGGLE=conf.php incelemesi atlandı (onay kutusu kapalı)
+CONF_REVIEW_SKIPPED_NOT_NEEDED=conf.php incelemesi gerekli değil (yeni kurulum veya değişiklik yok)
+JS_STEP_INSTALL=Dosya kurulumu

@@ -2061,10 +2061,11 @@ function fetchConfReview(target) {
 		.catch(function () { return { needed: false }; });
 }
 
-function renderConfReviewForm(fields, logList) {
+function renderConfReviewForm(fields, logList, stepLabel) {
 	var li = document.createElement('li');
 	li.className = 'inline-conf-review';
-	var html = '<h3>' + escapeHtml(L('H2_CONF_REVIEW')) + '</h3>';
+	var titlePrefix = stepLabel ? stepLabel + ' ' : '';
+	var html = '<h3>' + escapeHtml(titlePrefix + L('H2_CONF_REVIEW')) + '</h3>';
 	html += '<p>' + escapeHtml(L('CONF_REVIEW_INTRO')) + '</p>';
 	html += '<p class="req-legend"><span class="req-star">*</span> ' + escapeHtml(L('CONF_REVIEW_REQUIRED_MARK')) + '</p>';
 	html += '<table class="conf-review-table">';
@@ -2111,9 +2112,9 @@ function collectConfOverrides(fields, container) {
 	return overrides;
 }
 
-function showConfReviewAndWait(fields, logList) {
+function showConfReviewAndWait(fields, logList, stepLabel) {
 	return new Promise(function (resolve) {
-		var reviewLi = renderConfReviewForm(fields, logList);
+		var reviewLi = renderConfReviewForm(fields, logList, stepLabel);
 		var btn = reviewLi.querySelector('.conf-review-confirm-btn');
 		btn.addEventListener('click', function onClick() {
 			btn.removeEventListener('click', onClick);
@@ -2198,10 +2199,18 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 	// 3. 1件の導入先を最初から最後まで処理するPromise関数。
 	// conf.php確認 → 設置 → ログ表示 が全部終わってから resolve するため、
 	// 複数選択時も1件ずつ確実に直列処理される（各個撃破）。
-	function processSingleTarget(target) {
+	var totalTargets = targetsList.length;
+	function processSingleTarget(target, targetNum) {
 		return new Promise(function (resolveNextTarget) {
+			// 工程プレフィックス：複数なら (01-1/3)、単一なら (1/3)
+			var prefix = totalTargets > 1
+				? '(' + String(targetNum).padStart(2, '0') + '-'
+				: '(';
+			var stepOf = function (step, total) { return prefix + step + '/' + total + ')'; };
+
 			var header = document.createElement('li');
-			header.innerHTML = '<strong>--- ' + Lf('JS_TARGET_HEADER', { LABEL: escapeHtml(target.label) }) + ' ---</strong>';
+			header.innerHTML = '<strong>--- ' + stepOf(1, 3) + ' '
+				+ Lf('JS_TARGET_HEADER', { LABEL: escapeHtml(target.label) }) + ' ---</strong>';
 			logList.appendChild(header);
 
 			// 20260801 Gikoneko: ファイル設置の前に、既存conf.phpがあれば
@@ -2210,14 +2219,32 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 			// 従来の全自動マージ動作に戻す（個人設定でオン/オフ可能）。
 			var reviewToggle = document.getElementById('conf-review-toggle');
 			var reviewEnabled = !reviewToggle || reviewToggle.checked;
-			var reviewFetchPromise = reviewEnabled ? fetchConfReview(target) : Promise.resolve({ needed: false });
+			var reviewFetchPromise = reviewEnabled ? fetchConfReview(target) : Promise.resolve({ needed: false, skipped_by_toggle: true });
 
 			reviewFetchPromise.then(function (reviewData) {
-				var overridesPromise = (reviewData && reviewData.needed && reviewData.fields && reviewData.fields.length)
-					? showConfReviewAndWait(reviewData.fields, logList)
-					: Promise.resolve(null);
+				var confNeeded = reviewData && reviewData.needed && reviewData.fields && reviewData.fields.length;
+				var overridesPromise;
+				if (confNeeded) {
+					overridesPromise = showConfReviewAndWait(reviewData.fields, logList, stepOf(2, 3));
+				} else {
+					// conf確認をスキップした理由を明示
+					var skipLi = document.createElement('li');
+					skipLi.className = 'skipped';
+					if (reviewData && reviewData.skipped_by_toggle) {
+						skipLi.textContent = stepOf(2, 3) + ' ' + L('CONF_REVIEW_SKIPPED_BY_TOGGLE');
+					} else {
+						skipLi.textContent = stepOf(2, 3) + ' ' + L('CONF_REVIEW_SKIPPED_NOT_NEEDED');
+					}
+					logList.appendChild(skipLi);
+					overridesPromise = Promise.resolve(null);
+				}
 
 				overridesPromise.then(function (overrides) {
+					// 工程(3/3)：ファイル設置
+					var installHeader = document.createElement('li');
+					installHeader.innerHTML = '<strong>' + stepOf(3, 3) + ' ' + escapeHtml(L('JS_STEP_INSTALL')) + '</strong>';
+					logList.appendChild(installHeader);
+
 					var langParam = '&lang=' + encodeURIComponent(<?php echo json_encode($lang); ?>);
 					var url = (target.kind === 'new')
 						? '?ajax=1&action=run_setup_new&dir=' + encodeURIComponent(target.value) + langParam

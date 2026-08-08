@@ -108,7 +108,7 @@ INSTALL_ROLLBACK_OK=退避していた元のファイルを元の場所に復元
 INSTALL_ROLLBACK_FAIL=元のファイルの復元にも失敗しました。バックアップ（%s）から手動で復元してください。
 
 # 20260801 Gikoneko: conf.php review screen (install.php)
-H2_CONF_REVIEW=ステップ3.5: conf.php設定の確認
+H2_CONF_REVIEW=conf.php設定の確認
 CONF_REVIEW_INTRO=導入前に、既存のconf.phpから引き継ぐ設定内容を確認・調整できます。値は自動マージ結果があらかじめ入力されています。
 CONF_REVIEW_REQUIRED_MARK=必須項目
 CONF_REVIEW_NEW_KEY_TAG=（新規）
@@ -257,3 +257,6 @@ JS_LOG_SAVE_FAILED=ログの保存に失敗しました
 CONF_REVIEW_CONFIRMED_BTN=✓ 確認済み
 ERROR_NO_LOG=ログデータがありません
 INSTALL_MIGRATE_SKIPPED=Migration Engine：移行済み（スキップ）
+CONF_REVIEW_SKIPPED_BY_TOGGLE=conf.php確認をスキップ（チェックボックスOFF）
+CONF_REVIEW_SKIPPED_NOT_NEEDED=conf.php確認不要（新規導入または変更なし）
+JS_STEP_INSTALL=ファイル設置

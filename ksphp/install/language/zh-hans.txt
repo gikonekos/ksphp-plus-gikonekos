@@ -109,7 +109,7 @@ INSTALL_ROLLBACK_OK=已恢复先前移至备份的原始文件: %s
 INSTALL_ROLLBACK_FAIL=原始文件的恢复也失败了。请从备份（%s）手动恢复。
 
 # 20260801 Gikoneko: conf.php review screen (install.php)
-H2_CONF_REVIEW=步骤3.5：确认 conf.php 设置
+H2_CONF_REVIEW=确认 conf.php 设置
 CONF_REVIEW_INTRO=安装前，您可以确认并调整从现有 conf.php 继承的设置。各项值已预填入自动合并的结果。
 CONF_REVIEW_REQUIRED_MARK=必填项
 CONF_REVIEW_NEW_KEY_TAG=（新增）
@@ -258,3 +258,6 @@ JS_LOG_SAVE_FAILED=保存日志失败
 CONF_REVIEW_CONFIRMED_BTN=✓ 已确认
 ERROR_NO_LOG=无日志数据
 INSTALL_MIGRATE_SKIPPED=Migration Engine：已迁移（跳过）
+CONF_REVIEW_SKIPPED_BY_TOGGLE=跳过 conf.php 确认（复选框未选中）
+CONF_REVIEW_SKIPPED_NOT_NEEDED=无需 conf.php 确认（新安装或无变更）
+JS_STEP_INSTALL=文件安装

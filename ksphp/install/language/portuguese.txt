@@ -109,7 +109,7 @@ INSTALL_ROLLBACK_OK=Arquivo original que havia sido movido para o backup foi res
 INSTALL_ROLLBACK_FAIL=A restauração do arquivo original também falhou. Restaure-o manualmente a partir do backup (%s).
 
 # 20260801 Gikoneko: conf.php review screen (install.php)
-H2_CONF_REVIEW=Etapa 3.5: Revisar configurações do conf.php
+H2_CONF_REVIEW=Revisar configurações do conf.php
 CONF_REVIEW_INTRO=Antes de instalar, revise e ajuste as configurações herdadas do conf.php existente. Os valores já vêm preenchidos com o resultado da mesclagem automática.
 CONF_REVIEW_REQUIRED_MARK=Campo obrigatório
 CONF_REVIEW_NEW_KEY_TAG=(novo)
@@ -258,3 +258,6 @@ JS_LOG_SAVE_FAILED=Falha ao salvar o log
 CONF_REVIEW_CONFIRMED_BTN=✓ Confirmado
 ERROR_NO_LOG=Sem dados de log
 INSTALL_MIGRATE_SKIPPED=Migration Engine: já migrado (ignorado)
+CONF_REVIEW_SKIPPED_BY_TOGGLE=Revisão do conf.php ignorada (caixa desmarcada)
+CONF_REVIEW_SKIPPED_NOT_NEEDED=Revisão do conf.php não necessária (instalação nova ou sem alterações)
+JS_STEP_INSTALL=Instalação de arquivos
