@@ -131,6 +131,14 @@ PHP가 Apache 모듈로 동작하는 경우 bbs.php는 644로 설정해도 됩�
 * bbs.php: 참조 행・자기 답글 태그가 표시 시 방문자 언어를 따름（로그는 기본 언어로 저장, 표시 시에만 변환. 로그 형식 불변）
 * bbs.php・sub/*.php: 참조 행 제거 처리（트리 표시・로그 다이제스트・관리 화면・이미지 BBS）를 영어 하드코딩에서 다국어 대응으로 변경
 
+### RC19 (2026/08/08)
+* install.php: 복수 설치 대상 직렬화——재귀적 runNextTarget()을 processSingleTarget()＋순차 Promise 체인으로 교체; conf 확인·관리자 비밀번호 입력 등이 각 대상별로 올바르게 처리됨
+* install.php: conf 확인 폼 인라인화（로그 목록 내에 표시）, CGIURL 기반 동적 링크, 설치 로그 저장 기능 추가
+* install.php: 스텝 번호（NN-S/T 형식）표시, conf 스킵 사유 표시, 대상별 설치 헤더 표시
+* install.php: ksphp_migrate() 호출 제거, data/.migrated 마커를 대상 디렉터리별로 직접 생성（KSPHP_ROOT 재정의 불가 문제 해결）
+* install.php: ksphp_install_run() 내의 미정의 $target_dir（올바른 이름: $parent_dir）버그 수정——복수 설치 통신 오류의 근본 원인
+* template.html: main_upper의 언어 선택기 재복원（다시 사라져 있던 문제를 재수정）
+
 자세한 내용은 `doc/changelog-2026-07-16-01.txt` 를 참조하세요.
 
 ## 할 일

@@ -131,6 +131,14 @@ KuzuhaScript（くずはすくりぷと）PHP移植版的改進版本。
 * bbs.php：參考行和自我回覆標籤在顯示時跟隨訪客語言（日誌仍以預設語言儲存，僅顯示時轉換，日誌格式不變）
 * bbs.php・sub/*.php：參考行的刪除處理（樹狀顯示・日誌摘要・管理畫面・圖片BBS）從英語硬編碼改為多語言支援
 
+### RC19 (2026/08/08)
+* install.php：多目標安裝串列化——將遞迴的 runNextTarget() 替換為 processSingleTarget()＋順序 Promise 鏈；conf 確認、管理員密碼輸入等互動現在按目標逐一正確執行
+* install.php：conf 確認表單內嵌至記錄列表；透過 CGIURL 產生動態連結；新增安裝記錄儲存功能
+* install.php：步驟編號（NN-S/T 格式）顯示、conf 跳過原因顯示、按目標顯示安裝標題
+* install.php：廢除 ksphp_migrate() 呼叫，改為直接在每個目標目錄內建立 data/.migrated 標記（解決 KSPHP_ROOT 無法重複定義的問題）
+* install.php：修復 ksphp_install_run() 內未定義的 $target_dir（正確名稱為 $parent_dir）——多目標安裝通訊錯誤的根本原因
+* template.html：再次還原 main_upper 中缺失的語言選擇器
+
 詳細內容請參閱 `doc/changelog-2026-07-16-01.txt`。
 
 ## 待辦事項

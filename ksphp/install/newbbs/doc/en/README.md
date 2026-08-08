@@ -257,6 +257,14 @@ If PHP runs as an Apache module, bbs.php can be read-only (644). If it runs as C
 * bbs.php: reference line and self-reply tag now follow the visitor's language on display (log still stores the default language; display-only translation, no log format change)
 * bbs.php + sub/*.php: reference-line stripping (tree view, log digest, admin, image BBS) is now language-aware instead of hardcoded to English "Reference: "
 
+### RC19 (2026/08/08)
+* install.php: serialise multi-target install — replaced recursive runNextTarget() with processSingleTarget() + sequential Promise chain; interactive prompts (conf overrides, admin-password dialogs) now fire correctly per target
+* install.php: conf review inlined into the log list; dynamic link via CGIURL; install-log save feature added
+* install.php: step numbering (NN-S/T format), conf-skip reason display, per-target install header
+* install.php: removed ksphp_migrate() call; data/.migrated marker now created directly per target_dir (fixes KSPHP_ROOT redefine issue on the second target)
+* install.php: fixed undefined $target_dir (correct name: $parent_dir) in migration marker block — root cause of the comm error in multi-target installs
+* template.html: lang selector in main_upper restored (had gone missing again)
+
 For full details on any release, see `doc/changelog-2026-07-16-01.txt`.
 
 ## ToDo

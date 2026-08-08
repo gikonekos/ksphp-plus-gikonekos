@@ -257,6 +257,14 @@ PHPがApacheモジュールとして動作している場合、bbs.phpは644（�
 * bbs.php：参考行・自己レスタグの表示を閲覧者言語に追従（ログはデフォルト言語のまま保存し、表示時のみ差し替え。ログ形式は不変）
 * bbs.php・sub/*.php：参考行の除去処理（ツリー表示・ログダイジェスト・管理画面・画像BBS）を英語ハードコードから多言語対応に変更
 
+### RC19 (2026/08/08)
+* install.php：複数インストール先の直列化 — processSingleTarget()＋Promise直列チェーンに置き換え（conf確認・パスワード入力等が各件ごとに確実に挟まれるように）
+* install.php：conf確認フォームをインライン化（ログリスト内に展開）、CGIURLを使った動的リンク生成、インストールログ保存機能を追加
+* install.php：ステップ番号（NN-S/T形式）表示、confスキップ理由の表示、設置ヘッダー表示を追加
+* install.php：migrate.php呼び出しを廃止し、data/.migratedマーカーを直接生成（KSPHP_ROOT再定義不可問題を回避）
+* install.php：ksphp_install_run()内の`$target_dir`未定義バグ修正（`$parent_dir`に修正） — 複数インストール通信エラーの根本原因
+* template.html：main_upperの言語切替セレクタが再度欠落していた問題を再修正
+
 詳細は `doc/changelog-2026-07-16-01.txt` を参照してください。
 
 ## ToDo

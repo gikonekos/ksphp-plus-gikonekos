@@ -131,6 +131,14 @@ PHP, Apache modülü olarak çalışıyorsa bbs.php salt okunur (644) olabilir. 
 * bbs.php: referans satırı ve kendi yanıtı etiketi görüntülemede ziyaretçinin dilini takip eder (log varsayılan dilde saklanır; yalnızca görüntülemede çeviri, log biçimi değişmez)
 * bbs.php + sub/*.php: referans satırı temizleme (ağaç görünümü, log özeti, yönetici, resim BBS) artık İngilizce sabit "Reference: " yerine dile duyarlı
 
+### RC19 (2026/08/08)
+* install.php: çoklu hedef kurulumunu seri hale getirme——özyinelemeli runNextTarget() yerine processSingleTarget()＋sıralı Promise zinciri; etkileşimli istemler (conf, yönetici şifresi) artık her hedef için doğru çalışıyor
+* install.php: conf incelemesi log listesine satır içi taşındı; CGIURL üzerinden dinamik bağlantı; kurulum günlüğü kaydetme özelliği eklendi
+* install.php: adım numaralandırma (NN-S/T formatı), conf atlama nedeni görüntüleme, hedef başlığı gösterimi
+* install.php: ksphp_migrate() çağrısı kaldırıldı; data/.migrated işareti her hedef dizin için doğrudan oluşturuluyor (KSPHP_ROOT yeniden tanımlama sorunu çözüldü)
+* install.php: ksphp_install_run() içindeki tanımsız $target_dir ($parent_dir olması gerekir) düzeltildi——çoklu kurulumda iletişim hatasının kök nedeni
+* template.html: main_upper dil seçici yeniden geri yüklendi (yeniden kaybolmuştu)
+
 Herhangi bir sürümün tam ayrıntıları için `doc/changelog-2026-07-16-01.txt` dosyasına bakın.
 
 ## Yapılacaklar

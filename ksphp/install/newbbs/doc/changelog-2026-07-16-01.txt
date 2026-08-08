@@ -2978,3 +2978,32 @@ Replaced with hash_file('sha256', ...) on both sides. hash_file()
 reads raw file bytes without any transformation, making the comparison
 exact and unaffected by transfer-time encoding changes.
 
+
+============================================================
+2026-08-08T11:54Z UTC
+------------------------------------------------------------
+[install.php: multi-target serialisation, UI overhaul, and bug fixes]
+Target: install/install.php, install/language/ (all 7 languages)
+
+A series of install.php changes landed after RC18.
+
+- Serialise multi-target install: replaced recursive runNextTarget() with
+  processSingleTarget() + sequential Promise chain. Each target handled
+  start-to-finish before the next begins. (44a7cb7)
+- Inline conf review, CGIURL-based links, install log save. (1774d2e)
+  New lang keys: SAVE_INSTALL_LOG_LABEL, JS_LOG_SAVED, JS_LOG_SAVE_FAILED,
+  CONF_REVIEW_CONFIRMED_BTN, ERROR_NO_LOG (7 langs)
+- Step numbering (NN-S/T), conf skip reason display, install header. (a640f49)
+  New lang keys: CONF_REVIEW_SKIPPED_BY_TOGGLE,
+  CONF_REVIEW_SKIPPED_NOT_NEEDED, JS_STEP_INSTALL (7 langs)
+- Inline migration marker instead of calling ksphp_migrate(), fixing
+  multi-target installs (KSPHP_ROOT redefine issue). (9055284)
+- Fix undefined $target_dir (should be $parent_dir) in migration marker
+  block — root cause of the comm error on every install. (4a614f2)
+- Miscellaneous: conf_summaries keyed by path; skipped-file log colour;
+  ReferenceError fix; backup_root naming; migration status display;
+  log-save checkbox default ON; targetNum propagation; lang selector
+  in main_upper restored (template.html). (aada6b6..59ae6a7)
+
+  Live verification: all items passed; multi-target comm error resolved.
+

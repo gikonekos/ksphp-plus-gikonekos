@@ -2546,3 +2546,75 @@ hash_file('sha256', ...)による生バイトハッシュ比較に変更する�
   検証：日本語・簡体中文・韓国語・英語の相互変換、括弧あり／なしの
         両フォーマット、全曜日で動作確認済み。
 
+
+============================================================
+2026-08-08T11:54Z UTC
+------------------------------------------------------------
+【install.php：複数インストール先の直列化・UI改修・バグ修正群】
+対象：install/install.php、install/language/（全7言語）
+
+RC18以降にinstall.phpへ加えた一連の改修。
+
+■ 複数インストール先の直列化（44a7cb7）
+  再帰的な runNextTarget() を廃止し、processSingleTarget()＋
+  Promise直列チェーンに置き換え。1件分（conf確認→設置→ログ表示）が
+  すべて完了してから次の対象へ進むため、conf確認・パスワード入力等の
+  インタラクションが各件ごとに確実に挟まれる。
+  bbsIndexAttrを共有外側インデックスではなくtarget.value由来に変更。
+  単体インストールの挙動は変わらない。
+
+■ conf確認インライン化・CGIURLリンク・ログ保存（1774d2e）
+  - conf.php確認フォームを上部固定パネルからログリスト内の
+    インライン<li>に移動。確認後もフォームはグレーアウトで残り、
+    複数件のレビューと結果が下方向に積み重なる形になった。
+  - 各件のconf確認にユニークなフィールド名前空間（uidプレフィックス）を
+    付与し、複数レビューがDOM上で競合しないようにした。
+  - collectConfOverrides()をレビューコンテナ要素スコープに限定。
+  - 「bbs.phpを開く」リンクが対象のconf.phpのCGIURLを使用するように変更。
+    絶対URL（http/https）はクリッカブルリンク、相対パスは<code>テキスト
+    表示（リンク切れを防ぐ）。旧bbs-linkクリックハンドラを削除。
+  - run_setup JSONレスポンスに'cgiurl'フィールドを追加。
+  - 「インストールログを保存」チェックボックス追加：ON時、蓄積したログを
+    save_install_log AJAXエンドポイントへPOSTし、
+    backup/install-log-YYYYMMDD-HHII.txt へ書き出す。
+  - 全7言語キー追加：SAVE_INSTALL_LOG_LABEL、JS_LOG_SAVED、
+    JS_LOG_SAVE_FAILED、CONF_REVIEW_CONFIRMED_BTN、ERROR_NO_LOG
+
+■ ステップ番号表示・conスキップ表示・設置ヘッダー（a640f49）
+  - processSingleTargetにtargetNumを追加し、ステップを
+    単体時は（1/3）（2/3）（3/3）、複数時は（01-1/3）…の形式で表示。
+  - ステップ1：対象ヘッダー、ステップ2：conf確認（またはスキップ理由）、
+    ステップ3：インストール。
+  - conf確認スキップ時にスキップ理由を表示
+    （トグルでOFF／不要）。全7言語対応。
+  - H2_CONF_REVIEWからハードコードの'Step 3.5:'プレフィックスを除去
+    （動的に生成するよう変更）。
+  - 全7言語キー追加：CONF_REVIEW_SKIPPED_BY_TOGGLE、
+    CONF_REVIEW_SKIPPED_NOT_NEEDED、JS_STEP_INSTALL
+
+■ Migration直接マーカー化（9055284）
+  migrate.phpの呼び出しをやめ、data/.migratedマーカーの作成を
+  ksphp_install_run()内で直接実行するよう変更。
+  ksphp_migrate()はKSPHP_ROOT定数に依存しており、define()で一度設定
+  された定数は再定義不可のため、2件目以降の導入先でKSPHP_ROOTが
+  誤ったディレクトリを指してしまう問題を解消。
+
+■ $target_dir未定義バグ修正（4a614f2）
+  ksphp_install_run()の引数名は$parent_dirだが、マーカー作成ブロック内で
+  $target_dirを参照していたためPHPエラーが発生し、通信エラーの原因に
+  なっていた。$target_dir → $parent_dirに修正。
+
+■ その他の修正（aada6b6・d749fa0・70081d1・3cb4bef・a508aaf・
+                 47e1f88・85f078d・59ae6a7）
+  - conf_summariesのキーをスキャン添字からパス文字列に変更
+  - 複数インストール時のバグ修正、スキップログを薄いシアン色（.skipped）で表示
+  - run-setup-btnハンドラの「paths is not defined」ReferenceError修正
+  - backup_rootのフォルダ名をtarget{idx}命名に戻す
+  - Migrationエンジンステータス表示をスキップ済み／初回で正確に切り替え
+  - ログ保存チェックボックスのデフォルトをONに変更
+  - processSingleTargetのforEach内でtargetNumを正しく渡すよう修正
+  - main_upperの言語切替セレクタが再度欠落していた問題を再修正
+    （template.htmlのみ）
+
+  実機検証：全項目問題なし（複数インストールの通信エラーも解消）。
+

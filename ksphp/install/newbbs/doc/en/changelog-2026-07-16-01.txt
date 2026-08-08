@@ -3003,3 +3003,77 @@ Target: install/newbbs/bbs.php
   Verified: ja/zh-hans/ko/en cross-translation, both parenthesised and
             unparenthesised formats, all seven day names.
 
+
+============================================================
+2026-08-08T11:54Z UTC
+------------------------------------------------------------
+[install.php: multi-target serialisation, UI overhaul, and bug fixes]
+Target: install/install.php, install/language/ (all 7 languages)
+
+A series of install.php changes landed after RC18.
+
+■ Serialise multi-target install with an explicit Promise chain (44a7cb7)
+  Replaced the recursive runNextTarget() driver with processSingleTarget()
+  plus a sequential Promise reduce. Each destination is now handled
+  start-to-finish (conf review → setup → log rendering) before the next
+  one begins, so interactive prompts (conf overrides, admin-password
+  dialogs) fire correctly for every target.
+  bbsIndexAttr now derives from target.value instead of a shared outer idx.
+  Single-target behaviour is unchanged.
+
+■ Inline conf review, CGIURL-based links, install log save (1774d2e)
+  - conf.php review form moved from a fixed top panel into an inline <li>
+    inside the setup-log list. After confirmation the form stays visible
+    (greyed out); multiple targets stack their reviews and results downward.
+  - Each target's review uses a unique field namespace (uid prefix) so
+    multiple review forms can coexist in the DOM without collisions.
+  - collectConfOverrides() is now scoped to the review container element.
+  - 'Open bbs.php' link now uses CGIURL from the target's conf.php:
+    absolute URLs become clickable links; relative paths display as
+    <code> text (no broken link). Old bbs-link click handler removed.
+  - run_setup JSON response now includes a 'cgiurl' field.
+  - New 'Save install log' checkbox: when checked, the accumulated log
+    text is POSTed to a new save_install_log AJAX endpoint and written to
+    backup/install-log-YYYYMMDD-HHII.txt.
+  - New language keys (7 langs): SAVE_INSTALL_LOG_LABEL, JS_LOG_SAVED,
+    JS_LOG_SAVE_FAILED, CONF_REVIEW_CONFIRMED_BTN, ERROR_NO_LOG
+
+■ Step numbering (NN-S/T), conf skip display, install header (a640f49)
+  - processSingleTarget now receives targetNum; steps are shown as (1/3),
+    (2/3), (3/3) for a single target, or (01-1/3), (01-2/3), (01-3/3)
+    for multiple targets.
+  - Step 1: target header. Step 2: conf review (or skip reason).
+    Step 3: install.
+  - Conf review skip shows the reason: toggled off vs. not needed
+    (all 7 languages).
+  - H2_CONF_REVIEW: hardcoded 'Step 3.5:' prefix removed (now dynamic).
+  - New language keys (7 langs): CONF_REVIEW_SKIPPED_BY_TOGGLE,
+    CONF_REVIEW_SKIPPED_NOT_NEEDED, JS_STEP_INSTALL
+
+■ Inline migration marker instead of calling ksphp_migrate() (9055284)
+  ksphp_migrate() depends on the KSPHP_ROOT constant, which is set once
+  by define() and cannot be redefined for a second target. The actual
+  logic (create data/.migrated if absent) is now done directly inside
+  ksphp_install_run() per target_dir, fixing multi-target installs where
+  the second target produced a comm error (a fatal from KSPHP_ROOT
+  pointing at the wrong directory).
+
+■ Fix $target_dir -> $parent_dir in migration marker block (4a614f2)
+  The parameter inside ksphp_install_run() is named $parent_dir, but the
+  migration marker block referenced the undefined $target_dir, causing a
+  PHP error on every install and triggering the comm error seen in testing.
+
+■ Miscellaneous fixes (aada6b6, d749fa0, 70081d1, 3cb4bef, a508aaf,
+                        47e1f88, 85f078d, 59ae6a7)
+  - conf_summaries keyed by path string instead of scan index
+  - Multi-target install bugfixes; skipped-file log entries styled in
+    muted cyan (.skipped class)
+  - ReferenceError: 'paths is not defined' in run-setup-btn handler fixed
+  - backup_root folder naming reverted to target{idx} scheme
+  - Migration Engine status now shows accurately (skipped vs. initial)
+  - 'Save install log' checkbox now defaults to checked (ON)
+  - targetNum passed correctly to processSingleTarget inside forEach
+  - Lang selector in main_upper restored again (template.html only)
+
+  Live verification: all items passed; multi-target comm error resolved.
+
