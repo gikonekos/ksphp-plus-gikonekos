@@ -1887,7 +1887,7 @@ function h(string $s): string {
 <h2><?php echo h(T('H2_STEP6')); ?></h2>
 <p><?php echo T('STEP6_INTRO'); ?></p>
 <p><label><input type="checkbox" id="conf-review-toggle" checked> <?php echo h(T('CONF_REVIEW_TOGGLE_LABEL')); ?></label></p>
-<p><label><input type="checkbox" id="save-install-log-toggle"> <?php echo h(T('SAVE_INSTALL_LOG_LABEL')); ?></label></p>
+<p><label><input type="checkbox" id="save-install-log-toggle" checked> <?php echo h(T('SAVE_INSTALL_LOG_LABEL')); ?></label></p>
 <div id="conf-review-panel" style="display:none"></div>
 <button id="run-setup-btn"><?php echo h(T('BTN_RUN_SETUP')); ?></button>
 <ul id="setup-log"></ul>
