@@ -2086,6 +2086,8 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 	var pathsEl = document.getElementById('conf-summaries-paths');
 	var paths = [];
 	try { paths = JSON.parse(pathsEl ? pathsEl.textContent || '[]' : '[]'); } catch (e) { paths = []; }
+
+	// 1. 対象のリストアップ
 	// 20260719 Gikoneko: data-index（近隣スキャン検出分）と
 	// data-new-dir（新規フォルダ追加分）の両方に対応する。
 	var targetsList = Array.prototype.slice.call(document.querySelectorAll('.target-checkbox:checked'))
@@ -2111,6 +2113,7 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 		return;
 	}
 
+	// 2. 事前バリデーション（管理パスワード移行が必要な場合）
 	// 20260720 Gikoneko: 移行フォームが必要な対象について、送信前に
 	// 入力値が揃っているか確認する（未入力ならAJAXを呼ばずその場で
 	// 中止表示し、他の対象の処理も始めない。サーバー側でも同様の
@@ -2143,110 +2146,118 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 
 	btn.disabled = true;
 	btn.textContent = L('JS_RUNNING');
-
-	var targetIdx = 0;
 	var hadFailure = false;
-	function runNextTarget() {
-		if (targetIdx >= targetsList.length) {
-			if (hadFailure) {
-				btn.textContent = L('JS_DONE_WITH_ERRORS_BTN');
-				var doneLi = document.createElement('li');
-				doneLi.className = 'ng';
-				doneLi.textContent = L('JS_DONE_WITH_ERRORS_MSG');
-				logList.appendChild(doneLi);
-			} else {
-				btn.textContent = L('JS_DONE_BTN');
-				var doneLi = document.createElement('li');
-				doneLi.textContent = L('JS_DONE_MSG');
-				logList.appendChild(doneLi);
-			}
-			return;
-		}
-		var target = targetsList[targetIdx];
-		var idx = target.value;
-		var header = document.createElement('li');
-		header.innerHTML = '<strong>--- ' + Lf('JS_TARGET_HEADER', { LABEL: escapeHtml(target.label) }) + ' ---</strong>';
-		logList.appendChild(header);
 
-		// 20260801 Gikoneko: ファイル設置の前に、既存conf.phpがあれば
-		// 調整確認画面を挟む。無ければ（新規導入等）従来通り即座に進む。
-		// #conf-review-toggle が未チェックなら、この画面自体をスキップし
-		// 従来の全自動マージ動作に戻す（個人設定でオン/オフ可能）。
-		var reviewToggle = document.getElementById('conf-review-toggle');
-		var reviewEnabled = !reviewToggle || reviewToggle.checked;
-		var reviewFetchPromise = reviewEnabled ? fetchConfReview(target) : Promise.resolve({ needed: false });
+	// 3. 1件の導入先を最初から最後まで処理するPromise関数。
+	// conf.php確認 → 設置 → ログ表示 が全部終わってから resolve するため、
+	// 複数選択時も1件ずつ確実に直列処理される（各個撃破）。
+	function processSingleTarget(target) {
+		return new Promise(function (resolveNextTarget) {
+			var header = document.createElement('li');
+			header.innerHTML = '<strong>--- ' + Lf('JS_TARGET_HEADER', { LABEL: escapeHtml(target.label) }) + ' ---</strong>';
+			logList.appendChild(header);
 
-		reviewFetchPromise.then(function (reviewData) {
-			var overridesPromise = (reviewData && reviewData.needed && reviewData.fields && reviewData.fields.length)
-				? showConfReviewAndWait(reviewData.fields)
-				: Promise.resolve(null);
+			// 20260801 Gikoneko: ファイル設置の前に、既存conf.phpがあれば
+			// 調整確認画面を挟む。無ければ（新規導入等）従来通り即座に進む。
+			// #conf-review-toggle が未チェックなら、この画面自体をスキップし
+			// 従来の全自動マージ動作に戻す（個人設定でオン/オフ可能）。
+			var reviewToggle = document.getElementById('conf-review-toggle');
+			var reviewEnabled = !reviewToggle || reviewToggle.checked;
+			var reviewFetchPromise = reviewEnabled ? fetchConfReview(target) : Promise.resolve({ needed: false });
 
-			overridesPromise.then(function (overrides) {
-				var langParam = '&lang=' + encodeURIComponent(<?php echo json_encode($lang); ?>);
-				var url = (target.kind === 'new')
-					? '?ajax=1&action=run_setup_new&dir=' + encodeURIComponent(target.value) + langParam
-					: '?ajax=1&action=run_setup&path=' + encodeURIComponent(target.path || '') + langParam;
+			reviewFetchPromise.then(function (reviewData) {
+				var overridesPromise = (reviewData && reviewData.needed && reviewData.fields && reviewData.fields.length)
+					? showConfReviewAndWait(reviewData.fields)
+					: Promise.resolve(null);
 
-				// 20260720 Gikoneko: 管理パスワード移行が必要な対象のみ、
-				// 平文パスワードをPOSTボディで送信する（GETクエリ文字列に
-				// 載せてアクセスログへ残すのを避けるため）。conf.php調整
-				// 内容がある場合も同様にPOSTボディで送る。いずれも無ければ
-				// 従来通りGETのみ（挙動変更なし）。
-				var fetchOptions = undefined;
-				if (target.oldAdminPass !== undefined || overrides !== null) {
-					var fd = new FormData();
-					if (target.oldAdminPass !== undefined) {
-						fd.append('old_admin_pass', target.oldAdminPass);
-						fd.append('new_admin_pass', target.newAdminPass);
-						fd.append('keep_admin_pass', target.keepAdminPass ? '1' : '0');
-					}
-					if (overrides !== null) {
-						fd.append('conf_overrides', JSON.stringify(overrides));
-					}
-					fetchOptions = { method: 'POST', body: fd };
-				}
+				overridesPromise.then(function (overrides) {
+					var langParam = '&lang=' + encodeURIComponent(<?php echo json_encode($lang); ?>);
+					var url = (target.kind === 'new')
+						? '?ajax=1&action=run_setup_new&dir=' + encodeURIComponent(target.value) + langParam
+						: '?ajax=1&action=run_setup&path=' + encodeURIComponent(target.path || '') + langParam;
 
-				fetch(url, fetchOptions)
-					.then(function (res) { return res.json(); })
-					.then(function (data) {
-						var lines = data.log || [];
-						var entryFilename = data.entry_filename || 'bbs.php';
-						var i = 0;
-						function showNext() {
-							if (i >= lines.length) {
-								var linkLi = document.createElement('li');
-								var bbsIndexAttr = (target.kind === 'new') ? ('new:' + idx) : idx;
-								linkLi.innerHTML = '<a href="?ajax=0" data-bbs-index="' + escapeHtml(bbsIndexAttr) + '" data-entry-filename="' + entryFilename + '" class="bbs-link" target="_blank">' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + '</a>';
-								logList.appendChild(linkLi);
-								targetIdx++;
-								runNextTarget();
-								return;
-							}
-							var li = document.createElement('li');
-							li.className = lines[i].skipped ? 'skipped' : (lines[i].ok ? 'ok' : 'ng');
-							if (!lines[i].ok) {
-								hadFailure = true;
-							}
-							li.textContent = lines[i].text;
-							logList.appendChild(li);
-							i++;
-							setTimeout(showNext, 60);
+					// 20260720 Gikoneko: 管理パスワード移行が必要な対象のみ、
+					// 平文パスワードをPOSTボディで送信する（GETクエリ文字列に
+					// 載せてアクセスログへ残すのを避けるため）。conf.php調整
+					// 内容がある場合も同様にPOSTボディで送る。いずれも無ければ
+					// 従来通りGETのみ（挙動変更なし）。
+					var fetchOptions = undefined;
+					if (target.oldAdminPass !== undefined || overrides !== null) {
+						var fd = new FormData();
+						if (target.oldAdminPass !== undefined) {
+							fd.append('old_admin_pass', target.oldAdminPass);
+							fd.append('new_admin_pass', target.newAdminPass);
+							fd.append('keep_admin_pass', target.keepAdminPass ? '1' : '0');
 						}
-						showNext();
-					})
-					.catch(function () {
-						var li = document.createElement('li');
-						li.className = 'ng';
-						li.textContent = Lf('JS_COMM_ERROR', { LABEL: target.label });
-						logList.appendChild(li);
-						hadFailure = true;
-						targetIdx++;
-						runNextTarget();
-					});
+						if (overrides !== null) {
+							fd.append('conf_overrides', JSON.stringify(overrides));
+						}
+						fetchOptions = { method: 'POST', body: fd };
+					}
+
+					fetch(url, fetchOptions)
+						.then(function (res) { return res.json(); })
+						.then(function (data) {
+							var lines = data.log || [];
+							var entryFilename = data.entry_filename || 'bbs.php';
+							var i = 0;
+
+							function showNextLogLine() {
+								if (i >= lines.length) {
+									var linkLi = document.createElement('li');
+									var bbsIndexAttr = (target.kind === 'new') ? ('new:' + target.value) : target.value;
+									linkLi.innerHTML = '<a href="?ajax=0" data-bbs-index="' + escapeHtml(bbsIndexAttr) + '" data-entry-filename="' + entryFilename + '" class="bbs-link" target="_blank">' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + '</a>';
+									logList.appendChild(linkLi);
+									// この導入先の処理とログ表示が終わったら次へ進む
+									resolveNextTarget();
+									return;
+								}
+								var li = document.createElement('li');
+								li.className = lines[i].skipped ? 'skipped' : (lines[i].ok ? 'ok' : 'ng');
+								if (!lines[i].ok) { hadFailure = true; }
+								li.textContent = lines[i].text;
+								logList.appendChild(li);
+								i++;
+								setTimeout(showNextLogLine, 60);
+							}
+							showNextLogLine();
+						})
+						.catch(function () {
+							var li = document.createElement('li');
+							li.className = 'ng';
+							li.textContent = Lf('JS_COMM_ERROR', { LABEL: target.label });
+							logList.appendChild(li);
+							hadFailure = true;
+							resolveNextTarget();
+						});
+				});
 			});
 		});
 	}
-	runNextTarget();
+
+	// 4. 直列実行ループの駆動
+	var sequence = Promise.resolve();
+	targetsList.forEach(function (target) {
+		sequence = sequence.then(function () {
+			return processSingleTarget(target);
+		});
+	});
+
+	// 5. 全件完了時の最終処理
+	sequence.then(function () {
+		if (hadFailure) {
+			btn.textContent = L('JS_DONE_WITH_ERRORS_BTN');
+			var doneLi = document.createElement('li');
+			doneLi.className = 'ng';
+			doneLi.textContent = L('JS_DONE_WITH_ERRORS_MSG');
+			logList.appendChild(doneLi);
+		} else {
+			btn.textContent = L('JS_DONE_BTN');
+			var doneLi = document.createElement('li');
+			doneLi.textContent = L('JS_DONE_MSG');
+			logList.appendChild(doneLi);
+		}
+	});
 });
 
 // 「開く」リンクは、対応するテーブル行のパスから実際のURLを組み立て
