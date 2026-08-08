@@ -2317,9 +2317,9 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 
 	// 4. 直列実行ループの駆動
 	var sequence = Promise.resolve();
-	targetsList.forEach(function (target) {
+	targetsList.forEach(function (target, idx) {
 		sequence = sequence.then(function () {
-			return processSingleTarget(target);
+			return processSingleTarget(target, idx + 1);
 		});
 	});
 
