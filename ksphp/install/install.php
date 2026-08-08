@@ -1654,7 +1654,10 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'run_setup') {
 	$new_admin_pass = (string) ($_POST['new_admin_pass'] ?? '');
 	$keep_admin_pass = ($_POST['keep_admin_pass'] ?? '') === '1';
 	$conf_overrides = ksphp_install_decode_conf_overrides((string) ($_POST['conf_overrides'] ?? ''));
-	$backup_root = $install_dir . '/backup/' . substr(md5($bbs_path), 0, 12);
+	// バックアップフォルダはスキャン済みリストの添字（ページ表示時と同一）で命名する。
+	$target_idx_for_backup = array_search($bbs_path, $targets_real, true);
+	if ($target_idx_for_backup === false) { $target_idx_for_backup = 0; }
+	$backup_root = $install_dir . '/backup/target' . $target_idx_for_backup;
 	echo json_encode(
 		array(
 			'log' => ksphp_install_run($newbbs_dir, $target_dir, $backup_root, $entry_filename, $old_admin_pass, $new_admin_pass, $conf_overrides, $keep_admin_pass),
