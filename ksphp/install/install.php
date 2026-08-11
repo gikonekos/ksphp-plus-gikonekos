@@ -1633,7 +1633,14 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'save_install_l
 	if (!is_dir($backup_dir)) {
 		@mkdir($backup_dir, 0755, true);
 	}
-	$log_filename = 'install-log-' . date('Ymd-Hi') . '.txt';
+	// 20260812 Gikoneko: multipart/form-dataはHTML仕様上、値の改行を
+	// CRLFへ正規化して送信するため、保存時にLFへ揃える。
+	$log_text = str_replace(array("\r\n", "\r"), "\n", $log_text);
+	if (substr($log_text, -1) !== "\n") {
+		$log_text .= "\n";
+	}
+	// 秒までを含めて、同一分内に複数回保存しても上書きされないようにする。
+	$log_filename = 'install-log-' . date('Ymd-His') . '.txt';
 	$log_path = $backup_dir . '/' . $log_filename;
 	$ok = @file_put_contents($log_path, $log_text) !== false;
 	echo json_encode(array('ok' => $ok, 'filename' => $log_filename));
@@ -1971,6 +1978,80 @@ function escapeHtml(s) {
 	var div = document.createElement('div');
 	div.textContent = s;
 	return div.innerHTML;
+}
+
+// 20260812 Gikoneko: インストールログ保存用のDOM→テキスト変換。
+// li.textContentをそのまま使うと、conf.php確認フォーム（表組みで
+// 100件近い設定項目を含む<li>）が区切り無しの1行に潰れて極端に
+// 読みづらくなるため、ブロック要素の境界で改行を入れる。
+// 入力欄は表示テキストを持たないので、値・選択状態を明示的に拾う。
+var KSPHP_LOG_BLOCK_TAGS = {
+	H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1,
+	P: 1, DIV: 1, UL: 1, OL: 1, LI: 1,
+	TABLE: 1, TR: 1, LABEL: 1, BUTTON: 1, PRE: 1
+};
+
+function ksphpNodeToLogText(node) {
+	var out = '';
+
+	function endsWithNewline() {
+		return out === '' || out.charAt(out.length - 1) === '\n';
+	}
+
+	function walk(n) {
+		// テキストノード
+		if (n.nodeType === 3) {
+			out += n.nodeValue;
+			return;
+		}
+		if (n.nodeType !== 1) {
+			return;
+		}
+
+		var tag = n.tagName;
+
+		if (tag === 'BR') {
+			out += '\n';
+			return;
+		}
+		if (tag === 'INPUT') {
+			var type = (n.getAttribute('type') || 'text').toLowerCase();
+			if (type === 'radio' || type === 'checkbox') {
+				out += n.checked ? '[x]' : '[ ]';
+			} else if (type !== 'button' && type !== 'submit') {
+				out += n.value;
+			}
+			return;
+		}
+		if (tag === 'TEXTAREA') {
+			// 複数行の値は1行に畳んでおく（1項目1行を保つため）
+			out += String(n.value).replace(/\r\n|\r|\n/g, ' / ');
+			return;
+		}
+		if (tag === 'SELECT') {
+			out += (n.selectedIndex >= 0) ? n.options[n.selectedIndex].text : '';
+			return;
+		}
+
+		var isBlock = KSPHP_LOG_BLOCK_TAGS[tag] === 1;
+		if (isBlock && !endsWithNewline()) {
+			out += '\n';
+		}
+		for (var i = 0; i < n.childNodes.length; i++) {
+			walk(n.childNodes[i]);
+		}
+		if (isBlock && !endsWithNewline()) {
+			out += '\n';
+		}
+	}
+
+	walk(node);
+
+	return out
+		.replace(/[ \t]+/g, ' ')      // 連続する空白・タブを1個へ
+		.replace(/ *\n */g, '\n')     // 行頭行末の空白を除去
+		.replace(/\n{3,}/g, '\n\n')   // 空行は最大1行まで
+		.replace(/^\n+|\n+$/g, '');   // 前後の空行を除去
 }
 
 function renderConfSummaries() {
@@ -2347,7 +2428,10 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 			var logItems = logList.querySelectorAll('li');
 			var logText = '';
 			logItems.forEach(function (li) {
-				logText += li.textContent + '\n';
+				var text = ksphpNodeToLogText(li);
+				if (text !== '') {
+					logText += text + '\n';
+				}
 			});
 			var langParam = '&lang=' + encodeURIComponent(<?php echo json_encode($lang); ?>);
 			var fd = new FormData();
