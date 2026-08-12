@@ -294,20 +294,20 @@
 (function(){var s=document.getElementById('ksphp-lang-select');if(s){s.addEventListener('change',function(){document.cookie='ksphp_lang='+encodeURIComponent(this.value)+';path=/;max-age='+(90*86400)+';SameSite=Lax';location.reload();});}})();
 </script>
 <br>
-<a href="{DEFURL}">←{BULLETIN_BOARD_LABEL}</a>
+<a href="{DEFURL}">{ARROW_BACK}{BULLETIN_BOARD_LABEL}</a>
 <hr>
 </patTemplate:tmpl>
 
 <!-- Message log search results -->
 <patTemplate:tmpl name="searchresult">
 <a id="top"></a>
-<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {TITLE_OLDLOG_SEARCH_RESULTS}　　<select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}&m=g">←{RETURN}</a>　<a href="#bottom">▼</a> <span class="ngset"></span></td></tr></table>
+<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {TITLE_OLDLOG_SEARCH_RESULTS}　　<select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}&m=g">{ARROW_BACK}{RETURN}</a>　<a href="#bottom">▼</a> <span class="ngset"></span></td></tr></table>
 <hr>
 </patTemplate:tmpl>
 
 <!-- Message log download HTML -->
 <patTemplate:tmpl name="htmldownload">
-<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {NAV_MESSAGE_LOGS}　　<select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}&m=g">←{RETURN}</a>　<a href="#bottom">▼</a> <span class="ngset"></span></td></tr></table>
+<table><tr><td><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {NAV_MESSAGE_LOGS}　　<select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}&m=g">{ARROW_BACK}{RETURN}</a>　<a href="#bottom">▼</a> <span class="ngset"></span></td></tr></table>
 <hr>
 </patTemplate:tmpl>
 
@@ -348,7 +348,7 @@
 <!-- ZIP archive list -->
 <patTemplate:tmpl name="archivelist">
 <a id="top"></a>
-<header><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}&m=g">←{TITLE_OLDLOG_SEARCH}</a>　<a href="{DEFURL}">{BULLETIN_BOARD_LABEL}</a> <a href="#bottom">▼</a></header>
+<header><span class="pagetitle"><a href="{CGIURL}" style="text-decoration: none;">{BBSTITLE}</a></span> <select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}&m=g">{ARROW_BACK}{TITLE_OLDLOG_SEARCH}</a>　<a href="{DEFURL}">{BULLETIN_BOARD_LABEL}</a> <a href="#bottom">▼</a></header>
 <h1>{ZIP_ARCHIVES_HEADING}</h1>
 <span class="medium">{ZIP_ARCHIVE_COLUMN_HEADERS}</span>
 <hr>
@@ -362,5 +362,5 @@
 </patTemplate:tmpl>
 </table>
 <hr>
-<a href="{DEFURL}&m=g">←{TITLE_OLDLOG_SEARCH}</a>　<a href="{DEFURL}">{BULLETIN_BOARD_LABEL}</a><br>
+<a href="{DEFURL}&m=g">{ARROW_BACK}{TITLE_OLDLOG_SEARCH}</a>　<a href="{DEFURL}">{BULLETIN_BOARD_LABEL}</a><br>
 </patTemplate:tmpl>

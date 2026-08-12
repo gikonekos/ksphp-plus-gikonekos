@@ -480,7 +480,7 @@
 <patTemplate:tmpl name="follow">
 <hr>
 <patTemplate:link src="message" />
-<table><tr><td><span class="bbsmsg">{TITLE_FOLLOWUP}　<a href="{DEFURL}" title="{TITLE_RETURN_PREV_PAGE2}">←{RETURN}</a></span></td></tr></table>
+<table><tr><td><span class="bbsmsg">{TITLE_FOLLOWUP}　<a href="{DEFURL}" title="{TITLE_RETURN_PREV_PAGE2}">{ARROW_BACK}{RETURN}</a></span></td></tr></table>
 <patTemplate:link src="form" />
 <div class="small">
     <label for="a2">{AUTO_LINK_URLS_LABEL}</label> <input type="checkbox" name="a" value="checked"{CHK_A} id="a2" />
@@ -498,7 +498,7 @@
 
 <!-- New post page -->
 <patTemplate:tmpl name="newpost">
-<table><tr><td><span class="pagetitle"><a href="{DEFURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {NEW_POST}　<select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}" title="{TITLE_RETURN_PREV_PAGE2}">←{RETURN}</a></td></tr></table>
+<table><tr><td><span class="pagetitle"><a href="{DEFURL}" style="text-decoration: none;">{BBSTITLE}</a></span> - {NEW_POST}　<select id="ksphp-lang-select" title="{LANG_SELECT_LABEL}" style="font-size:small;vertical-align:middle;">{LANG_OPTIONS_HTML}</select> <a href="{DEFURL}" title="{TITLE_RETURN_PREV_PAGE2}">{ARROW_BACK}{RETURN}</a></td></tr></table>
 <patTemplate:link src="form" />
 <div class="small">
     <label for="a3">{AUTO_LINK_URLS_LABEL}</label> <input type="checkbox" name="a" value="checked"{CHK_A} id="a3" />
@@ -518,7 +518,7 @@
 <hr>
 </patTemplate:tmpl>
 <patTemplate:tmpl name="searchlist_lower">
-<span class="bbsmsg">{SUCCESS}{POSTS_FOUND}　<a href="{DEFURL}" title="{TITLE_RETURN_PREV_PAGE2}">←{RETURN}</a></span>
+<span class="bbsmsg">{SUCCESS}{POSTS_FOUND}　<a href="{DEFURL}" title="{TITLE_RETURN_PREV_PAGE2}">{ARROW_BACK}{RETURN}</a></span>
 </patTemplate:tmpl>
 
 <!-- Post complete -->

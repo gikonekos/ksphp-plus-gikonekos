@@ -186,6 +186,21 @@ $CONF['META_DIRECTION'] = in_array($language_file_name, $ksphp_rtl_langs, true)
     ? 'rtl'
     : 'ltr';
 
+// 2026-08-12：「戻る」「次へ」を示す矢印。←(U+2190)・→(U+2192)は
+// Unicodeの双方向アルゴリズムでは自動反転しない（Bidi_Mirrored=No）
+// ため、書字方向に応じて明示的に入れ替える必要がある。
+// テンプレート側は {ARROW_BACK} / {ARROW_FORWARD} を使うこと。
+// 2026-08-12: Arrows meaning "back" and "next". U+2190/U+2192 are not
+// Bidi_Mirrored, so they do NOT flip automatically under dir="rtl" and
+// must be swapped explicitly. Templates use {ARROW_BACK}/{ARROW_FORWARD}.
+if ($CONF['META_DIRECTION'] === 'rtl') {
+    $CONF['ARROW_BACK']    = '→';
+    $CONF['ARROW_FORWARD'] = '←';
+} else {
+    $CONF['ARROW_BACK']    = '←';
+    $CONF['ARROW_FORWARD'] = '→';
+}
+
 // Load the board's default language separately so that strings written
 // to the log (Reference line, self-reply tag) are always stored in the
 // configured default language, not in the visitor's selected language.
@@ -214,6 +229,19 @@ $ksphp_lang_labels = array(
     'zh-hant'    => '繁體中文',
     'zh-hans'    => '简体中文',
     'korean'     => '한국어',
+    // 2026-08-12：追加予定言語の表示名を先行登録。language/*.txt を
+    // 置いた時点でプルダウンに正しい言語名で現れる（未登録だと
+    // ファイル名がそのまま出てしまうため）。
+    // Display names for planned languages, registered ahead of time so
+    // that dropping in language/*.txt is all that's needed.
+    'spanish'    => 'Español',
+    'french'     => 'Français',
+    'german'     => 'Deutsch',
+    'indonesian' => 'Bahasa Indonesia',
+    'vietnamese' => 'Tiếng Việt',
+    'tagalog'    => 'Tagalog',
+    'hindi'      => 'हिन्दी',
+    'arabic'     => 'العربية',
 );
 $ksphp_lang_files = glob('./language/*.txt');
 $ksphp_lang_options_html = '';
