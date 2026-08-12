@@ -109,6 +109,17 @@ $CONF = array(
   ## TL note: Ayashii World-style AA (ASCII art) may not render correctly using English (en) without some additional CSS to change the font to MS Gothic or another compatible font
   // 日本語：ja
   // English : en
+  // ※2026-08-12：この値は「フォールバック」に変わりました。
+  //   <html lang> は閲覧者が選択中の言語（LANGUAGE_FILE／言語プルダウン）
+  //   から bbs.php 側で自動解決されます。ここの値が使われるのは、
+  //   bbs.php の $ksphp_lang_tags に未登録の言語ファイルを置いた場合
+  //   のみです。書字方向（<html dir>）も同様に自動判定されるため、
+  //   ここで指定する必要はありません。
+  // NOTE (2026-08-12): This is now only a *fallback*. The <html lang>
+  //   attribute is resolved automatically in bbs.php from the visitor's
+  //   selected language; this value is used only for language files not
+  //   registered in $ksphp_lang_tags there. Text direction (<html dir>)
+  //   is likewise determined automatically.
   'META_LANGUAGE' => 'ja',
 
   // ※2026-07-16：ロジック／テンプレートはsub/ja・sub/enの分割を廃止し、

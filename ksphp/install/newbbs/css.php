@@ -135,6 +135,14 @@ $css = <<<'CSS'
     .centerItem {
         text-align: center;
     }
+
+    /* 行末寄せ。LTRでは右、RTL（アラビア語等）では左に自動で反転する。
+       旧来の <td align="right"> の置き換え先。
+       Aligns to the end of the inline axis: right in LTR, left in RTL.
+       Replacement for the old <td align="right"> presentational attribute. */
+    .endItem {
+        text-align: end;
+    }
     /* Links */
     a:link { color: #{C_A_COLOR}; transition:0.2s; }
     a:visited { color: #{C_A_VISITED}; }
@@ -150,19 +158,19 @@ $css = <<<'CSS'
     @media screen and (min-width: 0px){
         .msgnormal { font-size: 0.9rem; font-size: 14px; line-height:1; /* white-space: pre-wrap; */ word-wrap: break-word; }
         .msgtree { font-size: 0.9rem; font-size: 14px; line-height:1; white-space: pre; overflow-x: auto; }
-        div.contents { margin-left: 18px; }
+        div.contents { margin-inline-start: 18px; }
     }
     @media screen and (min-width: 640px){
         .msgnormal { font-size: 1.0rem; font-size: 16px; }
         .msgtree { font-size: 1.0rem; font-size: 16px; }
-        div.contents { margin-left: 27px; }
+        div.contents { margin-inline-start: 27px; }
     }
     iframe { max-width: 100%; }
     img { max-width: 99%; height: auto; }
     td { white-space: nowrap; }
     fieldset { display: inline-block; margin: 5px 0; padding: 10px; max-width: 100%; }
     /* Bulletin board title */
-    .pagetitle { font-size: large; font-weight: bold; text-align: left; }
+    .pagetitle { font-size: large; font-weight: bold; text-align: start; }
     /* Upper link row */
     .link_upper { font-size: 14px; font-size: 0.9rem; }
     /* Lower link row */
@@ -178,7 +186,7 @@ $css = <<<'CSS'
     /* There are no posts below this point */
     .msgmore { font-size: 15px; font-size: 0.95rem; font-style: italic; }
     /* Copyright notice */
-    .copyright { font-size: 13px; font-size: 0.8rem; text-align: right;}
+    .copyright { font-size: 13px; font-size: 0.8rem; text-align: end;}
     /* Title */
     .ms { color: #{C_SUBJ}; font-size: 17px; font-size: 1.05rem; font-weight: bold; }
     /* Post number */
@@ -214,7 +222,7 @@ $css = <<<'CSS'
     /* Environment variables */
     .env { font-size: 13px; font-size: 0.8rem; font-size: 0.8rem; font-style: italic; }
     /* Buttons */
-    input[type="button"],input[type="submit"],input[type="reset"] { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: 2px solid #999; border-radius: 2px; background: #bbb; background-color: #d2d2d2; transition:0.2s; padding: .5px .4em; margin-right: .5em; }
+    input[type="button"],input[type="submit"],input[type="reset"] { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: 2px solid #999; border-radius: 2px; background: #bbb; background-color: #d2d2d2; transition:0.2s; padding: .5px .4em; margin-inline-end: .5em; }
     input[type="button"]:hover,input[type="submit"]:hover,input[type="reset"]:hover { background-color: #cdf; border-color: #888; }
     input[type="button"]:active,input[type="submit"]:active,input[type="reset"]:active  { background-color: #abd; border-color: #08c; }
     /* Text box */

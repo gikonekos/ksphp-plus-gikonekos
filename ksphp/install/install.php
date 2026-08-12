@@ -1795,7 +1795,7 @@ function h(string $s): string {
 	h1 { font-size:1.2em; }
 	h2 { font-size:1em; border-bottom:1px solid #007f7f; padding-bottom:0.25em; margin-top:1.5em; }
 	table { border-collapse:collapse; margin:0.5em 0; }
-	td, th { padding:0.25em 0.75em; border:1px solid #007f7f; text-align:left; }
+	td, th { padding:0.25em 0.75em; border:1px solid #007f7f; text-align:start; }
 	.ok      { color:#8cff8c; }
 	.ng      { color:#ff8c8c; }
 	.skipped { color:#7fd4d4; }
@@ -1809,7 +1809,7 @@ function h(string $s): string {
 	button:disabled { background:#555; cursor:default; }
 	#setup-log { list-style:none; margin:0.5em 0; padding:0; font-size:0.9em; }
 	#setup-log li { padding:0.15em 0; }
-	#lang-select-wrap { float:right; }
+	#lang-select-wrap { float:inline-end; }
 	#conf-review-panel { border:2px solid #ffcf5c; background:#003030; padding:0.75em 1em; margin:0.75em 0; }
 	.inline-conf-review { border:2px solid #ffcf5c; background:#003030; padding:0.75em 1em; margin:0.75em 0; list-style:none; }
 	.inline-conf-review.confirmed { opacity:0.6; }

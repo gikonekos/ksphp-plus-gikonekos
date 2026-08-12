@@ -70,7 +70,7 @@
 		style.id = 'ksphp-longpost-style';
 		style.textContent =
 			'.ksphp-longpost-collapsed{border:1px dashed #888;padding:0.3em 0.6em;font-size:0.85em;}' +
-			'.ksphp-longpost-collapsed a{margin-left:0.5em;}';
+			'.ksphp-longpost-collapsed a{margin-inline-start:0.5em;}';
 		document.head.appendChild(style);
 	}
 

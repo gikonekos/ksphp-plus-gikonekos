@@ -142,6 +142,50 @@ if (file_exists($langfile)) {
     die("Language file not found: $langfile");
 }
 
+// 2026-08-12：<html lang> と <html dir> を選択中の言語に追従させる。
+// 従来 META_LANGUAGE は conf.php の静的値（'ja'）だったため、言語を
+// 切り替えてもlang属性が'ja'のまま変わらなかった（既存の不具合）。
+// ここで選択中の言語ファイル名からBCP47言語タグと書字方向を解決し、
+// $CONFを上書きする。$CONFは後段で array_merge されて全テンプレートに
+// 渡るため、これだけで {META_LANGUAGE} / {META_DIRECTION} に反映される。
+// 未登録の言語ファイル名はconf.phpの値とltrにフォールバックする。
+//
+// 2026-08-12: Make <html lang> and <html dir> follow the selected
+// language. META_LANGUAGE used to be a static conf.php value, so the
+// lang attribute never changed when the visitor switched languages.
+// Resolving it here and overwriting $CONF is enough, because $CONF is
+// array_merge()d into the global template vars further down.
+$ksphp_lang_tags = array(
+    'japanese'   => 'ja',
+    'english'    => 'en',
+    'korean'     => 'ko',
+    'portuguese' => 'pt',
+    'turkish'    => 'tr',
+    'zh-hans'    => 'zh-Hans',
+    'zh-hant'    => 'zh-Hant',
+    // 追加予定分（language/*.txt を置けばそのまま有効になる）
+    // Planned additions -- effective as soon as the .txt file is added.
+    'spanish'    => 'es',
+    'hindi'      => 'hi',
+    'french'     => 'fr',
+    'indonesian' => 'id',
+    'vietnamese' => 'vi',
+    'tagalog'    => 'tl',
+    'german'     => 'de',
+    'arabic'     => 'ar',
+);
+// 右横書き（RTL）の言語。ここに列挙した言語では <html dir="rtl"> となり、
+// CSSの論理プロパティ（margin-inline-start 等）が自動的に反転する。
+// RTL languages: listed here to emit <html dir="rtl">, which flips all
+// the CSS logical properties automatically.
+$ksphp_rtl_langs = array('arabic');
+
+$CONF['META_LANGUAGE'] = $ksphp_lang_tags[$language_file_name]
+    ?? ($CONF['META_LANGUAGE'] ?? 'en');
+$CONF['META_DIRECTION'] = in_array($language_file_name, $ksphp_rtl_langs, true)
+    ? 'rtl'
+    : 'ltr';
+
 // Load the board's default language separately so that strings written
 // to the log (Reference line, self-reply tag) are always stored in the
 // configured default language, not in the visitor's selected language.

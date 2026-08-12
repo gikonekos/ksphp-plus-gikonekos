@@ -17,13 +17,13 @@
 	<tr>
 		<td>{FCHECK}</td>
 		<td><a href="{DEFURL}&amp;m=g&amp;f={FILENAME}">{FTITLE}</a></td>
-		<td align="right"><span class="medium"><i>{FTIME}</i></span></td>
-		<td align="right"><span class="medium"><i>{FSIZE} bytes</i></span></td>
+		<td class="endItem"><span class="medium"><i>{FTIME}</i></span></td>
+		<td class="endItem"><span class="medium"><i>{FSIZE} bytes</i></span></td>
 		<patTemplate:tmpl name="topiclink">
-		<td align="right"><span class="medium"><a href="{DEFURL}&amp;m=g&amp;l={FILENAME}">{TITLE_TOPIC_LIST}</a></span></td>
+		<td class="endItem"><span class="medium"><a href="{DEFURL}&amp;m=g&amp;l={FILENAME}">{TITLE_TOPIC_LIST}</a></span></td>
 	</patTemplate:tmpl>
 	<patTemplate:tmpl name="dllink">
-	<td align="right"><span class="medium"><a href="{DEFURL}&amp;m=g&amp;dl={FILENAME}">↓{DOWNLOAD_LABEL}</a></span></td>
+	<td class="endItem"><span class="medium"><a href="{DEFURL}&amp;m=g&amp;dl={FILENAME}">↓{DOWNLOAD_LABEL}</a></span></td>
 </patTemplate:tmpl>
 </tr>
 </patTemplate:tmpl>
@@ -356,8 +356,8 @@
 	<patTemplate:tmpl name="archive" visibility="hidden">
 	<tr>
 		<td><a href="{DIR}{FILENAME}">{FILENAME}</a></td>
-		<td align="right"><span class="medium"><i>{FTIME}</i></span></td>
-		<td align="right"><span class="medium"><i>{FSIZE} bytes</i></span></td>
+		<td class="endItem"><span class="medium"><i>{FTIME}</i></span></td>
+		<td class="endItem"><span class="medium"><i>{FSIZE} bytes</i></span></td>
 	</tr>
 </patTemplate:tmpl>
 </table>

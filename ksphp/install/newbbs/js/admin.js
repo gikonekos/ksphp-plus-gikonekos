@@ -31,13 +31,18 @@
   css.textContent = `
     tr.${HIDDEN} { display: none !important; }
     tr.${ARMED} > td { background-color: #0f6b6b; }
-    tr.${ARMED} > td:first-child { box-shadow: inset 4px 0 0 #1ee; }
+    /* box-shadowには論理プロパティ版が無いため、オフセットをカスタム
+       プロパティ化し、RTL時に符号を反転させて行頭側にアクセントを出す。
+       box-shadow has no logical-property equivalent, so the offset is
+       exposed as a custom property and flipped under dir="rtl". */
+    tr.${ARMED} > td:first-child { box-shadow: inset var(--swdh-accent-offset, 4px) 0 0 #1ee; }
+    [dir="rtl"] tr.${ARMED} > td:first-child { --swdh-accent-offset: -4px; }
     .swdh-bar { display: none; margin: 6px 0; padding: 5px 8px; border: 2px solid #c0c0c0;
                 border-radius: 2px; background: #003434; color: #efefef; font-size: 13px; }
-    .swdh-bar .tag { background: #007f7f; color: #fff; padding: 0 6px; border-radius: 2px; margin-right: 4px; }
+    .swdh-bar .tag { background: #007f7f; color: #fff; padding: 0 6px; border-radius: 2px; margin-inline-end: 4px; }
     .swdh-bar code { color: #cfe; word-break: break-all; }
     .swdh-bar button { -webkit-appearance: none; appearance: none; border: 2px solid #999;
-                       border-radius: 2px; background: #d2d2d2; padding: 0 .5em; margin-left: 8px; cursor: pointer; }
+                       border-radius: 2px; background: #d2d2d2; padding: 0 .5em; margin-inline-start: 8px; cursor: pointer; }
     .swdh-bar button:hover { background: #cdf; }
     .swdh-click { cursor: pointer; }
   `;

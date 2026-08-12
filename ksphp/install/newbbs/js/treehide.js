@@ -92,9 +92,9 @@
 		style.textContent =
 			'.ksphp-treehide-toggle{font-size:0.85em;margin:0.3em 0;}' +
 			'.ksphp-treehide-panel{font-size:0.85em;border:1px dashed #888;padding:0.3em 0.6em;margin:0.3em 0;}' +
-			'.ksphp-treehide-panel ul{margin:0.2em 0 0;padding-left:1.2em;}' +
-			'.ksphp-treehide-empty{color:#888;list-style:none;margin-left:-1.2em;}' +
-			'.ksphp-treehide-link{font-size:0.85em;text-decoration:none;border:1px solid #888;padding:0 0.3em;margin-left:0.3em;}';
+			'.ksphp-treehide-panel ul{margin:0.2em 0 0;padding-inline-start:1.2em;}' +
+			'.ksphp-treehide-empty{color:#888;list-style:none;margin-inline-start:-1.2em;}' +
+			'.ksphp-treehide-link{font-size:0.85em;text-decoration:none;border:1px solid #888;padding:0 0.3em;margin-inline-start:0.3em;}';
 		document.head.appendChild(style);
 	}
 
