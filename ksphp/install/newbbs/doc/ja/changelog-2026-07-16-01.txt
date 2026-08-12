@@ -2618,3 +2618,139 @@ RC18以降にinstall.phpへ加えた一連の改修。bbs.phpへの変更はな�
 
   実機検証：全項目問題なし（複数インストールの通信エラーも解消）。
 
+
+============================================================
+2026-08-12T08:00 UTC
+------------------------------------------------------------
+【RTL（右横書き）対応フェーズ1：方向依存指定の全撤廃】
+対象：css.php, sub/template.html, sub/tmpllog.html, sub/tmpltree.html,
+      sub/index.html, js/admin.js, js/treehide.js, js/longpostfilter.js,
+      bbs.php, conf.php, install.php
+
+アラビア語対応の準備として、左右を直接指定している箇所をすべて
+論理プロパティ（書字方向に応じて自動で反転する指定）へ置き換えた。
+
+■ 物理プロパティ→論理プロパティ（18箇所）
+  - css.php：margin-left×2 → margin-inline-start、
+    .pagetitleのtext-align:left → start、
+    .copyrightのtext-align:right → end、
+    ボタンのmargin-right → margin-inline-end
+  - install.php：表セルのtext-align:left → start、
+    言語プルダウンのfloat:right → float:inline-end
+  - sub/index.html：padding-left/right → padding-inline
+  - js/treehide.js：padding-left と、それと対になる負のmargin-left
+    （インデント打ち消し用）を同時に論理版へ変換。片方だけ変えると
+    表示が崩れるため、必ず対で扱う必要がある。
+  - js/longpostfilter.js、js/admin.js：margin-left/right を論理版へ
+
+■ HTML表示属性の撤廃
+  sub/tmpllog.html の <td align="right"> 6箇所を、css.php に新設した
+  .endItem クラス（text-align:end）へ置き換えた。
+
+■ box-shadowの扱い（js/admin.js）
+  box-shadowには論理プロパティ版が存在しないため、insetのオフセットを
+  カスタムプロパティ --swdh-accent-offset に切り出し、[dir="rtl"] で
+  -4px に反転させる方式を採用した。
+
+■ <html>のlang／dir動的化
+  sub/template.html の <html> に dir="{META_DIRECTION}" を追加。
+  bbs.php の言語ファイル読み込み直後に $ksphp_lang_tags（言語ファイル名
+  →BCP47言語タグ、15言語分を先行登録）と $ksphp_rtl_langs を置き、
+  $CONF['META_LANGUAGE'] と $CONF['META_DIRECTION'] を上書きする。
+  $CONF は array_merge で全テンプレートへ渡るため、この1箇所の上書きで
+  全ページに反映される。
+
+  ※既存バグの修正：META_LANGUAGE は conf.php の静的値 'ja' 固定で
+    あったため、閲覧者が言語を切り替えても <html lang> が 'ja' のまま
+    追従していなかった。今回選択中の言語から解決するようにした。
+    conf.php 側の META_LANGUAGE は、未登録言語用のフォールバックに
+    降格した旨をコメントで明記している。
+
+  検証：php -l・node --check 全通過。php -S 経由で css.php を実配信し、
+  論理プロパティの出力・物理プロパティ残存ゼロ・色差し込みの健全性を
+  確認。言語別に <html> を実測し、japanese→lang="ja" dir="ltr"、
+  english→en/ltr、zh-hant→zh-Hant/ltr、korean→ko/ltr、turkish→tr/ltr、
+  arabic→lang="ar" dir="rtl" を確認した。
+
+
+============================================================
+2026-08-12T08:20 UTC
+------------------------------------------------------------
+【RTL対応：方向を示す矢印の反転と、言語表示名の先行登録】
+対象：bbs.php, sub/template.html, sub/tmpllog.html, sub/tmpltree.html
+
+■ 矢印の反転
+  ← (U+2190) と → (U+2192) は Unicode の双方向アルゴリズムにおいて
+  Bidi_Mirrored ではないため、dir="rtl" にしても自動では反転しない。
+  $CONF['ARROW_BACK'] / ['ARROW_FORWARD'] を追加し、テンプレート内の
+  生の ← 8箇所を {ARROW_BACK} に、「次のページ」ボタンの → 1箇所を
+  {ARROW_FORWARD} に置き換えた。
+  ▼▲↓ は縦方向を示す記号であり書字方向の影響を受けないため、
+  意図的にそのまま残している。
+
+■ 言語表示名の先行登録
+  $ksphp_lang_labels に、追加予定8言語の表示名を先行登録した
+  （Español／Français／Deutsch／Bahasa Indonesia／Tiếng Việt／
+  Tagalog／हिन्दी／العربية）。未登録の言語はプルダウンに
+  ファイル名がそのまま表示されてしまうため。
+
+
+============================================================
+2026-08-12T08:35 UTC
+------------------------------------------------------------
+【install.php：言語タグ・書字方向・言語リストの動的化】
+対象：install.php
+
+インストーラ側にも既存バグが2件あり、あわせて修正した。
+
+  [1] <html lang> が `$lang === 'english' ? 'en' : 'ja'` という二択の
+      ハードコードだったため、韓国語・ポルトガル語・トルコ語・中国語
+      （簡体・繁体）を選んでも lang="ja" と出力されていた。
+      BCP47言語タグを引く $install_lang_tags を追加して解決し、
+      あわせて dir 属性も出力するようにした。
+
+  [2] 対応言語リスト（$lang_options）と <select> の <option> 群が、
+      同じ7言語を二重にハードコードしていた。そのため language/ に
+      新しい .txt を置いても認識されなかった。両方を
+      glob('language/*.txt') の走査ベースへ統一した。名前は basename()
+      から取り、[A-Za-z0-9_-] のみに限定している。不正な ?lang= が
+      従来どおり japanese にフォールバックすることも確認済み。
+
+  インストールログのリンク先頭に付く矢印は、JS側で
+  document.documentElement の dir 属性を読んで切り替える。
+
+  検証：既存7言語すべてで正しい言語タグの出力を確認。プルダウンが
+  選択状態を保ったまま生成されること、パストラバーサル（../ 等）の
+  試行が従来どおり弾かれること、アラビア語ファイルを置くだけで
+  lang="ar" dir="rtl" になることを確認した。
+
+
+============================================================
+2026-08-12T08:50 UTC
+------------------------------------------------------------
+【install/ のディレクトリ一覧抑止と、設置後削除の明文化】
+対象：install/index.html（新規）, install.php,
+      doc/InstallGuide.txt（全8ファイル）
+
+install.php を設置後に残した場合の露出について、配布物側と文書側の
+両面から対処した（コードのバグではなく、運用上の防御）。
+
+  [1] ksphp_install_ensure_backup_dir() を新設し、install/backup/ を
+      作成する2箇所（ksphp_install_log_error とログ保存処理）を統一。
+      作成と同時に index.html を設置する。backup/ には
+      install-log-*.txt と install-errors-*.txt が蓄積され、これらには
+      サーバーの絶対パスと導入ファイル一覧が含まれる。
+
+  [2] install/index.html を新規に同梱。ksphp_install_list_files() の
+      走査根は newbbs/ であるため、この index.html が導入ファイル一覧に
+      混入しないことを確認済み。
+
+  [3] doc/InstallGuide.txt の全8ファイル（root・en・ja・ko・pt・tr・
+      zh-hans・zh-hant）に、設置完了後は install/ ディレクトリごと
+      削除する旨の節を各言語で追記した。無認証の install.php が何を
+      露出しうるかを具体的に示し、同梱の index.html はディレクトリ
+      一覧の抑止であってアクセス制御ではない点も明記している。
+
+  なお _setup.php は使用後に自分自身をリネームする仕組みを持つが、
+  install.php にはこの仕組みが無いため、手動削除を文書化する形で
+  対応している。

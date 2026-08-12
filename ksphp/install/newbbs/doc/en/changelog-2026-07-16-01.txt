@@ -3077,3 +3077,140 @@ A series of install.php changes landed after RC18.
 
   Live verification: all items passed; multi-target comm error resolved.
 
+
+============================================================
+2026-08-12T08:00 UTC
+------------------------------------------------------------
+[RTL support, phase 1: remove every physical direction property]
+Files: css.php, sub/template.html, sub/tmpllog.html, sub/tmpltree.html,
+       sub/index.html, js/admin.js, js/treehide.js, js/longpostfilter.js,
+       bbs.php, conf.php, install.php
+
+In preparation for Arabic support, every place that named a physical
+side was replaced with its logical equivalent, which flips automatically
+with the text direction.
+
+* Physical to logical properties (18 sites)
+  - css.php: margin-left x2 -> margin-inline-start; .pagetitle
+    text-align: left -> start; .copyright text-align: right -> end;
+    button margin-right -> margin-inline-end
+  - install.php: table cell text-align: left -> start; the language
+    dropdown's float: right -> float: inline-end
+  - sub/index.html: padding-left/right -> padding-inline
+  - js/treehide.js: padding-left and the negative margin-left that
+    cancels it were converted together. Changing only one of the pair
+    breaks the indent, so they must always be handled as a unit.
+  - js/longpostfilter.js, js/admin.js: margin-left/right -> logical
+
+* Presentational HTML attribute removed
+  The six <td align="right"> in sub/tmpllog.html now use a new .endItem
+  class (text-align: end) defined in css.php.
+
+* box-shadow (js/admin.js)
+  box-shadow has no logical-property equivalent, so the inset offset is
+  exposed as a custom property, --swdh-accent-offset, and flipped to
+  -4px under [dir="rtl"].
+
+* Dynamic lang and dir on <html>
+  sub/template.html's <html> gained dir="{META_DIRECTION}". Right after
+  the language file is loaded, bbs.php now defines $ksphp_lang_tags
+  (language file name -> BCP47 tag, all 15 languages registered ahead of
+  time) and $ksphp_rtl_langs, and overwrites $CONF['META_LANGUAGE'] and
+  $CONF['META_DIRECTION']. $CONF is array_merge()d into the global
+  template variables, so overwriting it in this one place reaches every
+  page.
+
+  Pre-existing bug fixed along the way: META_LANGUAGE was a static
+  conf.php value ('ja'), so <html lang> stayed at 'ja' no matter which
+  language the visitor selected. It is now resolved from the selected
+  language, and conf.php documents that its own value is only a fallback
+  for languages not registered in the table.
+
+  Verified: php -l and node --check clean. css.php was served over
+  php -S to confirm the logical properties are emitted, that no physical
+  property survives, and that colour substitution still works. Measured
+  per language: japanese -> lang="ja" dir="ltr", english -> en/ltr,
+  zh-hant -> zh-Hant/ltr, korean -> ko/ltr, turkish -> tr/ltr,
+  arabic -> lang="ar" dir="rtl".
+
+
+============================================================
+2026-08-12T08:20 UTC
+------------------------------------------------------------
+[RTL support: flip directional arrows, register language display names]
+Files: bbs.php, sub/template.html, sub/tmpllog.html, sub/tmpltree.html
+
+* Arrows
+  U+2190 and U+2192 are not Bidi_Mirrored, so they do not flip on their
+  own under dir="rtl". $CONF['ARROW_BACK'] and ['ARROW_FORWARD'] were
+  added; the eight hardcoded back arrows in the templates became
+  {ARROW_BACK}, and the next-page arrow became {ARROW_FORWARD}.
+  The vertical arrows are deliberately left alone -- they denote up and
+  down, which text direction does not affect.
+
+* Language display names
+  $ksphp_lang_labels gained display names for the eight planned
+  languages (Espanol, Francais, Deutsch, Bahasa Indonesia, Tieng Viet,
+  Tagalog, Hindi, Arabic, written in their own scripts). Without an
+  entry, a language shows up in the dropdown as its bare file name.
+
+
+============================================================
+2026-08-12T08:35 UTC
+------------------------------------------------------------
+[install.php: real language tags, text direction, dynamic language list]
+Files: install.php
+
+Two pre-existing bugs in the installer were fixed at the same time.
+
+  [1] <html lang> was the hardcoded ternary
+      `$lang === 'english' ? 'en' : 'ja'`, so Korean, Portuguese,
+      Turkish and both Chinese variants were all emitted as lang="ja".
+      A proper BCP47 table, $install_lang_tags, now resolves the tag,
+      and a dir attribute is emitted alongside it.
+
+  [2] The supported-language list ($lang_options) and the <option>
+      markup were two separate hardcoded copies of the same seven
+      languages, so dropping a new .txt into language/ had no effect.
+      Both are now driven by scanning glob('language/*.txt'); names come
+      from basename() and are restricted to [A-Za-z0-9_-]. An unknown
+      ?lang= still falls back to japanese, as before.
+
+  The arrow prefixed to the install-log link is flipped in JS by reading
+  the dir attribute from document.documentElement.
+
+  Verified: all seven existing languages emit the correct tag; the
+  dropdown is generated with the selected option preserved;
+  path-traversal attempts on ?lang= still fall back; and dropping in an
+  Arabic file is enough to make the installer render lang="ar" dir="rtl".
+
+
+============================================================
+2026-08-12T08:50 UTC
+------------------------------------------------------------
+[Suppress directory listing under install/, document post-setup deletion]
+Files: install/index.html (new), install.php,
+       doc/InstallGuide.txt (all 8 files)
+
+Addresses what an install.php left in place after setup exposes. Neither
+item is a code bug; both are packaging and operational hardening.
+
+  [1] A new ksphp_install_ensure_backup_dir() replaces the two separate
+      sites that created install/backup/ (ksphp_install_log_error and
+      the log-saving path), and writes an index.html there on creation.
+      backup/ accumulates install-log-*.txt and install-errors-*.txt,
+      which carry absolute server paths and the list of installed files.
+
+  [2] install/index.html is now shipped. It sits outside the scan root
+      of ksphp_install_list_files() (newbbs/), so it does not enter the
+      installed file set -- confirmed.
+
+  [3] All eight doc/InstallGuide.txt files (root, en, ja, ko, pt, tr,
+      zh-hans, zh-hant) gained a section, in each language, stating that
+      the install/ directory must be deleted once setup is complete. It
+      spells out what an unauthenticated install.php exposes and states
+      explicitly that the bundled index.html files suppress enumeration
+      only and are not access control.
+
+  _setup.php renames itself after use; install.php has no such
+  mechanism, which is why the manual step is documented instead.
