@@ -56,12 +56,92 @@ function ksphp_install_load_language(string $lang): array {
 	return $result;
 }
 
-$lang_options = array('english', 'japanese', 'korean', 'portuguese', 'turkish', 'zh-hans', 'zh-hant');
+// 2026-08-12：従来は対応言語を配列でハードコードしていたため、
+// language/ に新しい .txt を置いても認識されなかった。実ディレクトリを
+// 走査して候補を作るように変更（bbs.php 側と同じ方式）。
+// glob() の結果から basename を取るので、任意のパスが混入する余地はない。
+// 加えて、念のため英数字・ハイフン・アンダースコアのみに限定する。
+// 2026-08-12: The supported-language list used to be a hardcoded array,
+// so dropping a new .txt into language/ had no effect. Scan the actual
+// directory instead (same approach as bbs.php). Names come from
+// basename() of glob() results and are additionally restricted to
+// [A-Za-z0-9_-], so no arbitrary path can slip through.
+$lang_options = array();
+$lang_files = glob(__DIR__ . '/language/*.txt');
+if ($lang_files !== false) {
+	foreach ($lang_files as $lf) {
+		$name = basename($lf, '.txt');
+		if ($name !== '' && preg_match('/\A[A-Za-z0-9_-]+\z/', $name)) {
+			$lang_options[] = $name;
+		}
+	}
+}
+sort($lang_options);
+if ($lang_options === array()) {
+	$lang_options = array('japanese');
+}
 $lang = (string) ($_GET['lang'] ?? 'japanese');
 if (!in_array($lang, $lang_options, true)) {
-	$lang = 'japanese';
+	$lang = in_array('japanese', $lang_options, true) ? 'japanese' : $lang_options[0];
 }
 $MSG = ksphp_install_load_language($lang);
+
+// 2026-08-12：<html lang> は english か ja かの二択でハードコードされて
+// おり、韓国語・ポルトガル語等を選んでも lang="ja" になっていた。
+// BCP47タグを引けるようにし、併せて書字方向も決める（RTL対応）。
+// 2026-08-12: <html lang> used to be a hardcoded english-or-ja ternary,
+// so Korean, Portuguese etc. all rendered as lang="ja". Resolve a real
+// BCP47 tag here, and the text direction along with it.
+$install_lang_tags = array(
+	'japanese'   => 'ja',
+	'english'    => 'en',
+	'korean'     => 'ko',
+	'portuguese' => 'pt',
+	'turkish'    => 'tr',
+	'zh-hans'    => 'zh-Hans',
+	'zh-hant'    => 'zh-Hant',
+	'spanish'    => 'es',
+	'hindi'      => 'hi',
+	'french'     => 'fr',
+	'indonesian' => 'id',
+	'vietnamese' => 'vi',
+	'tagalog'    => 'tl',
+	'german'     => 'de',
+	'arabic'     => 'ar',
+);
+$install_rtl_langs = array('arabic');
+$html_lang = $install_lang_tags[$lang] ?? 'en';
+$html_dir  = in_array($lang, $install_rtl_langs, true) ? 'rtl' : 'ltr';
+
+// 言語プルダウンの表示名。language/*.txt を置けばプルダウンには自動で
+// 現れるが、ここに無い言語はファイル名がそのまま表示される。
+// bbs.php 側の $ksphp_lang_labels と同じ内容を保つこと。
+// Display names for the language dropdown. A new language/*.txt shows up
+// automatically, but falls back to the bare file name if not listed here.
+// Keep in sync with $ksphp_lang_labels in bbs.php.
+$install_lang_labels = array(
+	'japanese'   => '日本語',
+	'english'    => 'English',
+	'korean'     => '한국어',
+	'portuguese' => 'Português',
+	'turkish'    => 'Türkçe',
+	'zh-hans'    => '简体中文',
+	'zh-hant'    => '繁體中文',
+	'spanish'    => 'Español',
+	'french'     => 'Français',
+	'german'     => 'Deutsch',
+	'indonesian' => 'Bahasa Indonesia',
+	'vietnamese' => 'Tiếng Việt',
+	'tagalog'    => 'Tagalog',
+	'hindi'      => 'हिन्दी',
+	'arabic'     => 'العربية',
+);
+// 「→」はBidi_Mirroredではないため dir="rtl" でも自動反転しない。
+// 出力箇所はインストールログ生成のJS側だけなので、そちらで
+// document.documentElement.dir を見て切り替える。
+// The arrow is not Bidi_Mirrored, so it does not flip on its own. It is
+// only emitted from the install-log JS, which reads the dir attribute.
+
 function T($key) {
 	return $GLOBALS['MSG'][$key] ?? $key;
 }
@@ -1786,7 +1866,7 @@ function h(string $s): string {
 
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo $lang === 'english' ? 'en' : 'ja'; ?>">
+<html lang="<?php echo h($html_lang); ?>" dir="<?php echo h($html_dir); ?>">
 <head>
 <meta charset="UTF-8">
 <title><?php echo h(T('PAGE_TITLE')); ?></title>
@@ -1827,13 +1907,9 @@ function h(string $s): string {
 <p id="lang-select-wrap">
 	<label for="lang-select"><?php echo h(T('LANG_SELECT_LABEL')); ?></label>
 	<select id="lang-select">
-		<option value="english" <?php echo $lang === 'english' ? 'selected' : ''; ?>>English</option>
-		<option value="japanese" <?php echo $lang === 'japanese' ? 'selected' : ''; ?>>日本語</option>
-		<option value="korean" <?php echo $lang === 'korean' ? 'selected' : ''; ?>>한국어</option>
-		<option value="portuguese" <?php echo $lang === 'portuguese' ? 'selected' : ''; ?>>Português</option>
-		<option value="turkish" <?php echo $lang === 'turkish' ? 'selected' : ''; ?>>Türkçe</option>
-		<option value="zh-hans" <?php echo $lang === 'zh-hans' ? 'selected' : ''; ?>>简体中文</option>
-		<option value="zh-hant" <?php echo $lang === 'zh-hant' ? 'selected' : ''; ?>>繁體中文</option>
+<?php foreach ($lang_options as $lang_opt): ?>
+		<option value="<?php echo h($lang_opt); ?>"<?php echo $lang === $lang_opt ? ' selected' : ''; ?>><?php echo h($install_lang_labels[$lang_opt] ?? $lang_opt); ?></option>
+<?php endforeach; ?>
 	</select>
 </p>
 <h1><?php echo h(T('PAGE_TITLE')); ?></h1>
@@ -1934,6 +2010,13 @@ function Lf(key, replacements) {
 	}
 	return s;
 }
+
+// 2026-08-12：導入完了リンクの先頭に付く矢印。→(U+2192)はUnicodeの
+// 双方向アルゴリズムでは自動反転しないため、書字方向を見て入れ替える。
+// 2026-08-12: Arrow prefixed to the "open the board" link in the install
+// log. U+2192 is not Bidi_Mirrored, so flip it based on text direction.
+var ARROW_FORWARD =
+	(document.documentElement.getAttribute('dir') === 'rtl') ? '←' : '→';
 
 document.getElementById('lang-select').addEventListener('change', function () {
 	location.href = '?lang=' + encodeURIComponent(this.value);
@@ -2367,10 +2450,10 @@ document.getElementById('run-setup-btn').addEventListener('click', function () {
 									var cgiurl = data.cgiurl || '';
 									if (/^https?:\/\//i.test(cgiurl)) {
 										// 絶対URLの場合のみリンクにする
-										linkLi.innerHTML = '→ <a href="' + escapeHtml(cgiurl) + '" target="_blank">' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + '</a>';
+										linkLi.innerHTML = escapeHtml(ARROW_FORWARD) + ' <a href="' + escapeHtml(cgiurl) + '" target="_blank">' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + '</a>';
 									} else {
 										// 相対パスの場合はテキスト表示（リンクしない）
-										linkLi.innerHTML = '→ ' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + ' <code>' + escapeHtml(cgiurl || entryFilename) + '</code>';
+										linkLi.innerHTML = escapeHtml(ARROW_FORWARD) + ' ' + escapeHtml(Lf('JS_OPEN_LINK_TEXT', { ENTRY: entryFilename })) + ' <code>' + escapeHtml(cgiurl || entryFilename) + '</code>';
 									}
 									logList.appendChild(linkLi);
 									// この導入先の処理とログ表示が終わったら次へ進む
