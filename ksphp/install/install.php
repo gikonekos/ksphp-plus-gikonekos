@@ -1237,11 +1237,48 @@ function ksphp_install_is_safe_target_dir(string $dir, string $install_dir): boo
  * 埋もれてしまう危険がある。install/backup/install-errors-YYYY-MM-DD.txt
  * に追記形式（複数回の実行分を蓄積）で永続的に記録する保険を設ける。
  */
-function ksphp_install_log_error(string $install_dir, string $message): void {
+/**
+ * 2026-08-12 Gikoneko: install/backup/ を作成する共通処理。
+ *
+ * backup/ には旧設置ファイル一式に加えて install-log-*.txt や
+ * install-errors-*.txt が入る。これらにはサーバーの絶対パスや導入
+ * ファイル一覧が含まれるため、ディレクトリ一覧が有効なサーバーでは
+ * 第三者に読まれうる。作成と同時に index.html を置いて一覧を抑止する。
+ *
+ * ※これは一覧の抑止であって、アクセス制御ではない。ファイル名を
+ *   知っている相手には依然として読まれる。install.php ごと設置後に
+ *   削除するのが本筋で、その旨は doc 側に記載する。
+ *
+ * 2026-08-12 Gikoneko: Shared helper for creating install/backup/.
+ * That directory ends up holding install-log-*.txt and
+ * install-errors-*.txt, which contain absolute server paths and the
+ * list of installed files, so an index.html is dropped in at creation
+ * time to suppress directory listing. Note this only stops enumeration
+ * -- it is not access control; deleting install.php after setup is the
+ * real answer, and the docs say so.
+ */
+function ksphp_install_ensure_backup_dir(string $install_dir): string {
 	$dir = $install_dir . '/backup';
 	if (!is_dir($dir)) {
 		@mkdir($dir, 0755, true);
 	}
+	$index = $dir . '/index.html';
+	if (is_dir($dir) && !file_exists($index)) {
+		@file_put_contents(
+			$index,
+			"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n"
+			. "<meta charset=\"UTF-8\">\n"
+			. "<meta name=\"robots\" content=\"noindex,nofollow\">\n"
+			. "<title>backup</title>\n</head>\n<body>\n"
+			. "<p>This directory holds installation backups and logs.</p>\n"
+			. "</body>\n</html>\n"
+		);
+	}
+	return $dir;
+}
+
+function ksphp_install_log_error(string $install_dir, string $message): void {
+	$dir = ksphp_install_ensure_backup_dir($install_dir);
 	$path = $dir . '/install-errors-' . gmdate('Y-m-d') . '.txt';
 	$line = gmdate('Y-m-d\TH:i:s\Z') . ' ' . $message . "\n";
 	@file_put_contents($path, $line, FILE_APPEND | LOCK_EX);
@@ -1709,10 +1746,7 @@ if (($_GET['ajax'] ?? '') === '1' && ($_GET['action'] ?? '') === 'save_install_l
 		echo json_encode(array('ok' => false, 'text' => T('ERROR_NO_LOG')));
 		exit;
 	}
-	$backup_dir = $install_dir . '/backup';
-	if (!is_dir($backup_dir)) {
-		@mkdir($backup_dir, 0755, true);
-	}
+	$backup_dir = ksphp_install_ensure_backup_dir($install_dir);
 	// 20260812 Gikoneko: multipart/form-dataはHTML仕様上、値の改行を
 	// CRLFへ正規化して送信するため、保存時にLFへ揃える。
 	$log_text = str_replace(array("\r\n", "\r"), "\n", $log_text);

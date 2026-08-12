@@ -118,3 +118,26 @@ language/*.txt directly, in the form:
   past-log search, tree view, admin login (GET/POST), personal
   settings screen, admin menu) under both the Japanese and English
   LANGUAGE_FILE settings.
+
+============================================================
+[Do this once installation is complete (important)]
+------------------------------------------------------------
+Delete the whole install/ directory once you are done.
+
+install.php runs without authentication, so that anyone carrying out
+the installation can use it. If you leave it in place afterwards, a
+third party can retrieve:
+
+  - the absolute path, version, write permissions and title of every
+    board on the server
+  - almost all conf.php settings (the admin password and key excepted)
+  - the logs under install/backup/, which contain absolute server
+    paths and the list of installed files
+
+install/index.html and install/backup/index.html are included and will
+suppress directory listing, but that only stops enumeration -- it is
+not access control. Anyone who knows a file name can still read it.
+Deleting the directory is the only reliable answer.
+
+Note that _setup.php (the admin password tool) renames itself after
+use. install.php has no such mechanism, so it must be removed by hand.

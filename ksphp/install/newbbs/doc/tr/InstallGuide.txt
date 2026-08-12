@@ -124,3 +124,28 @@ doğrudan şu şekilde referans almasını sağlar:
   hem Japonca hem de İngilizce LANGUAGE_FILE ayarlarında HTTP 200
   döndüğü, geride kalan {PLACEHOLDER} işaretlemesi olmadığı ve
   window.KSPHP_LANG'ın geçerli bir JSON olarak üretildiği doğrulandı.
+
+============================================================
+[Kurulum tamamlandıktan sonra yapılması gerekenler (önemli)]
+------------------------------------------------------------
+İşlem bittiğinde install/ dizinini tamamen silin.
+
+install.php, kurulumu yapan herkesin kullanabilmesi için kimlik
+doğrulaması olmadan çalışır. Kurulumdan sonra yerinde bırakılırsa,
+üçüncü bir kişi şunları elde edebilir:
+
+  - sunucudaki her forumun mutlak yolu, sürümü, yazma izinleri ve
+    başlığı
+  - conf.php ayarlarının neredeyse tamamı (yönetici parolası ve
+    anahtarı hariç)
+  - install/backup/ altındaki günlükler; bunlar mutlak sunucu
+    yollarını ve kurulan dosyaların listesini içerir
+
+install/index.html ve install/backup/index.html pakete dahildir ve
+dizin listelemesini engeller; ancak bu yalnızca listelemeyi durdurur,
+bir erişim denetimi değildir. Dosya adını bilen biri yine de
+okuyabilir. Tek güvenilir çözüm dizini silmektir.
+
+_setup.php (yönetici parolası aracı) kullanımdan sonra kendi adını
+değiştirir. install.php'de böyle bir mekanizma yoktur, bu nedenle
+elle silinmesi gerekir.

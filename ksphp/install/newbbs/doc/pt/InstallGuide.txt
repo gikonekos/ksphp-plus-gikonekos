@@ -126,3 +126,29 @@ language/*.txt diretamente, na forma:
   administrador (GET/POST), tela de configurações pessoais, menu de
   administração), tanto com a configuração LANGUAGE_FILE em japonês
   quanto em inglês.
+
+============================================================
+[Faça isto depois de concluir a instalação (importante)]
+------------------------------------------------------------
+Apague todo o diretório install/ assim que terminar.
+
+O install.php funciona sem autenticação, para que qualquer pessoa
+possa realizar a instalação. Se ele for deixado no servidor, um
+terceiro pode obter:
+
+  - o caminho absoluto, a versão, as permissões de escrita e o título
+    de cada fórum no servidor
+  - quase todas as configurações do conf.php (exceto a senha e a chave
+    de administrador)
+  - os registos em install/backup/, que contêm caminhos absolutos do
+    servidor e a lista de ficheiros instalados
+
+Os ficheiros install/index.html e install/backup/index.html estão
+incluídos e suprimem a listagem de diretórios, mas isso apenas impede
+a enumeração -- não é controlo de acesso. Quem souber o nome de um
+ficheiro continua a poder lê-lo. Apagar o diretório é a única solução
+fiável.
+
+Note que o _setup.php (ferramenta de senha de administrador) muda o
+próprio nome após o uso. O install.php não tem esse mecanismo, por
+isso precisa de ser removido manualmente.
