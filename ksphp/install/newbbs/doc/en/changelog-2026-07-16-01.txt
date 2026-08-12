@@ -3214,3 +3214,43 @@ item is a code bug; both are packaging and operational hardening.
 
   _setup.php renames itself after use; install.php has no such
   mechanism, which is why the manual step is documented instead.
+
+
+============================================================
+2026-08-12T09:30 UTC
+------------------------------------------------------------
+[Arabic language file added -- the 15th language, and the first RTL one]
+Files: language/arabic.txt (new)
+
+Phase 1 of the RTL work had already registered Arabic in
+$ksphp_lang_tags, $ksphp_rtl_langs and $ksphp_lang_labels, so adding the
+file was enough to turn right-to-left rendering on.
+
+  - All 298 keys translated into Modern Standard Arabic, with
+    english.txt as the source. The key set and key order were verified
+    to match it exactly.
+  - Placeholders (%s, %d, {BINDEX}, {EINDEX}, {N}) match english.txt
+    in both count and order. The script uses plain sprintf with no
+    positional specifiers, so reordering them would swap the arguments.
+  - Leading and trailing spaces (HACKER_TAG's leading space,
+    TREE_USER_LABEL's trailing space, and so on), HTML tags and entity
+    references are preserved as in the source.
+  - Only the &nbsp; count varies, following the word count of the
+    language -- the existing seven languages vary the same way, from
+    three in Japanese to eight in Portuguese.
+  - OG_LOCALE is ar_AR. Weekday names are spelled out rather than
+    abbreviated, since Arabic does not commonly abbreviate them.
+
+  Note: lines mixing Arabic with %s, &nbsp; or HTML tags look scrambled
+  in an editor that applies the bidirectional algorithm, even though the
+  byte order is correct. A comment at the top of the file says so.
+
+  Verified: all five endpoints (/, m=g, m=c, m=tree, m=login) return
+  HTTP 200 with no unresolved template variables and lang="ar" dir="rtl";
+  the dropdown shows the language under its own name; and Japanese,
+  English and Korean are unaffected.
+
+  install/language/ is a separate 247-key set and has no Arabic file yet.
+  The installer builds its language list by scanning the directory, so
+  Arabic simply does not appear there until the file exists -- nothing is
+  left inconsistent in the meantime.

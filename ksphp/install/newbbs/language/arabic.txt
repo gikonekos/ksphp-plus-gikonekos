@@ -1,0 +1,369 @@
+# ksphp-plus language file (Arabic / العربية)
+# Format: KEY=value  (no spaces around "=" -- anything after "=" is taken
+# literally, including leading/trailing spaces, up to end of line)
+# Lines starting with "#" or ";" are comments. Blank lines are ignored.
+# Encoding: UTF-8, no BOM.
+# Placeholders like {MAXNAMELENGTH} are substituted by the script and must
+# be kept as-is (same spelling, including the curly braces).
+# NOTE: this is a right-to-left language. Lines that mix Arabic with %s,
+# &nbsp; or HTML tags will look scrambled in an editor that applies the
+# bidirectional algorithm; the byte order is nevertheless correct. Keep
+# every %s in the same order as in english.txt -- the script uses plain
+# sprintf without positional specifiers.
+
+# Service / access
+BBS_OUT_OF_SERVICE=هذه اللوحة غير متاحة حاليًا.
+ACCESS_PROHIBITED=الوصول ممنوع.
+
+# Generic / IO errors
+FAILED_TO_READ_MESSAGE=تعذّرت قراءة الرسالة
+FILE_AUTOCREATED=لم يُعثر على %s، لذلك تم إنشاؤه من جديد.
+FAILED_TO_OPEN_LOG=تعذّر فتح ملف السجل: %s
+FAILED_TO_OUTPUT_LOG=تعذّر إخراج سجل الرسائل
+OLDLOG_TOO_LARGE=ملف سجل الرسائل يتجاوز الحد الأقصى لحجم الملف
+PARTICIPANT_FILE_ERROR=خطأ في إخراج ملف المشاركين
+
+# Posting / validation
+POSTING_SUSPENDED=خاصية النشر في هذه اللوحة معلّقة حاليًا.
+ADMIN_ONLY_POSTING=النشر في هذه اللوحة مسموح للمشرفين فقط.
+ADMIN_POST_DISABLED=دخول المشرف عبر نموذج النشر معطّل. يُرجى استخدام رابط الإدارة.
+BAD_REFERER=لا يمكن النشر من عناوين أخرى غير
+POST_TOO_WIDE=عدد الأحرف في محتوى المشاركة كبير جدًا.
+POST_TOO_MANY_LINES=عدد الأسطر في محتوى المشاركة كبير جدًا.
+POST_TOO_LARGE=محتوى المشاركة كبير جدًا.
+NAME_TOO_LONG=عدد الأحرف في حقل الاسم كبير جدًا. (حتى %s حرفًا)
+EMAIL_TOO_LONG=عدد الأحرف في حقل البريد الإلكتروني كبير جدًا. (حتى %s حرفًا)
+TITLE_TOO_LONG=عدد الأحرف في حقل العنوان كبير جدًا. (حتى %s حرفًا)
+POST_TOO_FAST=الفاصل الزمني بين المشاركات قصير جدًا. يُرجى المحاولة مرة أخرى.
+NGWORD_FOUND=تحتوي المشاركة على كلمات محظورة.
+SPAM_KUN=اخرج من هنا أيها المزعج!!!
+
+# Caller / request
+INVALID_CALLER=طلب غير صالح.
+NO_PARAMETERS=لا توجد معطيات.
+INVALID_PASSWORD=كلمة المرور غير صحيحة.
+
+# Follow / search / reference
+MESSAGE_NOT_FOUND=تعذّر العثور على الرسالة المحدّدة.
+REFERENCE_NOT_FOUND=لم يُعثر على المشاركة المرجعية.
+REFERENCE_COLON=مرجع:
+FOLLOW_UP_POST=رد متابعة
+POST_SEARCH=بحث في المشاركات
+
+# Completion / undo
+POST_COMPLETE=تم النشر
+DELETION_COMPLETE=تم الحذف
+UNDO_POST_NOT_FOUND=لم يُعثر على المشاركة المعنية.
+UNDO_NOT_PERMITTED=حذف المشاركة المعنية غير مسموح.
+
+# Main list footer
+POSTS_RANGE_NEWEST_TO_OLDEST=المعروض أعلاه هو المشاركات من {BINDEX} إلى {EINDEX}، مرتّبة من الأحدث إلى الأقدم. 
+NO_UNREAD_MESSAGES=لا توجد رسائل غير مقروءة. 
+NO_POSTS_BELOW=لا توجد مشاركات بعد هذه النقطة.
+
+# New post page
+NEW_POST=مشاركة جديدة
+
+# Labels / tags inserted into messages
+HACKER_TAG= (مخترق)
+FRAUDSTER_TAG= (محتال)
+SELF_REPLY_TAG= (رد ذاتي)
+
+# Weekdays
+SUNDAY=الأحد
+MONDAY=الاثنين
+TUESDAY=الثلاثاء
+WEDNESDAY=الأربعاء
+THURSDAY=الخميس
+FRIDAY=الجمعة
+SATURDAY=السبت
+
+# Admin / image upload errors
+NO_PASSWORD_SET=لم يتم تعيين كلمة مرور.
+FILE_SIZE_OVER_LIMIT=حجم الملف يتجاوز %s كيلوبايت.
+FILE_UPLOAD_FAILED=فشلت عملية رفع الملف. الرمز: %s
+FAILED_TO_LOAD_UPLOAD_ID=تعذّر تحميل ملف الصورة المرفوع.
+IMAGE_WIDTH_EXCEEDED=عرض الصورة يتجاوز الحد المسموح.
+IMAGE_FILEMSG=صورة%s %s %s*%s %sKB
+INVALID_FILE_FORMAT=صيغة الملف غير صحيحة.
+DIRECTORY_OPEN_FAILED=تعذّر فتح هذا المجلد.
+TOO_MANY_KEYWORDS=عدد كلمات البحث كبير جدًا.
+
+# Page titles
+TITLE_ADMIN_MENU=قائمة الإدارة
+TITLE_MESSAGE_DELETE_MODE=وضع حذف الرسائل
+TITLE_PASSWORD_SETTINGS=صفحة إعدادات كلمة المرور
+TITLE_OLDLOG_SEARCH=البحث في سجل الرسائل
+TITLE_OLDLOG_SEARCH_RESULTS=نتائج البحث في سجل الرسائل
+TITLE_OLDLOG=سجل الرسائل
+TITLE_TOPIC_LIST=قائمة المواضيع
+TITLE_OLDLOG_ARCHIVE=أرشيف سجل الرسائل
+TITLE_TREEVIEW_MAIN=عرض شجري
+TITLE_ERROR=خطأ
+TITLE_NOTICE=تنبيه
+
+# HTML titles
+TITLE_FOLLOWUP=رد متابعة
+TITLE_SEARCH_BY_USER=البحث حسب المستخدم
+TITLE_THREAD_VIEW=عرض السلسلة
+TITLE_TREE_VIEW=عرض شجري
+TITLE_DELETE_POST=حذف المشاركة
+
+# Additional UI strings
+URL_REDIRECTION=إعادة توجيه العنوان
+USER_SETTINGS=إعدادات المستخدم
+COUNTER_ERROR=خطأ في العدّاد
+
+# template.html UI strings
+NAV_PR_OFFICE=مكتب الإعلان
+NAV_CONTACT=اتصل بنا
+NAV_MESSAGE_LOGS=سجلات الرسائل
+NAV_MANAGE=الإدارة
+BRAND_NAME=KuzuhaScriptPHP+
+RETURN=رجوع
+MSG_USER_LABEL=المستخدم:
+MSG_POST_DATE_LABEL=تاريخ النشر:
+NEXT_PAGE=الصفحة التالية
+RELOAD=تحديث
+UNREAD=غير مقروء
+TITLE_ADMIN_POST=النشر بصفة مشرف
+FORM_NAME_LABEL=الاسم
+FORM_EMAIL_LABEL=البريد الإلكتروني
+FORM_TITLE_LABEL=العنوان
+POST_RELOAD=نشر/تحديث
+CLEAR=مسح
+FORM_CONTENTS_LABEL=المحتوى
+FORM_CONTENTS_HELP_SIMPLE=(حتى %s عمودًا و%s سطرًا. يُرجى إدراج فواصل الأسطر عند الحاجة. لا يمكن استخدام وسوم HTML أو BBCode.)
+FORM_CONTENTS_HELP_IMAGE=(حتى %s عمودًا و%s سطرًا. يُرجى إدراج فواصل الأسطر عند الحاجة. لا يمكن استخدام وسوم HTML أو BBCode. <br>            إذا كتبت %s في النص، فسيتم إدراج الصورة المرفوعة في ذلك الموضع.)
+KAOMOJI_SHOW_MORE=عرض المزيد من وجوه الكاومojiِ
+KAOMOJI_INTRO=يتم عرض المزيد من وجوه الكاوموجي بأسلوب Ayashii World. اطّلع أيضًا على <a target="_blank" href="//mattari.heyuri.net/">Mattari AA</a>.
+KAOMOJI_CAT_MATTARI=استرخاء / هدوء
+KAOMOJI_CAT_DAUSO=حزن / بؤس
+KAOMOJI_CAT_ANGRY=غضب / شرّ
+KAOMOJI_CAT_EHHH=ماذا!؟
+KAOMOJI_CAT_GESTURES=إيماءات / تلويح
+KAOMOJI_CAT_SLEEPY=نعاس / أخرى
+KAOMOJI_CAT_DROOLING=سيلان اللعاب
+KAOMOJI_CAT_SMOKING=تدخين / شرب الشاي
+KAOMOJI_CAT_FUN=مرح / متنوّع
+IMAGE_UPLOAD_LABEL=رفع صورة
+IMAGE_UPLOAD_HELP=（JPG/GIF/PNG فقط. أقصى عرض %s بكسل؛ أقصى ارتفاع %s بكسل؛ أقصى حجم للملف %s كيلوبايت.）
+POSTS_DISPLAYED_LABEL=المشاركات&nbsp;المعروضة
+AUTO_LINK_URLS_LABEL=ربط&nbsp;العناوين&nbsp;تلقائيًا
+LOG_READING_MODE_LABEL=وضع&nbsp;قراءة&nbsp;السجل
+HIDE_LINK_LINE_LABEL=إخفاء&nbsp;سطر&nbsp;الروابط
+SHOW_IMAGES_LABEL=إظهار&nbsp;الصور
+COUNTER_TEXT=المشاهدات&nbsp;منذ&nbsp;%s:&nbsp;%s (مستوى&nbsp;المتانة:&nbsp;%s)
+MBRCOUNT_TEXT=المشاركون&nbsp;الحاليون:&nbsp;%s&nbsp;مستخدم (خلال&nbsp;%s&nbsp;ثانية)
+LOGSAVE_TEXT=أقصى&nbsp;عدد&nbsp;مشاركات&nbsp;محفوظة:&nbsp;%s&nbsp;مشاركة
+THREAD_LABEL=سلسلة
+TREE_LABEL=شجرة
+DELETE_PREVIOUS_POST=حذف&nbsp;المشاركة&nbsp;السابقة
+LATEST_30_POSTS=أحدث 30 مشاركة
+POSTS_FOUND= مشاركة تم العثور عليها.
+RETURN_TO_BBS_HELP=انقر على الرابط أعلاه أو اضغط <kbd>Alt</kbd>(+<kbd>Shift</kbd>)+<b><kbd>O</kbd></b> للعودة إلى اللوحة.
+DISPLAY_COLORS_LEGEND=ألوان العرض (بالنظام الست عشري)
+TEXT_COLOR_LABEL=لون النص
+BACKGROUND_COLOR_LABEL=لون الخلفية
+LINK_COLOR_LABEL=لون الروابط
+VISITED_LINK_COLOR_LABEL=لون الروابط المزارة
+ACTIVE_LINK_COLOR_LABEL=لون الروابط النشطة
+MOUSEOVER_LINK_COLOR_LABEL=لون الروابط عند مرور المؤشر
+TITLE_COLOR_LABEL=لون العنوان
+QUOTE_COLOR_LABEL=لون الاقتباس
+ADDITIONAL_FEATURES_LEGEND=خصائص إضافية
+GZIP_LABEL=النقل باستخدام ضغط gzip (سيكون العرض أسرع)
+LOG_READING_MODE_DESC_LABEL=وضع قراءة السجل (لن يتم عرض نموذج النشر)
+AUTO_LINK_URLS_DESC_LABEL=ربط العناوين تلقائيًا (ستتحوّل العناوين داخل المشاركة إلى روابط عند النشر)
+COOKIE_LABEL=حفظ اسمك وبريدك الإلكتروني في ملف تعريف ارتباط عند النشر
+HIDE_LINK_ROW_DESC_LABEL=إخفاء صف الروابط (لن يتم عرض قائمة الروابط أسفل نموذج النشر)
+FOLLOW_DISPLAY_LEGEND=طريقة عرض صفحة رد المتابعة
+FOLLOW_NEW_WINDOW_LABEL=الفتح والعرض في نافذة جديدة
+FOLLOW_SAME_PAGE_LABEL=العرض في الصفحة نفسها
+BOOKMARK_HELP=إذا حفظت العنوان الذي يظهر بعد النقر على "تسجيل" في المفضلة، فستتمكّن من تصفّح اللوحة بالإعدادات أعلاه.
+REGISTER=تسجيل
+UNDO_CHANGES=التراجع عن التغييرات
+RESTORE_DEFAULTS=استعادة الإعدادات الافتراضية
+REDIRECTING=جارٍ إعادة التوجيه…
+PAGE_GEN_TIME_TEXT=زمن توليد الصفحة: %s ثانية
+OG_LOCALE=ar_AR
+
+# tmpltree.html UI strings
+STANDARD_VIEW=العرض&nbsp;القياسي
+TOP_LABEL=الأعلى
+
+# login.html UI strings
+MOD_LOGIN_TITLE=دخول المشرف
+PASSWORD_LABEL=كلمة المرور:
+LOGIN_BUTTON=تسجيل الدخول
+LOGIN_ERROR=اسم المستخدم أو كلمة المرور غير صحيحة.
+
+# tmpladmin.html UI strings
+DELETE_MESSAGES_BTN=حذف الرسائل
+VIEW_LOG_FILE_BTN=عرض ملف السجل
+REGEN_PASSWORD_BTN=إعادة توليد كلمة المرور المشفّرة
+PHP_CONFIG_INFO_BTN=معلومات إعدادات PHP على الخادم
+LOGOUT_BTN=تسجيل الخروج
+CLOSE_BTN=إغلاق
+PERFORM_DELETION_BTN=تنفيذ الحذف
+DELETE_INSTRUCTIONS=يُرجى تحديد مربّعات الاختيار للمشاركات التي تريد حذفها، ثم النقر على زر [تنفيذ الحذف] في الأسفل.
+DELETE_COL_HEADER=حذف
+VIEW_COL_HEADER=عرض
+DATE_POSTED_COL_HEADER=تاريخ النشر
+SUBJECT_COL_HEADER=الموضوع
+USERNAME_COL_HEADER=اسم المستخدم
+HOST_COL_HEADER=المضيف
+COMMENT_COL_HEADER=تعليق
+SETPASS_INSTRUCTIONS=عيّن كلمة المرور الخاصة بك.<br>		يُرجى إدخال كلمة مرور المشرف التي ستستخدمها لإدارة اللوحة من الآن فصاعدًا.<br>	ستُستخدم كلمة المرور التي تدخلها هنا للنشر باسم المشرف وللتحقّق من هويتك عند الدخول إلى وضع الإدارة.
+ADMIN_PASSWORD_LABEL=كلمة مرور المشرف
+SET_BTN=تعيين
+RESET_BTN=إعادة تعيين
+PASSWORD_GENERATED_MSG=تم توليد كلمة المرور المشفّرة!<br>	الصق سلسلة كلمة المرور المشفّرة التالية في القسم المخصّص لها في السكربت الرئيسي للوحة.
+BULLETIN_BOARD_LABEL=اللوحة
+WARNING_LABEL=تحذير
+ADMIN_ACCESS_WARNING=يُمنع منعًا باتًا دخول غير المصرّح لهم. سيتم تتبّع المخالفين وتحديد مواقعهم واحتجازهم.
+
+# tmpllog.html UI strings
+FROM_DAY_LABEL=من يوم
+HOUR_LABEL=ساعة
+TO_DAY_LABEL=إلى يوم
+MINUTE_LABEL=دقيقة
+ZIP_ARCHIVES_LINK=أرشيفات ZIP لسجلات الرسائل
+LIST_OF_LOGS_HEADING=قائمة سجلات الرسائل
+DOWNLOAD_LABEL=تنزيل
+SELECT_DESELECT_ALL_LABEL=تحديد/إلغاء تحديد الكل
+JS_UNAVAILABLE_WARNING=جافاسكربت غير متاحة.
+JS_UNAVAILABLE_HELP=يُرجى تفعيل جافاسكربت لاستخدام تحديد/إلغاء تحديد الكل.
+SEARCH_LOGS_HEADING=البحث في سجلات الرسائل
+SPECIFY_KEYWORDS_LEGEND=تحديد الكلمات المفتاحية
+SEARCH_BTN=بحث
+SPECIFY_TIME_RANGE_LEGEND=تحديد النطاق الزمني
+BOOLEAN_OPERATOR_LEGEND=المعامل المنطقي
+AND_SEARCH_OPTION=بحث AND
+OR_SEARCH_OPTION=بحث OR
+SEARCH_TARGET_LEGEND=نطاق البحث
+ALL_TEXT_OPTION=كل النص
+USERNAMES_OPTION=أسماء المستخدمين
+TITLES_OPTION=العناوين
+OTHER_LEGEND=أخرى
+CASE_INSENSITIVE_LABEL=البحث في الأحرف الكبيرة والصغيرة معًا
+SHOW_POST_BUTTONS_LABEL=إظهار أزرار النشر
+GZIP_SIMPLE_LABEL=النقل باستخدام ضغط gzip
+UNABLE_TO_OPEN_FILE_TEXT=تعذّر فتح %s.
+TOPIC_LIST_COLUMN_HEADERS=عرض السلسلة - عرض شجري - الردود - آخر تحديث - المحتوى
+ZIP_ARCHIVES_HEADING=أرشيفات ZIP لسجل الرسائل
+ZIP_ARCHIVE_COLUMN_HEADERS=تنزيل - التاريخ - الوقت - الحجم
+
+# JavaScript UI strings, exposed via window.KSPHP_LANG
+MAKE_LINE_BREAKS_BTN=إدراج فواصل الأسطر
+UPLOADER_THUMBNAILS_LABEL=مصغّرات المرفوعات
+LINK_THUMBNAILS_LABEL=مصغّرات الروابط
+LINK_THUMBNAIL_EXTENSIONS_LEGEND=امتدادات مصغّرات الروابط
+NGWORD_LINK_START=الكلمات&nbsp;المحجوبة&nbsp;(
+NGWORD_LINK_HITS=&nbsp;تطابق)
+NGWORD_UPDATE_BTN=تحديث
+ADMIN_FILTER_BY_LABEL=التصفية حسب 
+ADMIN_FILTER_HOST_LABEL=المضيف
+ADMIN_FILTER_NAME_LABEL=الاسم
+ADMIN_FILTER_CLEAR_BTN=مسح ✕
+ADMIN_RANGE_START_MSG=تم تعيين بداية النطاق — انقر على خلية تاريخ أخرى للإنهاء
+
+# sub/bbstree.php UI strings
+TREE_RANGE_TEXT=المعروض أعلاه هو السلاسل من {BINDEX} إلى {EINDEX}، مرتّبة من الأحدث تحديثًا إلى الأقدم.
+TREE_NO_THREADS_BELOW=لا توجد سلاسل بعد هذه النقطة.
+TREE_DATE_UPDATED=[تاريخ التحديث: %s]
+TREE_USER_LABEL=المستخدم: 
+
+# sub/bbslog.php search result summary
+SEARCH_RESULT_FOR_QUERY=بالنسبة إلى "%s" كانت هناك 
+SEARCH_RESULTS_COUNT=%d نتيجة.
+SEARCH_NO_RESULTS=لا توجد نتائج.
+
+# sub/bbsimage.php error messages
+UPLOAD_DISABLED_ERROR=خطأ: خاصية رفع الملفات غير مسموح بها.
+IMAGE_PROCESSING_UNSUPPORTED_ERROR=خطأ: خاصية معالجة الصور غير مدعومة.
+
+# title attribute tooltips
+TITLE_ADMIN_LOGIN=دخول المشرف/المدير
+TITLE_SETTINGS_SHORTCUT=Alt(+Shift)+C، الدخول إلى صفحة الإعدادات
+TITLE_POST_RELOAD_SHORTCUT_P=Alt(+Shift)+P، إذا نقرت على زر النشر دون كتابة أي محتوى، فسيتم تحديث الصفحة بدلًا من ذلك
+TITLE_POST_RELOAD_SHORTCUT_R=Alt(+Shift)+R، إذا نقرت على زر النشر دون كتابة أي محتوى، فسيتم تحديث الصفحة بدلًا من ذلك
+TITLE_BOTTOM=الأسفل
+TITLE_BOTTOM_SHORTCUT=الأسفل Alt(+Shift)+B
+TITLE_BROWSE_OLD_POSTS=تصفّح المشاركات القديمة والبحث فيها.
+TITLE_DELETE_CHANGES_RETURN=حذف جميع التغييرات والعودة إلى اللوحة.
+TITLE_DELETE_LAST_POST=حذف آخر مشاركة قمت بنشرها
+TITLE_STACK_BBS_DISPLAY=عرض المشاركات على هيئة لوحة تراكمية.
+TITLE_DISPLAY_REPLY_THREAD=عرض سلسلة الردود كسلسلة
+TITLE_DISPLAY_AS_TREE=عرض السلسلة على هيئة شجرة
+TITLE_DISPLAY_THREADS_BRANCHES=عرض السلاسل على هيئة فروع
+TITLE_EMAIL_ADMIN=مراسلة المشرف بالبريد الإلكتروني
+TITLE_GO_TO_PR_OFFICE=الانتقال إلى مكتب الإعلان
+TITLE_TO_PR_OFFICE=إلى مكتب الإعلان
+TITLE_PR_OFFICE=مكتب الإعلان
+TITLE_LIST_USER_POSTS=عرض جميع المشاركات التي نشرها المستخدم نفسه
+TITLE_POST_REPLY=نشر رد
+TITLE_RETURN_PREV_PAGE=العودة إلى الصفحة السابقة
+TITLE_RETURN_PREV_PAGE2=العودة إلى الصفحة السابقة
+TITLE_RETURN_BBS_SHORTCUT=العودة إلى اللوحة Alt(+Shift)+O
+TITLE_SAVE_SETTINGS_RETURN=حفظ إعداداتك والعودة إلى اللوحة.
+TITLE_RESET_SETTINGS=إعادة تعيين إعداداتك
+TITLE_TOP_SHORTCUT=الأعلى Alt(+Shift)+T
+
+# Gikoneko Together (gikoneko.php / gikonekoadd.php)
+GIKO_TOGETHER=مع غيكونيكو
+GIKO_TEACH_LINK_TEXT=علّم غيكونيكو كلمة
+GIKO_FORTUNE_SHOKICHI=بركة صغيرة
+GIKO_FORTUNE_CHUKICHI=بركة متوسطة
+GIKO_FORTUNE_KYOU=نحس
+GIKO_FORTUNE_DAIKICHI=بركة عظيمة
+GIKO_FORTUNE_YOUKICHI=بركة فتيّة
+GIKO_FORTUNE_GOUKICHI=بركة راعدة
+GIKO_FORTUNE_NEKOKICHI=بركة القطط
+GIKO_FORTUNE_DOKICHI=بركة غاضبة
+GIKO_FORTUNE_AIKICHI=بركة محبّة
+GIKO_FORTUNE_INKICHI=بركة منسحبة
+GIKO_FORTUNE_KICHI=بركة
+GIKO_FORTUNE_RAKUKICHI=بركة هانئة
+GIKO_ADD_TITLE=مع غيكونيكو - شاشة الإضافة
+GIKO_ERR_DUPLICATE=هذه الكلمة مسجّلة بالفعل.
+GIKO_ERR_TOO_LONG=هذه الكلمة طويلة جدًا.
+GIKO_ERR_WRITE_FAILED=فشلت الكتابة. تحقّق من موقع ملف البيانات (%s) ومن أذونات الكتابة عليه.
+GIKO_POST_COMPLETE=تمت الإضافة
+GIKO_BACK_TO_BBS=العودة إلى اللوحة
+GIKO_ADD_PROMPT=اكتب شيئًا ليقوله غيكونيكو (حتى %s حرفًا نصف العرض)
+GIKO_ADD_SUBMIT=علّمه كلمة
+GIKO_ADD_RESET=مسح
+
+LANG_SELECT_LABEL=اللغة:
+
+# tree-hide (unread thread deletion) JS feature
+TREE_HIDE_LINK=[إخفاء]
+TREE_HIDE_SETTING_LABEL=تفعيل إخفاء السلاسل (إعداد شخصي، لهذا المتصفّح فقط)
+TREE_HIDDEN_PANEL_TITLE=السلاسل المخفية
+TREE_RESTORE_LINK=استعادة
+TREE_RESTORE_ALL_LINK=استعادة الكل
+TREE_HIDDEN_EMPTY=لا توجد سلاسل مخفية.
+
+# long-post line-count NG filter JS feature
+LONGPOST_SETTING_LABEL=تفعيل مرشّح المشاركات الطويلة (إعداد شخصي، لهذا المتصفّح فقط)
+LONGPOST_THRESHOLD_LABEL=حدّ عدد الأسطر:
+LONGPOST_COLLAPSED_TEXT=تم طيّ مشاركة تتجاوز {N} سطرًا.
+LONGPOST_EXPAND_LINK=إظهار
+LONGPOST_COLLAPSE_LINK=طيّ
+
+# LaTeX math rendering JS feature (KaTeX via CDN)
+LATEX_SETTING_LABEL=تفعيل عرض معادلات LaTeX (إعداد شخصي، لهذا المتصفّح فقط، يُحمّل KaTeX من شبكة CDN)
+
+# JS settings panel
+JS_SETTINGS_LEGEND=إعدادات جافاسكربت
+JS_GIKO_LABEL=مع غيكونيكو (عند عدم وجود مشاركات غير مقروءة)
+JS_IMGTHUMB_LABEL=مصغّرات الصور
+JS_KAOMOJI_LABEL=لوحة الكاوموجي
+JS_LATEX_LABEL=عرض معادلات LaTeX (يُحمّل KaTeX من شبكة CDN)
+JS_LINEBREAKER_LEN_LABEL=الطول المستهدف لفاصل السطر:
+JS_LINEBREAKER_NOTE=ملاحظة: لا يمكن تعطيل فاصل الأسطر نفسه (حدود حجم المشاركة تستلزمه). الرقم أعلاه يضبط موضع الفصل فقط.
+JS_LONGPOST_LABEL=مرشّح المشاركات الطويلة
+JS_TREEHIDE_LABEL=إخفاء السلاسل غير المقروءة
+JS_UPTHUMB_LABEL=مصغّرات المرفوعات
+JS_VIDEMBED_LABEL=تضمين الفيديو
