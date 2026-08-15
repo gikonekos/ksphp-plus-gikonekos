@@ -143,7 +143,7 @@ terceiro pode obter:
   - os registos em install/backup/, que contêm caminhos absolutos do
     servidor e a lista de ficheiros instalados
 
-Os ficheiros install/index.html e install/backup/index.html estão
+O ficheiro install/backup/index.html está
 incluídos e suprimem a listagem de diretórios, mas isso apenas impede
 a enumeração -- não é controlo de acesso. Quem souber o nome de um
 ficheiro continua a poder lê-lo. Apagar o diretório é a única solução

@@ -134,10 +134,10 @@ third party can retrieve:
   - the logs under install/backup/, which contain absolute server
     paths and the list of installed files
 
-install/index.html and install/backup/index.html are included and will
-suppress directory listing, but that only stops enumeration -- it is
-not access control. Anyone who knows a file name can still read it.
-Deleting the directory is the only reliable answer.
+install/backup/index.html is included and will suppress directory
+listing of the backup directory, but that only stops enumeration --
+it is not access control. Anyone who knows a file name can still
+read it. Deleting the directory is the only reliable answer.
 
 Note that _setup.php (the admin password tool) renames itself after
 use. install.php has no such mechanism, so it must be removed by hand.

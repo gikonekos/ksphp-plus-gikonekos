@@ -110,7 +110,7 @@ install.php 為了讓任何人都能進行安裝作業，執行時不需要認�
   - conf.php 的幾乎全部設定值（管理密碼和金鑰除外）
   - install/backup/ 中的紀錄（含伺服器絕對路徑和已安裝檔案清單）
 
-本套件已附帶 install/index.html 與 install/backup/index.html，可以
+本套件已附帶 install/backup/index.html，可以
 抑制目錄清單的顯示，但這只是抑制列舉，並非存取控制。知道檔案名稱
 的人依然可以讀取。刪除才是唯一可靠的對策。
 

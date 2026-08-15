@@ -110,7 +110,7 @@ install.php 为了让任何人都能进行安装作业，运行时不需要认�
   - conf.php 的几乎全部设置值（管理密码和密钥除外）
   - install/backup/ 中的日志（含服务器绝对路径和已安装文件列表）
 
-本包已附带 install/index.html 与 install/backup/index.html，可以
+本包已附带 install/backup/index.html，可以
 抑制目录列表的显示，但这只是抑制列举，并非访问控制。知道文件名
 的人依然可以读取。删除才是唯一可靠的对策。
 

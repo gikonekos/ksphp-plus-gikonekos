@@ -271,9 +271,7 @@ For full details on any release, see `doc/changelog-2026-07-16-01.txt`.
 * **Uploader thumbnail JS** — make upthumb.js easily configurable for Uploader software instances other than Uploader@Heyuri
 * **New-post form not appearing** — intermittent; reproduction conditions unknown
 * **RTL layout check in a real browser** — the logical properties and the `dir` attribute are in place, but the result has not been eyeballed yet. The tree view is the most likely to break, since `.msgtree` uses `white-space: pre`. The post form, the header navigation row and the quote/post-number positions also need a look.
-* **Arabic file for the installer** — the board's own `language/arabic.txt` is done; `install/language/` is a separate 247-key set and still has no Arabic version. The installer scans the directory for its language list, so Arabic just does not appear there yet.
-* **Seven further language files** — Spanish, French, German, Indonesian, Vietnamese, Tagalog and Hindi. All are pre-registered in the same tables; only the `.txt` files are outstanding.
-* **install.php self-rename** — `_setup.php` renames itself after first use, `install.php` does not. Deletion is currently only documented, plus an `index.html` to suppress directory listing.
+* **install.php self-rename** — `_setup.php` renames itself after first use, `install.php` does not. Deletion is currently only documented.
 
 ## Known Bugs
 * Large number of `&nbsp;` entities appear when searching logs

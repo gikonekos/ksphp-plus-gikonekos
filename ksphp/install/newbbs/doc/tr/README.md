@@ -148,7 +148,7 @@ Herhangi bir sürümün tam ayrıntıları için `doc/changelog-2026-07-16-01.tx
 * **Gerçek bir tarayıcıda RTL düzen denetimi** — mantıksal özellikler ve `dir` niteliği yerinde, ancak sonuç henüz gözle görülmedi. `.msgtree` `white-space: pre` kullandığı için en çok ağaç görünümünün bozulması olası. Gönderi formu, başlıktaki gezinme satırı ve alıntı ile ileti numarası konumları da gözden geçirilmeli.
 * **Kurulum programı için Arapça dosya** — panonun kendi `language/arabic.txt` dosyası tamamlandı; `install/language/` 247 anahtarlık ayrı bir küme ve henüz Arapça sürümü yok. Kurulum programı dil listesini dizini tarayarak oluşturduğu için Arapça şimdilik orada görünmüyor.
 * **Yedi dil dosyası daha** — İspanyolca, Fransızca, Almanca, Endonezce, Vietnamca, Tagalogca ve Hintçe. Hepsi aynı tablolarda önceden kayıtlı; yalnızca `.txt` dosyaları eksik.
-* **install.php'nin kendini yeniden adlandırması** — `_setup.php` ilk kullanımdan sonra kendi adını değiştirir, `install.php` değiştirmez. Şu an yalnızca silme adımının belgelenmesi ve dizin listelemesini engelleyen bir `index.html` mevcut.
+* **install.php'nin kendini yeniden adlandırması** — `_setup.php` ilk kullanımdan sonra kendi adını değiştirir, `install.php` değiştirmez. Şu an yalnızca silme adımının belgelenmesi mevcut.
 
 ## Bilinen Hatalar
 * Log araması sırasında çok sayıda `&nbsp;` varlığı görünüyor

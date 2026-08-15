@@ -147,7 +147,7 @@ Para detalhes completos de qualquer versão, consulte `doc/changelog-2026-07-16-
 * **Verificação do layout RTL num navegador real** — as propriedades lógicas e o atributo `dir` já estão implementados, mas o resultado ainda não foi visto. A vista em árvore é a mais provável de quebrar, pois `.msgtree` usa `white-space: pre`. O formulário de publicação, a linha de navegação do cabeçalho e as posições das citações e dos números das mensagens também precisam de ser verificados.
 * **Ficheiro árabe para o instalador** — o `language/arabic.txt` do próprio fórum está feito; `install/language/` é um conjunto separado de 247 chaves e ainda não tem versão árabe. O instalador percorre o diretório para montar a lista de idiomas, portanto o árabe simplesmente ainda não aparece ali.
 * **Mais sete ficheiros de idioma** — espanhol, francês, alemão, indonésio, vietnamita, tagalo e hindi. Todos estão pré-registados nas mesmas tabelas; faltam apenas os ficheiros `.txt`.
-* **Auto-renomeação do install.php** — o `_setup.php` muda o próprio nome após a primeira utilização, o `install.php` não. De momento existe apenas a documentação do passo de eliminação e um `index.html` para suprimir a listagem de diretórios.
+* **Auto-renomeação do install.php** — o `_setup.php` muda o próprio nome após a primeira utilização, o `install.php` não. De momento existe apenas a documentação do passo de eliminação.
 
 ## Bugs conhecidos
 * Grande número de entidades `&nbsp;` aparecem ao pesquisar logs

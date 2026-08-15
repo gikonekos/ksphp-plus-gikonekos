@@ -141,7 +141,7 @@ doğrulaması olmadan çalışır. Kurulumdan sonra yerinde bırakılırsa,
   - install/backup/ altındaki günlükler; bunlar mutlak sunucu
     yollarını ve kurulan dosyaların listesini içerir
 
-install/index.html ve install/backup/index.html pakete dahildir ve
+install/backup/index.html pakete dahildir ve
 dizin listelemesini engeller; ancak bu yalnızca listelemeyi durdurur,
 bir erişim denetimi değildir. Dosya adını bilen biri yine de
 okuyabilir. Tek güvenilir çözüm dizini silmektir.
