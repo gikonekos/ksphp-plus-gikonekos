@@ -1,0 +1,364 @@
+# ksphp-plus language file (Vietnamese / Tiếng Việt)
+# Format: KEY=value  (no spaces around "=" -- anything after "=" is taken
+# literally, including leading/trailing spaces, up to end of line)
+# Lines starting with "#" or ";" are comments. Blank lines are ignored.
+# Encoding: UTF-8, no BOM.
+# Placeholders like {MAXNAMELENGTH} are substituted by the script and must
+# be kept as-is (same spelling, including the curly braces).
+
+# Service / access
+BBS_OUT_OF_SERVICE=Diễn đàn này hiện đang ngừng hoạt động.
+ACCESS_PROHIBITED=Truy cập bị cấm.
+
+# Generic / IO errors
+FAILED_TO_READ_MESSAGE=Không đọc được tin nhắn
+FILE_AUTOCREATED=Không tìm thấy %s, nên đã được tạo mới.
+FAILED_TO_OPEN_LOG=Không mở được tệp nhật ký: %s
+FAILED_TO_OUTPUT_LOG=Không xuất được nhật ký tin nhắn
+OLDLOG_TOO_LARGE=Tệp nhật ký tin nhắn vượt quá giới hạn kích thước tệp
+PARTICIPANT_FILE_ERROR=Lỗi xuất tệp người tham gia
+
+# Posting / validation
+POSTING_SUSPENDED=Chức năng đăng bài của diễn đàn này hiện đang bị tạm ngừng.
+ADMIN_ONLY_POSTING=Chỉ quản trị viên mới được phép đăng bài trên diễn đàn.
+ADMIN_POST_DISABLED=Truy cập quản trị qua biểu mẫu đăng bài đã bị tắt. Vui lòng dùng liên kết Quản lý.
+BAD_REFERER=Không thể đăng bài từ các URL khác ngoài
+POST_TOO_WIDE=Nội dung bài đăng có quá nhiều ký tự.
+POST_TOO_MANY_LINES=Nội dung bài đăng có quá nhiều dòng.
+POST_TOO_LARGE=Nội dung bài đăng quá lớn.
+NAME_TOO_LONG=Trường tên có quá nhiều ký tự. (Tối đa %s ký tự)
+EMAIL_TOO_LONG=Trường email có quá nhiều ký tự. (Tối đa %s ký tự)
+TITLE_TOO_LONG=Trường tiêu đề có quá nhiều ký tự. (Tối đa %s ký tự)
+POST_TOO_FAST=Khoảng thời gian giữa các bài đăng quá ngắn. Vui lòng thử lại.
+NGWORD_FOUND=Bài đăng chứa từ ngữ bị cấm.
+SPAM_KUN=Cút đi, đồ spam!!!
+
+# Caller / request
+INVALID_CALLER=Yêu cầu không hợp lệ.
+NO_PARAMETERS=Không có tham số.
+INVALID_PASSWORD=Mật khẩu không đúng.
+
+# Follow / search / reference
+MESSAGE_NOT_FOUND=Không tìm thấy tin nhắn được chỉ định.
+REFERENCE_NOT_FOUND=Không tìm thấy bài đăng tham chiếu.
+REFERENCE_COLON=Tham chiếu:
+FOLLOW_UP_POST=Trả lời
+POST_SEARCH=Tìm kiếm bài đăng
+
+# Completion / undo
+POST_COMPLETE=Đăng bài hoàn tất
+DELETION_COMPLETE=Xóa hoàn tất
+UNDO_POST_NOT_FOUND=Không tìm thấy bài đăng tương ứng.
+UNDO_NOT_PERMITTED=Không được phép xóa bài đăng tương ứng.
+
+# Main list footer
+POSTS_RANGE_NEWEST_TO_OLDEST=Hiển thị các bài đăng từ {BINDEX} đến {EINDEX}, theo thứ tự mới nhất đến cũ nhất. 
+NO_UNREAD_MESSAGES=Không có tin nhắn chưa đọc. 
+NO_POSTS_BELOW=Không có bài đăng nào bên dưới điểm này.
+
+# New post page
+NEW_POST=Bài đăng mới
+
+# Labels / tags inserted into messages
+HACKER_TAG= (kẻ tấn công)
+FRAUDSTER_TAG= (kẻ gian lận)
+SELF_REPLY_TAG= (tự trả lời)
+
+# Weekdays
+SUNDAY=CN
+MONDAY=T2
+TUESDAY=T3
+WEDNESDAY=T4
+THURSDAY=T5
+FRIDAY=T6
+SATURDAY=T7
+
+# Admin / image upload errors
+NO_PASSWORD_SET=Chưa đặt mật khẩu.
+FILE_SIZE_OVER_LIMIT=Kích thước tệp vượt quá %sKB.
+FILE_UPLOAD_FAILED=Quá trình tải lên tệp thất bại. Mã: %s
+FAILED_TO_LOAD_UPLOAD_ID=Không tải được tệp hình ảnh đã tải lên.
+IMAGE_WIDTH_EXCEEDED=Chiều rộng hình ảnh vượt quá giới hạn.
+IMAGE_FILEMSG=Hình ảnh%s %s %s*%s %sKB
+INVALID_FILE_FORMAT=Định dạng tệp không đúng.
+DIRECTORY_OPEN_FAILED=Không mở được thư mục này.
+TOO_MANY_KEYWORDS=Có quá nhiều từ khóa tìm kiếm.
+
+# Page titles
+TITLE_ADMIN_MENU=Menu quản trị
+TITLE_MESSAGE_DELETE_MODE=Chế độ xóa tin nhắn
+TITLE_PASSWORD_SETTINGS=Trang cài đặt mật khẩu
+TITLE_OLDLOG_SEARCH=Tìm kiếm nhật ký tin nhắn
+TITLE_OLDLOG_SEARCH_RESULTS=Kết quả tìm kiếm nhật ký tin nhắn
+TITLE_OLDLOG=Nhật ký tin nhắn
+TITLE_TOPIC_LIST=Danh sách chủ đề
+TITLE_OLDLOG_ARCHIVE=Lưu trữ ZIP nhật ký tin nhắn
+TITLE_TREEVIEW_MAIN=Chế độ xem cây
+TITLE_ERROR=Lỗi
+TITLE_NOTICE=Thông báo
+
+# HTML titles
+TITLE_FOLLOWUP=Trả lời
+TITLE_SEARCH_BY_USER=Tìm theo người dùng
+TITLE_THREAD_VIEW=Chế độ xem luồng
+TITLE_TREE_VIEW=Chế độ xem cây
+TITLE_DELETE_POST=Xóa bài đăng
+
+# Additional UI strings
+URL_REDIRECTION=Chuyển hướng URL
+USER_SETTINGS=Cài đặt người dùng
+COUNTER_ERROR=Lỗi bộ đếm
+
+# template.html UI strings
+NAV_PR_OFFICE=Trang chủ
+NAV_CONTACT=Liên hệ
+NAV_MESSAGE_LOGS=Lưu trữ
+NAV_MANAGE=Quản lý
+BRAND_NAME=KuzuhaScriptPHP+
+RETURN=Quay lại
+MSG_USER_LABEL=Người dùng:
+MSG_POST_DATE_LABEL=Ngày đăng:
+NEXT_PAGE=Trang tiếp theo
+RELOAD=Tải lại
+UNREAD=Chưa đọc
+TITLE_ADMIN_POST=Đăng với tư cách quản trị viên
+FORM_NAME_LABEL=Tên
+FORM_EMAIL_LABEL=Email
+FORM_TITLE_LABEL=Tiêu đề
+POST_RELOAD=Đăng/Tải lại
+CLEAR=Xóa
+FORM_CONTENTS_LABEL=Nội dung
+FORM_CONTENTS_HELP_SIMPLE=(Tối đa %s cột và %s dòng. Vui lòng chèn ngắt dòng ở những chỗ phù hợp. Không thể dùng thẻ HTML/BBCode.)
+FORM_CONTENTS_HELP_IMAGE=(Tối đa %s cột và %s dòng. Vui lòng chèn ngắt dòng ở những chỗ phù hợp. Không thể dùng thẻ HTML/BBCode. <br>            Nếu bạn viết %s trong văn bản, hình ảnh đã tải lên sẽ được chèn vào vị trí đó.)
+KAOMOJI_SHOW_MORE=Hiện thêm kaomoji
+KAOMOJI_INTRO=Đang hiển thị thêm kaomoji phong cách Ayashii World. Hãy xem thêm <a target="_blank" href="//mattari.heyuri.net/">Mattari AA</a>.
+KAOMOJI_CAT_MATTARI=Thư giãn / Bình yên
+KAOMOJI_CAT_DAUSO=Buồn / Ủ rũ
+KAOMOJI_CAT_ANGRY=Giận dữ / Xấu xa
+KAOMOJI_CAT_EHHH=Hả!?
+KAOMOJI_CAT_GESTURES=Cử chỉ / Vẫy tay
+KAOMOJI_CAT_SLEEPY=Buồn ngủ / Khác
+KAOMOJI_CAT_DROOLING=Chảy nước dãi
+KAOMOJI_CAT_SMOKING=Hút thuốc / Uống trà
+KAOMOJI_CAT_FUN=Vui / Linh tinh
+IMAGE_UPLOAD_LABEL=Tải hình ảnh lên
+IMAGE_UPLOAD_HELP=（Chỉ JPG/GIF/PNG. Chiều rộng tối đa %spx; chiều cao tối đa %spx; kích thước tệp tối đa %sKB.）
+POSTS_DISPLAYED_LABEL=Bài&nbsp;đăng&nbsp;hiển&nbsp;thị
+AUTO_LINK_URLS_LABEL=Tự&nbsp;động&nbsp;liên&nbsp;kết&nbsp;URL
+LOG_READING_MODE_LABEL=Chế&nbsp;độ&nbsp;đọc&nbsp;nhật&nbsp;ký
+HIDE_LINK_LINE_LABEL=Ẩn&nbsp;dòng&nbsp;liên&nbsp;kết
+SHOW_IMAGES_LABEL=Hiện&nbsp;hình&nbsp;ảnh
+COUNTER_TEXT=Lượt&nbsp;xem&nbsp;trang&nbsp;từ&nbsp;%s:&nbsp;%s (mức&nbsp;chống&nbsp;lỗi:&nbsp;%s)
+MBRCOUNT_TEXT=Người&nbsp;tham&nbsp;gia&nbsp;hiện&nbsp;tại:&nbsp;%s&nbsp;người (trong&nbsp;vòng&nbsp;%s&nbsp;giây)
+LOGSAVE_TEXT=Số&nbsp;bài&nbsp;đăng&nbsp;lưu&nbsp;tối&nbsp;đa:&nbsp;%s&nbsp;bài
+THREAD_LABEL=Luồng
+TREE_LABEL=Cây
+DELETE_PREVIOUS_POST=Xóa&nbsp;bài&nbsp;đăng&nbsp;trước
+LATEST_30_POSTS=30 bài đăng mới nhất
+POSTS_FOUND= bài đăng được tìm thấy.
+RETURN_TO_BBS_HELP=Nhấp vào liên kết ở trên hoặc nhấn <kbd>Alt</kbd>(+<kbd>Shift</kbd>)+<b><kbd>O</kbd></b> để quay lại diễn đàn.
+DISPLAY_COLORS_LEGEND=Màu hiển thị (thập lục phân)
+TEXT_COLOR_LABEL=Màu chữ
+BACKGROUND_COLOR_LABEL=Màu nền
+LINK_COLOR_LABEL=Màu liên kết
+VISITED_LINK_COLOR_LABEL=Màu liên kết đã truy cập
+ACTIVE_LINK_COLOR_LABEL=Màu liên kết đang hoạt động
+MOUSEOVER_LINK_COLOR_LABEL=Màu liên kết khi di chuột
+TITLE_COLOR_LABEL=Màu tiêu đề
+QUOTE_COLOR_LABEL=Màu trích dẫn
+ADDITIONAL_FEATURES_LEGEND=Tính năng bổ sung
+GZIP_LABEL=Truyền bằng nén gzip (hiển thị sẽ nhanh hơn)
+LOG_READING_MODE_DESC_LABEL=Chế độ đọc nhật ký (sẽ không hiển thị biểu mẫu đăng bài)
+AUTO_LINK_URLS_DESC_LABEL=Tự động liên kết URL (URL trong nội dung bài đăng sẽ tự động thành liên kết khi đăng)
+COOKIE_LABEL=Lưu tên và địa chỉ email của bạn vào cookie khi đăng bài
+HIDE_LINK_ROW_DESC_LABEL=Ẩn hàng liên kết (sẽ không hiển thị danh sách liên kết bên dưới biểu mẫu đăng bài)
+FOLLOW_DISPLAY_LEGEND=Cách hiển thị trang trả lời
+FOLLOW_NEW_WINDOW_LABEL=Mở và hiển thị cửa sổ mới
+FOLLOW_SAME_PAGE_LABEL=Hiển thị trên cùng trang
+BOOKMARK_HELP=Nếu bạn đánh dấu URL xuất hiện sau khi nhấp "Đăng ký", bạn có thể duyệt diễn đàn với các cài đặt ở trên.
+REGISTER=Đăng ký
+UNDO_CHANGES=Hoàn tác thay đổi
+RESTORE_DEFAULTS=Khôi phục mặc định
+REDIRECTING=Đang chuyển hướng…
+PAGE_GEN_TIME_TEXT=Thời gian tạo trang: %s giây
+OG_LOCALE=vi_VN
+
+# tmpltree.html UI strings
+STANDARD_VIEW=Chế&nbsp;độ&nbsp;xem&nbsp;chuẩn
+TOP_LABEL=Đầu trang
+
+# login.html UI strings
+MOD_LOGIN_TITLE=Đăng nhập điều hành viên
+PASSWORD_LABEL=Mật khẩu:
+LOGIN_BUTTON=Đăng nhập
+LOGIN_ERROR=Tên người dùng hoặc mật khẩu không hợp lệ.
+
+# tmpladmin.html UI strings
+DELETE_MESSAGES_BTN=Xóa tin nhắn
+VIEW_LOG_FILE_BTN=Xem tệp nhật ký
+REGEN_PASSWORD_BTN=Tạo lại mật khẩu đã mã hóa
+PHP_CONFIG_INFO_BTN=Thông tin cấu hình PHP máy chủ
+LOGOUT_BTN=Đăng xuất
+CLOSE_BTN=Đóng
+PERFORM_DELETION_BTN=Thực hiện xóa
+DELETE_INSTRUCTIONS=Vui lòng đánh dấu các ô chọn của bài đăng bạn muốn xóa, rồi nhấp nút [Thực hiện xóa] ở dưới cùng.
+DELETE_COL_HEADER=Xóa
+VIEW_COL_HEADER=Xem
+DATE_POSTED_COL_HEADER=Ngày đăng
+SUBJECT_COL_HEADER=Chủ đề
+USERNAME_COL_HEADER=Tên người dùng
+HOST_COL_HEADER=Máy chủ
+COMMENT_COL_HEADER=Bình luận
+SETPASS_INSTRUCTIONS=Đặt mật khẩu của bạn.<br>		Vui lòng nhập mật khẩu quản trị viên mà bạn sẽ dùng để quản lý diễn đàn từ nay.<br>	Mật khẩu bạn nhập ở đây sẽ được dùng để đăng bài với tên quản trị viên và để xác thực khi vào chế độ quản trị.
+ADMIN_PASSWORD_LABEL=Mật khẩu quản trị viên
+SET_BTN=Đặt
+RESET_BTN=Đặt lại
+PASSWORD_GENERATED_MSG=Đã tạo mật khẩu mã hóa!<br>	Dán chuỗi mật khẩu mã hóa sau vào phần được chỉ định của tập lệnh diễn đàn chính.
+BULLETIN_BOARD_LABEL=Diễn đàn
+WARNING_LABEL=CẢNH BÁO
+ADMIN_ACCESS_WARNING=NGHIÊM CẤM TRUY CẬP BỞI NHÂN VIÊN KHÔNG ĐƯỢC ỦY QUYỀN. NGƯỜI VI PHẠM SẼ BỊ THEO DÕI, XÁC ĐỊNH VỊ TRÍ VÀ BẮT GIỮ.
+
+# tmpllog.html UI strings
+FROM_DAY_LABEL=Từ ngày
+HOUR_LABEL=giờ
+TO_DAY_LABEL=đến ngày
+MINUTE_LABEL=phút
+ZIP_ARCHIVES_LINK=Lưu trữ ZIP nhật ký tin nhắn
+LIST_OF_LOGS_HEADING=Danh sách nhật ký tin nhắn
+DOWNLOAD_LABEL=Tải xuống
+SELECT_DESELECT_ALL_LABEL=Chọn/bỏ chọn tất cả
+JS_UNAVAILABLE_WARNING=JavaScript không khả dụng.
+JS_UNAVAILABLE_HELP=Vui lòng bật JavaScript để dùng chọn/bỏ chọn tất cả.
+SEARCH_LOGS_HEADING=Tìm kiếm nhật ký tin nhắn
+SPECIFY_KEYWORDS_LEGEND=Chỉ định từ khóa
+SEARCH_BTN=Tìm kiếm
+SPECIFY_TIME_RANGE_LEGEND=Chỉ định khoảng thời gian
+BOOLEAN_OPERATOR_LEGEND=Toán tử boolean
+AND_SEARCH_OPTION=Tìm kiếm VÀ
+OR_SEARCH_OPTION=Tìm kiếm HOẶC
+SEARCH_TARGET_LEGEND=Đối tượng tìm kiếm
+ALL_TEXT_OPTION=Toàn bộ văn bản
+USERNAMES_OPTION=Tên người dùng
+TITLES_OPTION=Tiêu đề
+OTHER_LEGEND=Khác
+CASE_INSENSITIVE_LABEL=Tìm cả chữ hoa và chữ thường
+SHOW_POST_BUTTONS_LABEL=Hiện nút đăng bài
+GZIP_SIMPLE_LABEL=Truyền bằng nén gzip
+UNABLE_TO_OPEN_FILE_TEXT=Không mở được %s.
+TOPIC_LIST_COLUMN_HEADERS=Chế độ xem luồng - Chế độ xem cây - Trả lời - Cập nhật lần cuối - Nội dung
+ZIP_ARCHIVES_HEADING=Lưu trữ ZIP nhật ký tin nhắn
+ZIP_ARCHIVE_COLUMN_HEADERS=Tải xuống - Ngày - Giờ - Kích thước
+
+# JavaScript UI strings
+MAKE_LINE_BREAKS_BTN=Tạo ngắt dòng
+UPLOADER_THUMBNAILS_LABEL=Hình thu nhỏ tải lên
+LINK_THUMBNAILS_LABEL=Hình thu nhỏ liên kết
+LINK_THUMBNAIL_EXTENSIONS_LEGEND=Phần mở rộng hình thu nhỏ liên kết
+NGWORD_LINK_START=Từ đã lọc&nbsp;(
+NGWORD_LINK_HITS=&nbsp;kết quả)
+NGWORD_UPDATE_BTN=Cập nhật
+ADMIN_FILTER_BY_LABEL=Đang lọc theo 
+ADMIN_FILTER_HOST_LABEL=máy chủ
+ADMIN_FILTER_NAME_LABEL=tên
+ADMIN_FILTER_CLEAR_BTN=xóa ✕
+ADMIN_RANGE_START_MSG=đã đặt điểm bắt đầu phạm vi — nhấp vào ô Ngày khác để hoàn tất
+
+# sub/bbstree.php UI strings
+TREE_RANGE_TEXT=Hiển thị các luồng từ {BINDEX} đến {EINDEX}, sắp xếp theo thứ tự cập nhật gần nhất đến xa nhất.
+TREE_NO_THREADS_BELOW=Không có luồng nào bên dưới điểm này.
+TREE_DATE_UPDATED=[Ngày cập nhật: %s]
+TREE_USER_LABEL=Người dùng: 
+
+# sub/bbslog.php search result summary
+SEARCH_RESULT_FOR_QUERY=Với "%s" có 
+SEARCH_RESULTS_COUNT=%d kết quả được tìm thấy.
+SEARCH_NO_RESULTS=không tìm thấy kết quả nào.
+
+# sub/bbsimage.php error messages
+UPLOAD_DISABLED_ERROR=Lỗi: Tính năng tải lên tệp không được phép.
+IMAGE_PROCESSING_UNSUPPORTED_ERROR=Lỗi: Tính năng xử lý hình ảnh không được hỗ trợ.
+
+# title attribute tooltips
+TITLE_ADMIN_LOGIN=Đăng nhập quản trị viên/điều hành viên
+TITLE_SETTINGS_SHORTCUT=Alt(+Shift)+C, Vào trang cài đặt
+TITLE_POST_RELOAD_SHORTCUT_P=Alt(+Shift)+P, nếu bạn nhấp nút đăng mà không viết nội dung, trang sẽ tải lại
+TITLE_POST_RELOAD_SHORTCUT_R=Alt(+Shift)+R, nếu bạn nhấp nút đăng mà không viết nội dung, trang sẽ tải lại
+TITLE_BOTTOM=Cuối trang
+TITLE_BOTTOM_SHORTCUT=Cuối trang Alt(+Shift)+B
+TITLE_BROWSE_OLD_POSTS=Duyệt và tìm kiếm qua các bài đăng cũ.
+TITLE_DELETE_CHANGES_RETURN=Xóa tất cả thay đổi và quay lại diễn đàn.
+TITLE_DELETE_LAST_POST=Xóa bài đăng cuối cùng bạn đã đăng
+TITLE_STACK_BBS_DISPLAY=Hiển thị bài đăng dưới dạng diễn đàn kiểu chồng.
+TITLE_DISPLAY_REPLY_THREAD=Hiển thị chuỗi trả lời dưới dạng luồng
+TITLE_DISPLAY_AS_TREE=Hiển thị luồng dưới dạng cây
+TITLE_DISPLAY_THREADS_BRANCHES=Hiển thị các luồng dưới dạng nhánh
+TITLE_EMAIL_ADMIN=Gửi email cho quản trị viên
+TITLE_GO_TO_PR_OFFICE=Đi tới trang chủ
+TITLE_TO_PR_OFFICE=Tới trang chủ
+TITLE_PR_OFFICE=Trang chủ
+TITLE_LIST_USER_POSTS=Liệt kê tất cả bài đăng của cùng một người dùng
+TITLE_POST_REPLY=Đăng một trả lời
+TITLE_RETURN_PREV_PAGE=Quay lại trang trước
+TITLE_RETURN_PREV_PAGE2=Quay lại trang trước
+TITLE_RETURN_BBS_SHORTCUT=Quay lại diễn đàn Alt(+Shift)+O
+TITLE_SAVE_SETTINGS_RETURN=Lưu cài đặt và quay lại diễn đàn.
+TITLE_RESET_SETTINGS=Đặt lại cài đặt của bạn
+TITLE_TOP_SHORTCUT=Đầu trang Alt(+Shift)+T
+
+# Gikoneko Together
+GIKO_TOGETHER=Gikoneko Together
+GIKO_TEACH_LINK_TEXT=Dạy Gikoneko một từ
+GIKO_FORTUNE_SHOKICHI=Phúc Nhỏ
+GIKO_FORTUNE_CHUKICHI=Phúc Vừa
+GIKO_FORTUNE_KYOU=Hung
+GIKO_FORTUNE_DAIKICHI=Đại Phúc
+GIKO_FORTUNE_YOUKICHI=Phúc Trẻ
+GIKO_FORTUNE_GOUKICHI=Phúc Vang Dội
+GIKO_FORTUNE_NEKOKICHI=Phúc Mèo
+GIKO_FORTUNE_DOKICHI=Phúc Giận Dữ
+GIKO_FORTUNE_AIKICHI=Phúc Yêu Thương
+GIKO_FORTUNE_INKICHI=Phúc Lui Về
+GIKO_FORTUNE_KICHI=Phúc
+GIKO_FORTUNE_RAKUKICHI=Phúc Thảnh Thơi
+GIKO_ADD_TITLE=Gikoneko Together - Màn hình đăng bài
+GIKO_ERR_DUPLICATE=Điều này đã được đăng ký.
+GIKO_ERR_TOO_LONG=Từ đó quá dài.
+GIKO_ERR_WRITE_FAILED=Ghi thất bại. Kiểm tra vị trí và quyền ghi của tệp dữ liệu (%s).
+GIKO_POST_COMPLETE=Đăng bài hoàn tất
+GIKO_BACK_TO_BBS=Quay lại diễn đàn
+GIKO_ADD_PROMPT=Viết điều gì đó để Gikoneko nói (tối đa %s ký tự nửa chiều rộng)
+GIKO_ADD_SUBMIT=Dạy một từ
+GIKO_ADD_RESET=Xóa
+
+LANG_SELECT_LABEL=Ngôn ngữ:
+
+# 20260801 Gikoneko: tree-hide JS feature
+TREE_HIDE_LINK=[Ẩn]
+TREE_HIDE_SETTING_LABEL=Bật ẩn luồng (cài đặt cá nhân, chỉ trình duyệt này)
+TREE_HIDDEN_PANEL_TITLE=Luồng đã ẩn
+TREE_RESTORE_LINK=Khôi phục
+TREE_RESTORE_ALL_LINK=Khôi phục tất cả
+TREE_HIDDEN_EMPTY=Không có luồng nào bị ẩn.
+
+# 20260801 Gikoneko: long-post filter JS feature
+LONGPOST_SETTING_LABEL=Bật bộ lọc bài đăng dài (cài đặt cá nhân, chỉ trình duyệt này)
+LONGPOST_THRESHOLD_LABEL=Ngưỡng dòng:
+LONGPOST_COLLAPSED_TEXT=Đã thu gọn một bài đăng có hơn {N} dòng.
+LONGPOST_EXPAND_LINK=Hiện
+LONGPOST_COLLAPSE_LINK=Thu gọn
+
+# 20260801 Gikoneko: LaTeX math rendering JS feature
+LATEX_SETTING_LABEL=Bật kết xuất toán học LaTeX (cài đặt cá nhân, chỉ trình duyệt này, tải KaTeX từ CDN)
+
+# 20260801 Gikoneko: JS settings panel
+JS_SETTINGS_LEGEND=Cài đặt JS
+JS_GIKO_LABEL=Gikoneko-to-issho (khi không có bài đăng chưa đọc)
+JS_IMGTHUMB_LABEL=Hình thu nhỏ hình ảnh
+JS_KAOMOJI_LABEL=Bảng kaomoji
+JS_LATEX_LABEL=Kết xuất toán học LaTeX (tải KaTeX từ CDN)
+JS_LINEBREAKER_LEN_LABEL=Độ dài ngắt dòng mục tiêu:
+JS_LINEBREAKER_NOTE=Lưu ý: bản thân bộ ngắt dòng không thể tắt (giới hạn kích thước bài đăng yêu cầu nó). Số ở trên chỉ điều chỉnh vị trí ngắt dòng.
+JS_LONGPOST_LABEL=Bộ lọc bài đăng dài
+JS_TREEHIDE_LABEL=Ẩn luồng chưa đọc
+JS_UPTHUMB_LABEL=Hình thu nhỏ tải lên
+JS_VIDEMBED_LABEL=Nhúng video
