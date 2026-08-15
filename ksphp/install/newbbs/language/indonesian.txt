@@ -1,0 +1,364 @@
+# ksphp-plus language file (Indonesian / Bahasa Indonesia)
+# Format: KEY=value  (no spaces around "=" -- anything after "=" is taken
+# literally, including leading/trailing spaces, up to end of line)
+# Lines starting with "#" or ";" are comments. Blank lines are ignored.
+# Encoding: UTF-8, no BOM.
+# Placeholders like {MAXNAMELENGTH} are substituted by the script and must
+# be kept as-is (same spelling, including the curly braces).
+
+# Service / access
+BBS_OUT_OF_SERVICE=Forum ini sedang tidak tersedia.
+ACCESS_PROHIBITED=Akses dilarang.
+
+# Generic / IO errors
+FAILED_TO_READ_MESSAGE=Gagal membaca pesan
+FILE_AUTOCREATED=%s tidak ditemukan, sehingga telah dibuat baru.
+FAILED_TO_OPEN_LOG=Gagal membuka file log: %s
+FAILED_TO_OUTPUT_LOG=Gagal menampilkan log pesan
+OLDLOG_TOO_LARGE=File log pesan melebihi batas ukuran file
+PARTICIPANT_FILE_ERROR=Kesalahan output file peserta
+
+# Posting / validation
+POSTING_SUSPENDED=Fungsi posting forum ini sedang ditangguhkan.
+ADMIN_ONLY_POSTING=Hanya administrator yang diizinkan memposting di forum ini.
+ADMIN_POST_DISABLED=Akses administrator melalui formulir posting dinonaktifkan. Gunakan tautan Kelola.
+BAD_REFERER=Posting tidak dapat dilakukan dari URL selain
+POST_TOO_WIDE=Konten postingan terlalu banyak karakter.
+POST_TOO_MANY_LINES=Konten postingan terlalu banyak baris.
+POST_TOO_LARGE=Konten postingan terlalu besar.
+NAME_TOO_LONG=Kolom nama terlalu banyak karakter. (Maksimal %s karakter)
+EMAIL_TOO_LONG=Kolom email terlalu banyak karakter. (Maksimal %s karakter)
+TITLE_TOO_LONG=Kolom judul terlalu banyak karakter. (Maksimal %s karakter)
+POST_TOO_FAST=Jeda waktu antar postingan terlalu singkat. Silakan coba lagi.
+NGWORD_FOUND=Postingan mengandung kata-kata terlarang.
+SPAM_KUN=Pergi dari sini, spam!!!
+
+# Caller / request
+INVALID_CALLER=Permintaan tidak valid.
+NO_PARAMETERS=Tidak ada parameter.
+INVALID_PASSWORD=Kata sandi salah.
+
+# Follow / search / reference
+MESSAGE_NOT_FOUND=Pesan yang ditentukan tidak dapat ditemukan.
+REFERENCE_NOT_FOUND=Postingan referensi tidak ditemukan.
+REFERENCE_COLON=Referensi:
+FOLLOW_UP_POST=Balasan
+POST_SEARCH=Cari postingan
+
+# Completion / undo
+POST_COMPLETE=Posting selesai
+DELETION_COMPLETE=Penghapusan selesai
+UNDO_POST_NOT_FOUND=Postingan yang bersangkutan tidak ditemukan.
+UNDO_NOT_PERMITTED=Penghapusan postingan yang bersangkutan tidak diizinkan.
+
+# Main list footer
+POSTS_RANGE_NEWEST_TO_OLDEST=Menampilkan postingan {BINDEX} hingga {EINDEX}, dari terbaru ke terlama. 
+NO_UNREAD_MESSAGES=Tidak ada pesan yang belum dibaca. 
+NO_POSTS_BELOW=Tidak ada postingan di bawah titik ini.
+
+# New post page
+NEW_POST=Postingan baru
+
+# Labels / tags inserted into messages
+HACKER_TAG= (peretas)
+FRAUDSTER_TAG= (penipu)
+SELF_REPLY_TAG= (balas sendiri)
+
+# Weekdays
+SUNDAY=Min
+MONDAY=Sen
+TUESDAY=Sel
+WEDNESDAY=Rab
+THURSDAY=Kam
+FRIDAY=Jum
+SATURDAY=Sab
+
+# Admin / image upload errors
+NO_PASSWORD_SET=Kata sandi belum ditetapkan.
+FILE_SIZE_OVER_LIMIT=Ukuran file melebihi %sKB.
+FILE_UPLOAD_FAILED=Proses unggah file gagal. Kode: %s
+FAILED_TO_LOAD_UPLOAD_ID=Gagal memuat file gambar yang diunggah.
+IMAGE_WIDTH_EXCEEDED=Lebar gambar melebihi batas.
+IMAGE_FILEMSG=Gambar%s %s %s*%s %sKB
+INVALID_FILE_FORMAT=Format file salah.
+DIRECTORY_OPEN_FAILED=Direktori ini tidak dapat dibuka.
+TOO_MANY_KEYWORDS=Kata kunci pencarian terlalu banyak.
+
+# Page titles
+TITLE_ADMIN_MENU=Menu administrasi
+TITLE_MESSAGE_DELETE_MODE=Mode penghapusan pesan
+TITLE_PASSWORD_SETTINGS=Halaman pengaturan kata sandi
+TITLE_OLDLOG_SEARCH=Pencarian arsip pesan
+TITLE_OLDLOG_SEARCH_RESULTS=Hasil pencarian arsip pesan
+TITLE_OLDLOG=Arsip pesan
+TITLE_TOPIC_LIST=Daftar topik
+TITLE_OLDLOG_ARCHIVE=Arsip ZIP pesan
+TITLE_TREEVIEW_MAIN=Tampilan pohon
+TITLE_ERROR=Kesalahan
+TITLE_NOTICE=Pemberitahuan
+
+# HTML titles
+TITLE_FOLLOWUP=Balasan
+TITLE_SEARCH_BY_USER=Cari berdasarkan pengguna
+TITLE_THREAD_VIEW=Tampilan utas
+TITLE_TREE_VIEW=Tampilan pohon
+TITLE_DELETE_POST=Hapus postingan
+
+# Additional UI strings
+URL_REDIRECTION=Pengalihan URL
+USER_SETTINGS=Pengaturan pengguna
+COUNTER_ERROR=Kesalahan penghitung
+
+# template.html UI strings
+NAV_PR_OFFICE=Beranda
+NAV_CONTACT=Kontak
+NAV_MESSAGE_LOGS=Arsip
+NAV_MANAGE=Kelola
+BRAND_NAME=KuzuhaScriptPHP+
+RETURN=Kembali
+MSG_USER_LABEL=Pengguna:
+MSG_POST_DATE_LABEL=Tanggal:
+NEXT_PAGE=Halaman berikutnya
+RELOAD=Muat ulang
+UNREAD=Belum dibaca
+TITLE_ADMIN_POST=Posting sebagai administrator
+FORM_NAME_LABEL=Nama
+FORM_EMAIL_LABEL=Email
+FORM_TITLE_LABEL=Judul
+POST_RELOAD=Posting/Muat ulang
+CLEAR=Hapus
+FORM_CONTENTS_LABEL=Konten
+FORM_CONTENTS_HELP_SIMPLE=(Maksimal %s kolom dan %s baris. Sisipkan jeda baris sesuai kebutuhan. Tag HTML/BBCode tidak dapat digunakan.)
+FORM_CONTENTS_HELP_IMAGE=(Maksimal %s kolom dan %s baris. Sisipkan jeda baris sesuai kebutuhan. Tag HTML/BBCode tidak dapat digunakan. <br>            Jika Anda menulis %s dalam teks, gambar yang diunggah akan disisipkan pada posisi tersebut.)
+KAOMOJI_SHOW_MORE=Tampilkan lebih banyak kaomoji
+KAOMOJI_INTRO=Menampilkan lebih banyak kaomoji bergaya Ayashii World. Lihat juga <a target="_blank" href="//mattari.heyuri.net/">Mattari AA</a>.
+KAOMOJI_CAT_MATTARI=Santai / Tenang
+KAOMOJI_CAT_DAUSO=Sedih / Murung
+KAOMOJI_CAT_ANGRY=Marah / Jahat
+KAOMOJI_CAT_EHHH=Hah!?
+KAOMOJI_CAT_GESTURES=Gerakan / Lambaian
+KAOMOJI_CAT_SLEEPY=Mengantuk / Lainnya
+KAOMOJI_CAT_DROOLING=Ngiler
+KAOMOJI_CAT_SMOKING=Merokok / Minum teh
+KAOMOJI_CAT_FUN=Seru / Lain-lain
+IMAGE_UPLOAD_LABEL=Unggah gambar
+IMAGE_UPLOAD_HELP=（Hanya JPG/GIF/PNG. Lebar maks. %spx; tinggi maks. %spx; ukuran maks. %sKB.）
+POSTS_DISPLAYED_LABEL=Postingan&nbsp;ditampilkan
+AUTO_LINK_URLS_LABEL=Tautan&nbsp;URL&nbsp;otomatis
+LOG_READING_MODE_LABEL=Mode&nbsp;baca&nbsp;arsip
+HIDE_LINK_LINE_LABEL=Sembunyikan&nbsp;baris&nbsp;tautan
+SHOW_IMAGES_LABEL=Tampilkan&nbsp;gambar
+COUNTER_TEXT=Kunjungan&nbsp;halaman&nbsp;sejak&nbsp;%s:&nbsp;%s (level&nbsp;tahan&nbsp;error:&nbsp;%s)
+MBRCOUNT_TEXT=Peserta&nbsp;saat&nbsp;ini:&nbsp;%s&nbsp;pengguna (dalam&nbsp;%s&nbsp;detik)
+LOGSAVE_TEXT=Maks.&nbsp;postingan&nbsp;tersimpan:&nbsp;%s&nbsp;postingan
+THREAD_LABEL=Utas
+TREE_LABEL=Pohon
+DELETE_PREVIOUS_POST=Hapus&nbsp;postingan&nbsp;sebelumnya
+LATEST_30_POSTS=30 postingan terbaru
+POSTS_FOUND= postingan ditemukan.
+RETURN_TO_BBS_HELP=Klik tautan di atas atau tekan <kbd>Alt</kbd>(+<kbd>Shift</kbd>)+<b><kbd>O</kbd></b> untuk kembali ke forum.
+DISPLAY_COLORS_LEGEND=Warna tampilan (heksadesimal)
+TEXT_COLOR_LABEL=Warna teks
+BACKGROUND_COLOR_LABEL=Warna latar belakang
+LINK_COLOR_LABEL=Warna tautan
+VISITED_LINK_COLOR_LABEL=Warna tautan dikunjungi
+ACTIVE_LINK_COLOR_LABEL=Warna tautan aktif
+MOUSEOVER_LINK_COLOR_LABEL=Warna tautan saat kursor di atas
+TITLE_COLOR_LABEL=Warna judul
+QUOTE_COLOR_LABEL=Warna kutipan
+ADDITIONAL_FEATURES_LEGEND=Fitur tambahan
+GZIP_LABEL=Transfer menggunakan kompresi gzip (tampilan akan lebih cepat)
+LOG_READING_MODE_DESC_LABEL=Mode baca arsip (formulir posting tidak akan ditampilkan)
+AUTO_LINK_URLS_DESC_LABEL=Tautan URL otomatis (URL dalam konten postingan akan otomatis menjadi tautan saat diposting)
+COOKIE_LABEL=Simpan nama dan email dalam cookie saat posting
+HIDE_LINK_ROW_DESC_LABEL=Sembunyikan baris tautan (daftar tautan di bawah formulir tidak akan ditampilkan)
+FOLLOW_DISPLAY_LEGEND=Cara menampilkan halaman balasan
+FOLLOW_NEW_WINDOW_LABEL=Buka dan tampilkan jendela baru
+FOLLOW_SAME_PAGE_LABEL=Tampilkan di halaman yang sama
+BOOKMARK_HELP=Jika Anda membookmark URL yang muncul setelah mengklik "Daftarkan", Anda dapat menjelajahi forum dengan pengaturan di atas.
+REGISTER=Daftarkan
+UNDO_CHANGES=Batalkan perubahan
+RESTORE_DEFAULTS=Pulihkan default
+REDIRECTING=Mengalihkan…
+PAGE_GEN_TIME_TEXT=Waktu pembuatan halaman: %s detik
+OG_LOCALE=id_ID
+
+# tmpltree.html UI strings
+STANDARD_VIEW=Tampilan&nbsp;standar
+TOP_LABEL=Atas
+
+# login.html UI strings
+MOD_LOGIN_TITLE=Login moderator
+PASSWORD_LABEL=Kata sandi:
+LOGIN_BUTTON=Masuk
+LOGIN_ERROR=Nama pengguna atau kata sandi salah.
+
+# tmpladmin.html UI strings
+DELETE_MESSAGES_BTN=Hapus pesan
+VIEW_LOG_FILE_BTN=Lihat file log
+REGEN_PASSWORD_BTN=Buat ulang kata sandi terenkripsi
+PHP_CONFIG_INFO_BTN=Informasi konfigurasi PHP server
+LOGOUT_BTN=Keluar
+CLOSE_BTN=Tutup
+PERFORM_DELETION_BTN=Lakukan penghapusan
+DELETE_INSTRUCTIONS=Centang kotak centang postingan yang ingin dihapus, lalu klik [Lakukan penghapusan].
+DELETE_COL_HEADER=Hapus
+VIEW_COL_HEADER=Lihat
+DATE_POSTED_COL_HEADER=Tanggal diposting
+SUBJECT_COL_HEADER=Subjek
+USERNAME_COL_HEADER=Nama pengguna
+HOST_COL_HEADER=Host
+COMMENT_COL_HEADER=Komentar
+SETPASS_INSTRUCTIONS=Tetapkan kata sandi Anda.<br>		Masukkan kata sandi administrator yang akan digunakan mulai sekarang.<br>	Kata sandi yang Anda masukkan di sini akan digunakan untuk memposting dengan nama administrator dan untuk mengautentikasi saat memasuki mode admin.
+ADMIN_PASSWORD_LABEL=Kata sandi administrator
+SET_BTN=Tetapkan
+RESET_BTN=Atur ulang
+PASSWORD_GENERATED_MSG=Kata sandi terenkripsi berhasil dibuat!<br>	Tempel string kata sandi terenkripsi berikut ke bagian yang ditentukan dari skrip forum utama.
+BULLETIN_BOARD_LABEL=Forum
+WARNING_LABEL=PERINGATAN
+ADMIN_ACCESS_WARNING=AKSES OLEH PERSONEL TIDAK BERWENANG DILARANG KERAS. PELANGGAR AKAN DILACAK, DITEMUKAN, DAN DITAHAN.
+
+# tmpllog.html UI strings
+FROM_DAY_LABEL=Dari hari
+HOUR_LABEL=jam
+TO_DAY_LABEL=hingga hari
+MINUTE_LABEL=menit
+ZIP_ARCHIVES_LINK=Arsip ZIP log pesan
+LIST_OF_LOGS_HEADING=Daftar arsip pesan
+DOWNLOAD_LABEL=Unduh
+SELECT_DESELECT_ALL_LABEL=Pilih/batalkan pilih semua
+JS_UNAVAILABLE_WARNING=JavaScript tidak tersedia.
+JS_UNAVAILABLE_HELP=Aktifkan JavaScript untuk menggunakan pilih/batalkan pilih semua.
+SEARCH_LOGS_HEADING=Cari log pesan
+SPECIFY_KEYWORDS_LEGEND=Tentukan kata kunci
+SEARCH_BTN=Cari
+SPECIFY_TIME_RANGE_LEGEND=Tentukan rentang waktu
+BOOLEAN_OPERATOR_LEGEND=Operator boolean
+AND_SEARCH_OPTION=Pencarian AND
+OR_SEARCH_OPTION=Pencarian OR
+SEARCH_TARGET_LEGEND=Target pencarian
+ALL_TEXT_OPTION=Semua teks
+USERNAMES_OPTION=Nama pengguna
+TITLES_OPTION=Judul
+OTHER_LEGEND=Lainnya
+CASE_INSENSITIVE_LABEL=Cari huruf besar dan kecil
+SHOW_POST_BUTTONS_LABEL=Tampilkan tombol posting
+GZIP_SIMPLE_LABEL=Transfer menggunakan kompresi gzip
+UNABLE_TO_OPEN_FILE_TEXT=Tidak dapat membuka %s.
+TOPIC_LIST_COLUMN_HEADERS=Tampilan utas - Tampilan pohon - Balasan - Terakhir diperbarui - Konten
+ZIP_ARCHIVES_HEADING=Arsip ZIP log pesan
+ZIP_ARCHIVE_COLUMN_HEADERS=Unduh - Tanggal - Waktu - Ukuran
+
+# JavaScript UI strings
+MAKE_LINE_BREAKS_BTN=Buat jeda baris
+UPLOADER_THUMBNAILS_LABEL=Thumbnail unggahan
+LINK_THUMBNAILS_LABEL=Thumbnail tautan
+LINK_THUMBNAIL_EXTENSIONS_LEGEND=Ekstensi thumbnail tautan
+NGWORD_LINK_START=Kata terfilter&nbsp;(
+NGWORD_LINK_HITS=&nbsp;hasil)
+NGWORD_UPDATE_BTN=Perbarui
+ADMIN_FILTER_BY_LABEL=Memfilter berdasarkan 
+ADMIN_FILTER_HOST_LABEL=host
+ADMIN_FILTER_NAME_LABEL=nama
+ADMIN_FILTER_CLEAR_BTN=hapus ✕
+ADMIN_RANGE_START_MSG=awal rentang ditetapkan — klik sel Tanggal lain untuk menyelesaikan
+
+# sub/bbstree.php UI strings
+TREE_RANGE_TEXT=Menampilkan utas {BINDEX} hingga {EINDEX}, diurutkan dari yang paling baru diperbarui.
+TREE_NO_THREADS_BELOW=Tidak ada utas di bawah titik ini.
+TREE_DATE_UPDATED=[Tanggal diperbarui: %s]
+TREE_USER_LABEL=Pengguna: 
+
+# sub/bbslog.php search result summary
+SEARCH_RESULT_FOR_QUERY=Untuk "%s" ditemukan 
+SEARCH_RESULTS_COUNT=%d hasil.
+SEARCH_NO_RESULTS=tidak ada hasil.
+
+# sub/bbsimage.php error messages
+UPLOAD_DISABLED_ERROR=Kesalahan: Fitur unggah file tidak diizinkan.
+IMAGE_PROCESSING_UNSUPPORTED_ERROR=Kesalahan: Fitur pemrosesan gambar tidak didukung.
+
+# title attribute tooltips
+TITLE_ADMIN_LOGIN=Login administrator/moderator
+TITLE_SETTINGS_SHORTCUT=Alt(+Shift)+C, Masuk ke halaman pengaturan
+TITLE_POST_RELOAD_SHORTCUT_P=Alt(+Shift)+P, jika Anda mengklik tombol posting tanpa menulis konten, halaman akan dimuat ulang
+TITLE_POST_RELOAD_SHORTCUT_R=Alt(+Shift)+R, jika Anda mengklik tombol posting tanpa menulis konten, halaman akan dimuat ulang
+TITLE_BOTTOM=Bawah
+TITLE_BOTTOM_SHORTCUT=Bawah Alt(+Shift)+B
+TITLE_BROWSE_OLD_POSTS=Jelajahi dan cari postingan lama.
+TITLE_DELETE_CHANGES_RETURN=Hapus semua perubahan dan kembali ke forum.
+TITLE_DELETE_LAST_POST=Hapus postingan terakhir Anda
+TITLE_STACK_BBS_DISPLAY=Tampilkan postingan dalam bentuk forum bertumpuk.
+TITLE_DISPLAY_REPLY_THREAD=Tampilkan rantai balasan sebagai utas
+TITLE_DISPLAY_AS_TREE=Tampilkan utas sebagai pohon
+TITLE_DISPLAY_THREADS_BRANCHES=Tampilkan utas sebagai cabang
+TITLE_EMAIL_ADMIN=Kirim email ke administrator
+TITLE_GO_TO_PR_OFFICE=Pergi ke beranda
+TITLE_TO_PR_OFFICE=Ke beranda
+TITLE_PR_OFFICE=Beranda
+TITLE_LIST_USER_POSTS=Daftarkan semua postingan dari pengguna yang sama
+TITLE_POST_REPLY=Posting balasan
+TITLE_RETURN_PREV_PAGE=Kembali ke halaman sebelumnya
+TITLE_RETURN_PREV_PAGE2=Kembali ke halaman sebelumnya
+TITLE_RETURN_BBS_SHORTCUT=Kembali ke forum Alt(+Shift)+O
+TITLE_SAVE_SETTINGS_RETURN=Simpan pengaturan dan kembali ke forum.
+TITLE_RESET_SETTINGS=Atur ulang pengaturan
+TITLE_TOP_SHORTCUT=Atas Alt(+Shift)+T
+
+# Gikoneko Together
+GIKO_TOGETHER=Gikoneko Together
+GIKO_TEACH_LINK_TEXT=Ajarkan kata kepada Gikoneko
+GIKO_FORTUNE_SHOKICHI=Berkah Kecil
+GIKO_FORTUNE_CHUKICHI=Berkah Sedang
+GIKO_FORTUNE_KYOU=Kutukan
+GIKO_FORTUNE_DAIKICHI=Berkah Besar
+GIKO_FORTUNE_YOUKICHI=Berkah Muda
+GIKO_FORTUNE_GOUKICHI=Berkah Menggelegar
+GIKO_FORTUNE_NEKOKICHI=Berkah Kucing
+GIKO_FORTUNE_DOKICHI=Berkah Marah
+GIKO_FORTUNE_AIKICHI=Berkah Penuh Kasih
+GIKO_FORTUNE_INKICHI=Berkah Mengundurkan Diri
+GIKO_FORTUNE_KICHI=Berkah
+GIKO_FORTUNE_RAKUKICHI=Berkah Santai
+GIKO_ADD_TITLE=Gikoneko Together - Layar Posting
+GIKO_ERR_DUPLICATE=Ini sudah terdaftar.
+GIKO_ERR_TOO_LONG=Kata itu terlalu panjang.
+GIKO_ERR_WRITE_FAILED=Gagal menulis. Periksa lokasi dan izin tulis file data (%s).
+GIKO_POST_COMPLETE=Posting selesai
+GIKO_BACK_TO_BBS=Kembali ke forum
+GIKO_ADD_PROMPT=Tulis sesuatu untuk diucapkan Gikoneko (hingga %s karakter setengah-lebar)
+GIKO_ADD_SUBMIT=Ajarkan kata
+GIKO_ADD_RESET=Hapus
+
+LANG_SELECT_LABEL=Bahasa:
+
+# 20260801 Gikoneko: tree-hide JS feature
+TREE_HIDE_LINK=[Sembunyikan]
+TREE_HIDE_SETTING_LABEL=Aktifkan penyembunyian utas (pengaturan pribadi, browser ini saja)
+TREE_HIDDEN_PANEL_TITLE=Utas tersembunyi
+TREE_RESTORE_LINK=Pulihkan
+TREE_RESTORE_ALL_LINK=Pulihkan semua
+TREE_HIDDEN_EMPTY=Tidak ada utas tersembunyi.
+
+# 20260801 Gikoneko: long-post filter JS feature
+LONGPOST_SETTING_LABEL=Aktifkan filter postingan panjang (pengaturan pribadi, browser ini saja)
+LONGPOST_THRESHOLD_LABEL=Ambang baris:
+LONGPOST_COLLAPSED_TEXT=Postingan dengan lebih dari {N} baris telah dilipat.
+LONGPOST_EXPAND_LINK=Tampilkan
+LONGPOST_COLLAPSE_LINK=Lipat
+
+# 20260801 Gikoneko: LaTeX math rendering JS feature
+LATEX_SETTING_LABEL=Aktifkan rendering matematika LaTeX (pengaturan pribadi, browser ini saja, memuat KaTeX dari CDN)
+
+# 20260801 Gikoneko: JS settings panel
+JS_SETTINGS_LEGEND=Pengaturan JS
+JS_GIKO_LABEL=Gikoneko-to-issho (ketika tidak ada pesan yang belum dibaca)
+JS_IMGTHUMB_LABEL=Thumbnail gambar
+JS_KAOMOJI_LABEL=Palet kaomoji
+JS_LATEX_LABEL=Rendering matematika LaTeX (memuat KaTeX dari CDN)
+JS_LINEBREAKER_LEN_LABEL=Panjang jeda baris target:
+JS_LINEBREAKER_NOTE=Catatan: pemecah baris itu sendiri tidak dapat dinonaktifkan (batas ukuran postingan memerlukannya). Angka di atas hanya menyesuaikan di mana baris dipecah.
+JS_LONGPOST_LABEL=Filter postingan panjang
+JS_TREEHIDE_LABEL=Penyembunyian utas belum dibaca
+JS_UPTHUMB_LABEL=Thumbnail unggahan
+JS_VIDEMBED_LABEL=Penyematan video
