@@ -1,0 +1,364 @@
+# ksphp-plus language file (French / Français)
+# Format: KEY=value  (no spaces around "=" -- anything after "=" is taken
+# literally, including leading/trailing spaces, up to end of line)
+# Lines starting with "#" or ";" are comments. Blank lines are ignored.
+# Encoding: UTF-8, no BOM.
+# Placeholders like {MAXNAMELENGTH} are substituted by the script and must
+# be kept as-is (same spelling, including the curly braces).
+
+# Service / access
+BBS_OUT_OF_SERVICE=Ce forum est actuellement hors service.
+ACCESS_PROHIBITED=Accès interdit.
+
+# Generic / IO errors
+FAILED_TO_READ_MESSAGE=Échec de la lecture du message
+FILE_AUTOCREATED=%s est introuvable ; il a été créé automatiquement.
+FAILED_TO_OPEN_LOG=Impossible d'ouvrir le fichier journal : %s
+FAILED_TO_OUTPUT_LOG=Impossible d'afficher le journal des messages
+OLDLOG_TOO_LARGE=Le fichier journal dépasse la limite de taille
+PARTICIPANT_FILE_ERROR=Erreur lors de la génération du fichier des participants
+
+# Posting / validation
+POSTING_SUSPENDED=La fonction de publication de ce forum est actuellement suspendue.
+ADMIN_ONLY_POSTING=Seuls les administrateurs sont autorisés à publier sur ce forum.
+ADMIN_POST_DISABLED=L'accès administrateur via le formulaire de publication est désactivé. Utilisez le lien d'administration.
+BAD_REFERER=Les publications ne peuvent pas provenir d'autres URL que
+POST_TOO_WIDE=Le contenu du message contient trop de caractères.
+POST_TOO_MANY_LINES=Le contenu du message contient trop de lignes.
+POST_TOO_LARGE=Le contenu du message est trop volumineux.
+NAME_TOO_LONG=Le champ nom contient trop de caractères. (Maximum %s caractères)
+EMAIL_TOO_LONG=Le champ e-mail contient trop de caractères. (Maximum %s caractères)
+TITLE_TOO_LONG=Le champ titre contient trop de caractères. (Maximum %s caractères)
+POST_TOO_FAST=L'intervalle entre les publications est trop court. Veuillez réessayer.
+NGWORD_FOUND=Le message contient des mots interdits.
+SPAM_KUN=Dehors, espèce de spam !!!
+
+# Caller / request
+INVALID_CALLER=Requête non valide.
+NO_PARAMETERS=Aucun paramètre.
+INVALID_PASSWORD=Le mot de passe est incorrect.
+
+# Follow / search / reference
+MESSAGE_NOT_FOUND=Le message spécifié est introuvable.
+REFERENCE_NOT_FOUND=Le message de référence est introuvable.
+REFERENCE_COLON=Référence :
+FOLLOW_UP_POST=Réponse
+POST_SEARCH=Rechercher un message
+
+# Completion / undo
+POST_COMPLETE=Publication effectuée
+DELETION_COMPLETE=Suppression effectuée
+UNDO_POST_NOT_FOUND=Le message correspondant est introuvable.
+UNDO_NOT_PERMITTED=La suppression du message correspondant n'est pas autorisée.
+
+# Main list footer
+POSTS_RANGE_NEWEST_TO_OLDEST=Messages {BINDEX} à {EINDEX} affichés, du plus récent au plus ancien. 
+NO_UNREAD_MESSAGES=Aucun message non lu. 
+NO_POSTS_BELOW=Aucune publication en dessous de ce point.
+
+# New post page
+NEW_POST=Nouvelle publication
+
+# Labels / tags inserted into messages
+HACKER_TAG= (pirate)
+FRAUDSTER_TAG= (imposteur)
+SELF_REPLY_TAG= (auto-réponse)
+
+# Weekdays
+SUNDAY=Dim
+MONDAY=Lun
+TUESDAY=Mar
+WEDNESDAY=Mer
+THURSDAY=Jeu
+FRIDAY=Ven
+SATURDAY=Sam
+
+# Admin / image upload errors
+NO_PASSWORD_SET=Aucun mot de passe n'a été défini.
+FILE_SIZE_OVER_LIMIT=La taille du fichier dépasse %s Ko.
+FILE_UPLOAD_FAILED=Le téléversement du fichier a échoué. Code : %s
+FAILED_TO_LOAD_UPLOAD_ID=Impossible de charger le fichier image téléversé.
+IMAGE_WIDTH_EXCEEDED=La largeur de l'image dépasse la limite.
+IMAGE_FILEMSG=Image%s %s %s*%s %s Ko
+INVALID_FILE_FORMAT=Le format du fichier est incorrect.
+DIRECTORY_OPEN_FAILED=Ce répertoire n'a pas pu être ouvert.
+TOO_MANY_KEYWORDS=Il y a trop de mots-clés de recherche.
+
+# Page titles
+TITLE_ADMIN_MENU=Menu d'administration
+TITLE_MESSAGE_DELETE_MODE=Mode de suppression des messages
+TITLE_PASSWORD_SETTINGS=Page de configuration du mot de passe
+TITLE_OLDLOG_SEARCH=Recherche dans les archives
+TITLE_OLDLOG_SEARCH_RESULTS=Résultats de la recherche dans les archives
+TITLE_OLDLOG=Archives des messages
+TITLE_TOPIC_LIST=Liste des sujets
+TITLE_OLDLOG_ARCHIVE=Archive ZIP des messages
+TITLE_TREEVIEW_MAIN=Vue arborescente
+TITLE_ERROR=Erreur
+TITLE_NOTICE=Avis
+
+# HTML titles
+TITLE_FOLLOWUP=Réponse
+TITLE_SEARCH_BY_USER=Rechercher par utilisateur
+TITLE_THREAD_VIEW=Vue par fil
+TITLE_TREE_VIEW=Vue arborescente
+TITLE_DELETE_POST=Supprimer la publication
+
+# Additional UI strings
+URL_REDIRECTION=Redirection d'URL
+USER_SETTINGS=Paramètres utilisateur
+COUNTER_ERROR=Erreur du compteur
+
+# template.html UI strings
+NAV_PR_OFFICE=Accueil
+NAV_CONTACT=Contact
+NAV_MESSAGE_LOGS=Archives
+NAV_MANAGE=Administrer
+BRAND_NAME=KuzuhaScriptPHP+
+RETURN=Retour
+MSG_USER_LABEL=Utilisateur :
+MSG_POST_DATE_LABEL=Date :
+NEXT_PAGE=Page suivante
+RELOAD=Actualiser
+UNREAD=Non lu
+TITLE_ADMIN_POST=Publier en tant qu'administrateur
+FORM_NAME_LABEL=Nom
+FORM_EMAIL_LABEL=E-mail
+FORM_TITLE_LABEL=Titre
+POST_RELOAD=Publier/Actualiser
+CLEAR=Effacer
+FORM_CONTENTS_LABEL=Contenu
+FORM_CONTENTS_HELP_SIMPLE=(Maximum %s colonnes et %s lignes. Insérez des sauts de ligne si nécessaire. Les balises HTML/BBCode ne sont pas acceptées.)
+FORM_CONTENTS_HELP_IMAGE=(Maximum %s colonnes et %s lignes. Insérez des sauts de ligne si nécessaire. Les balises HTML/BBCode ne sont pas acceptées. <br>            Si vous écrivez %s dans le texte, l'image téléversée sera insérée à cet endroit.)
+KAOMOJI_SHOW_MORE=Afficher plus de kaomoji
+KAOMOJI_INTRO=Affichage de kaomoji supplémentaires du style Ayashii World. Consultez aussi <a target="_blank" href="//mattari.heyuri.net/">Mattari AA</a>.
+KAOMOJI_CAT_MATTARI=Détendu / Tranquille
+KAOMOJI_CAT_DAUSO=Triste / Abattu
+KAOMOJI_CAT_ANGRY=Énervé / Méchant
+KAOMOJI_CAT_EHHH=Hein !?
+KAOMOJI_CAT_GESTURES=Gestes / Saluts
+KAOMOJI_CAT_SLEEPY=Endormi / Autres
+KAOMOJI_CAT_DROOLING=Baveux
+KAOMOJI_CAT_SMOKING=Fumeur / Buveur de thé
+KAOMOJI_CAT_FUN=Amusant / Divers
+IMAGE_UPLOAD_LABEL=Téléverser une image
+IMAGE_UPLOAD_HELP=（JPG/GIF/PNG uniquement. Largeur max. %spx ; hauteur max. %spx ; taille max. %s Ko.）
+POSTS_DISPLAYED_LABEL=Publications&nbsp;affichées
+AUTO_LINK_URLS_LABEL=Lier&nbsp;les&nbsp;URL&nbsp;automatiquement
+LOG_READING_MODE_LABEL=Mode&nbsp;lecture&nbsp;d'archives
+HIDE_LINK_LINE_LABEL=Masquer&nbsp;la&nbsp;ligne&nbsp;de&nbsp;liens
+SHOW_IMAGES_LABEL=Afficher&nbsp;les&nbsp;images
+COUNTER_TEXT=Pages&nbsp;vues&nbsp;depuis&nbsp;le&nbsp;%s :&nbsp;%s (niveau&nbsp;antiéchec :&nbsp;%s)
+MBRCOUNT_TEXT=Participants&nbsp;actuels :&nbsp;%s&nbsp;utilisateurs (dans&nbsp;les&nbsp;%s&nbsp;dernières&nbsp;secondes)
+LOGSAVE_TEXT=Max.&nbsp;publications&nbsp;sauvegardées :&nbsp;%s
+THREAD_LABEL=Fil
+TREE_LABEL=Arbre
+DELETE_PREVIOUS_POST=Supprimer&nbsp;la&nbsp;publication&nbsp;précédente
+LATEST_30_POSTS=30 dernières publications
+POSTS_FOUND= publications trouvées.
+RETURN_TO_BBS_HELP=Cliquez sur le lien ci-dessus ou appuyez sur <kbd>Alt</kbd>(+<kbd>Shift</kbd>)+<b><kbd>O</kbd></b> pour revenir au forum.
+DISPLAY_COLORS_LEGEND=Couleurs d'affichage (hexadécimal)
+TEXT_COLOR_LABEL=Couleur du texte
+BACKGROUND_COLOR_LABEL=Couleur de fond
+LINK_COLOR_LABEL=Couleur des liens
+VISITED_LINK_COLOR_LABEL=Couleur des liens visités
+ACTIVE_LINK_COLOR_LABEL=Couleur des liens actifs
+MOUSEOVER_LINK_COLOR_LABEL=Couleur des liens au survol
+TITLE_COLOR_LABEL=Couleur du titre
+QUOTE_COLOR_LABEL=Couleur des citations
+ADDITIONAL_FEATURES_LEGEND=Fonctionnalités supplémentaires
+GZIP_LABEL=Transférer avec compression gzip (affichage plus rapide)
+LOG_READING_MODE_DESC_LABEL=Mode lecture d'archives (le formulaire de publication ne sera pas affiché)
+AUTO_LINK_URLS_DESC_LABEL=Lier les URL automatiquement (les URL dans le contenu deviendront des liens à la publication)
+COOKIE_LABEL=Enregistrer le nom et l'e-mail dans un cookie lors de la publication
+HIDE_LINK_ROW_DESC_LABEL=Masquer la ligne de liens (la liste de liens sous le formulaire ne sera pas affichée)
+FOLLOW_DISPLAY_LEGEND=Comment afficher la page de réponse
+FOLLOW_NEW_WINDOW_LABEL=Ouvrir dans une nouvelle fenêtre
+FOLLOW_SAME_PAGE_LABEL=Afficher sur la même page
+BOOKMARK_HELP=Si vous mettez en favori l'URL qui apparaît après avoir cliqué sur « Enregistrer », vous pourrez naviguer avec les paramètres ci-dessus.
+REGISTER=Enregistrer
+UNDO_CHANGES=Annuler les modifications
+RESTORE_DEFAULTS=Restaurer les valeurs par défaut
+REDIRECTING=Redirection en cours…
+PAGE_GEN_TIME_TEXT=Temps de génération de la page : %s secondes
+OG_LOCALE=fr_FR
+
+# tmpltree.html UI strings
+STANDARD_VIEW=Vue&nbsp;standard
+TOP_LABEL=Haut
+
+# login.html UI strings
+MOD_LOGIN_TITLE=Connexion modérateur
+PASSWORD_LABEL=Mot de passe :
+LOGIN_BUTTON=Se connecter
+LOGIN_ERROR=Identifiant ou mot de passe incorrect.
+
+# tmpladmin.html UI strings
+DELETE_MESSAGES_BTN=Supprimer des messages
+VIEW_LOG_FILE_BTN=Voir le fichier journal
+REGEN_PASSWORD_BTN=Régénérer le mot de passe chiffré
+PHP_CONFIG_INFO_BTN=Informations de configuration PHP du serveur
+LOGOUT_BTN=Se déconnecter
+CLOSE_BTN=Fermer
+PERFORM_DELETION_BTN=Effectuer la suppression
+DELETE_INSTRUCTIONS=Cochez les cases des messages à supprimer, puis cliquez sur [Effectuer la suppression].
+DELETE_COL_HEADER=Supprimer
+VIEW_COL_HEADER=Voir
+DATE_POSTED_COL_HEADER=Date
+SUBJECT_COL_HEADER=Sujet
+USERNAME_COL_HEADER=Utilisateur
+HOST_COL_HEADER=Hôte
+COMMENT_COL_HEADER=Commentaire
+SETPASS_INSTRUCTIONS=Définissez votre mot de passe.<br>		Veuillez entrer le mot de passe administrateur que vous utiliserez dorénavant.<br>	Ce mot de passe sera utilisé pour publier avec le nom d'administrateur et pour vous authentifier en mode administration.
+ADMIN_PASSWORD_LABEL=Mot de passe administrateur
+SET_BTN=Définir
+RESET_BTN=Réinitialiser
+PASSWORD_GENERATED_MSG=Mot de passe chiffré généré !<br>	Collez la chaîne de mot de passe chiffré suivante dans la section désignée du script principal du forum.
+BULLETIN_BOARD_LABEL=Forum
+WARNING_LABEL=AVERTISSEMENT
+ADMIN_ACCESS_WARNING=L'ACCÈS PAR DU PERSONNEL NON AUTORISÉ EST STRICTEMENT INTERDIT. LES CONTREVENANTS SERONT TRACÉS, LOCALISÉS ET APPRÉHENDÉS.
+
+# tmpllog.html UI strings
+FROM_DAY_LABEL=Du jour
+HOUR_LABEL=heure
+TO_DAY_LABEL=au jour
+MINUTE_LABEL=minutes
+ZIP_ARCHIVES_LINK=Archives ZIP des journaux de messages
+LIST_OF_LOGS_HEADING=Liste des archives de messages
+DOWNLOAD_LABEL=Télécharger
+SELECT_DESELECT_ALL_LABEL=Tout sélectionner/désélectionner
+JS_UNAVAILABLE_WARNING=JavaScript n'est pas disponible.
+JS_UNAVAILABLE_HELP=Activez JavaScript pour utiliser la sélection/désélection totale.
+SEARCH_LOGS_HEADING=Rechercher dans les journaux de messages
+SPECIFY_KEYWORDS_LEGEND=Spécifier des mots-clés
+SEARCH_BTN=Rechercher
+SPECIFY_TIME_RANGE_LEGEND=Spécifier une plage de temps
+BOOLEAN_OPERATOR_LEGEND=Opérateur booléen
+AND_SEARCH_OPTION=Recherche ET
+OR_SEARCH_OPTION=Recherche OU
+SEARCH_TARGET_LEGEND=Cible de recherche
+ALL_TEXT_OPTION=Tout le texte
+USERNAMES_OPTION=Noms d'utilisateur
+TITLES_OPTION=Titres
+OTHER_LEGEND=Autre
+CASE_INSENSITIVE_LABEL=Rechercher en majuscules et minuscules
+SHOW_POST_BUTTONS_LABEL=Afficher les boutons de publication
+GZIP_SIMPLE_LABEL=Transférer avec compression gzip
+UNABLE_TO_OPEN_FILE_TEXT=Impossible d'ouvrir %s.
+TOPIC_LIST_COLUMN_HEADERS=Vue par fil - Vue arborescente - Réponses - Dernière mise à jour - Contenu
+ZIP_ARCHIVES_HEADING=Archives ZIP des journaux de messages
+ZIP_ARCHIVE_COLUMN_HEADERS=Télécharger - Date - Heure - Taille
+
+# JavaScript UI strings
+MAKE_LINE_BREAKS_BTN=Insérer des sauts de ligne
+UPLOADER_THUMBNAILS_LABEL=Miniatures de téléversement
+LINK_THUMBNAILS_LABEL=Miniatures de lien
+LINK_THUMBNAIL_EXTENSIONS_LEGEND=Extensions des miniatures de lien
+NGWORD_LINK_START=Mots filtrés&nbsp;(
+NGWORD_LINK_HITS=&nbsp;occurrences)
+NGWORD_UPDATE_BTN=Mettre à jour
+ADMIN_FILTER_BY_LABEL=Filtrage par 
+ADMIN_FILTER_HOST_LABEL=hôte
+ADMIN_FILTER_NAME_LABEL=nom
+ADMIN_FILTER_CLEAR_BTN=effacer ✕
+ADMIN_RANGE_START_MSG=début de plage défini — cliquez sur une autre cellule de date pour terminer
+
+# sub/bbstree.php UI strings
+TREE_RANGE_TEXT=Fils {BINDEX} à {EINDEX} affichés, du plus au moins récemment mis à jour.
+TREE_NO_THREADS_BELOW=Aucun fil en dessous de ce point.
+TREE_DATE_UPDATED=[Mis à jour : %s]
+TREE_USER_LABEL=Utilisateur : 
+
+# sub/bbslog.php search result summary
+SEARCH_RESULT_FOR_QUERY=Pour « %s », 
+SEARCH_RESULTS_COUNT=%d résultat(s) trouvé(s).
+SEARCH_NO_RESULTS=aucun résultat trouvé.
+
+# sub/bbsimage.php error messages
+UPLOAD_DISABLED_ERROR=Erreur : la fonction de téléversement de fichiers n'est pas autorisée.
+IMAGE_PROCESSING_UNSUPPORTED_ERROR=Erreur : la fonction de traitement d'image n'est pas prise en charge.
+
+# title attribute tooltips
+TITLE_ADMIN_LOGIN=Connexion administrateur/modérateur
+TITLE_SETTINGS_SHORTCUT=Alt(+Shift)+C, Accéder à la page des paramètres
+TITLE_POST_RELOAD_SHORTCUT_P=Alt(+Shift)+P, cliquer sur publier sans contenu rechargera la page
+TITLE_POST_RELOAD_SHORTCUT_R=Alt(+Shift)+R, cliquer sur publier sans contenu rechargera la page
+TITLE_BOTTOM=Bas
+TITLE_BOTTOM_SHORTCUT=Bas Alt(+Shift)+B
+TITLE_BROWSE_OLD_POSTS=Parcourir et rechercher dans les anciennes publications.
+TITLE_DELETE_CHANGES_RETURN=Supprimer toutes les modifications et revenir au forum.
+TITLE_DELETE_LAST_POST=Supprimer votre dernière publication
+TITLE_STACK_BBS_DISPLAY=Afficher les publications sous forme de forum empilé.
+TITLE_DISPLAY_REPLY_THREAD=Afficher la chaîne de réponses en fil
+TITLE_DISPLAY_AS_TREE=Afficher le fil en arbre
+TITLE_DISPLAY_THREADS_BRANCHES=Afficher les fils en branches
+TITLE_EMAIL_ADMIN=Envoyer un e-mail à l'administrateur
+TITLE_GO_TO_PR_OFFICE=Aller à l'accueil
+TITLE_TO_PR_OFFICE=Vers l'accueil
+TITLE_PR_OFFICE=Accueil
+TITLE_LIST_USER_POSTS=Lister toutes les publications du même utilisateur
+TITLE_POST_REPLY=Publier une réponse
+TITLE_RETURN_PREV_PAGE=Retourner à la page précédente
+TITLE_RETURN_PREV_PAGE2=Retourner à la page précédente
+TITLE_RETURN_BBS_SHORTCUT=Retourner au forum Alt(+Shift)+O
+TITLE_SAVE_SETTINGS_RETURN=Enregistrer les paramètres et revenir au forum.
+TITLE_RESET_SETTINGS=Réinitialiser les paramètres
+TITLE_TOP_SHORTCUT=Haut Alt(+Shift)+T
+
+# Gikoneko Together
+GIKO_TOGETHER=Gikoneko Together
+GIKO_TEACH_LINK_TEXT=Apprendre un mot à Gikoneko
+GIKO_FORTUNE_SHOKICHI=Petite bénédiction
+GIKO_FORTUNE_CHUKICHI=Bénédiction moyenne
+GIKO_FORTUNE_KYOU=Malédiction
+GIKO_FORTUNE_DAIKICHI=Grande bénédiction
+GIKO_FORTUNE_YOUKICHI=Bénédiction juvénile
+GIKO_FORTUNE_GOUKICHI=Bénédiction tonitruante
+GIKO_FORTUNE_NEKOKICHI=Bénédiction du chat
+GIKO_FORTUNE_DOKICHI=Bénédiction furieuse
+GIKO_FORTUNE_AIKICHI=Bénédiction amoureuse
+GIKO_FORTUNE_INKICHI=Bénédiction retirée
+GIKO_FORTUNE_KICHI=Bénédiction
+GIKO_FORTUNE_RAKUKICHI=Bénédiction insouciante
+GIKO_ADD_TITLE=Gikoneko Together - Écran de publication
+GIKO_ERR_DUPLICATE=Ceci a déjà été enregistré.
+GIKO_ERR_TOO_LONG=Ce mot est trop long.
+GIKO_ERR_WRITE_FAILED=Échec de l'écriture. Vérifiez l'emplacement et les permissions du fichier de données (%s).
+GIKO_POST_COMPLETE=Publication effectuée
+GIKO_BACK_TO_BBS=Retourner au forum
+GIKO_ADD_PROMPT=Écrivez quelque chose que Gikoneko dira (jusqu'à %s caractères demi-largeur)
+GIKO_ADD_SUBMIT=Apprendre un mot
+GIKO_ADD_RESET=Effacer
+
+LANG_SELECT_LABEL=Langue :
+
+# 20260801 Gikoneko: tree-hide JS feature
+TREE_HIDE_LINK=[Masquer]
+TREE_HIDE_SETTING_LABEL=Activer le masquage des fils (paramètre personnel, ce navigateur uniquement)
+TREE_HIDDEN_PANEL_TITLE=Fils masqués
+TREE_RESTORE_LINK=Restaurer
+TREE_RESTORE_ALL_LINK=Tout restaurer
+TREE_HIDDEN_EMPTY=Aucun fil masqué.
+
+# 20260801 Gikoneko: long-post filter JS feature
+LONGPOST_SETTING_LABEL=Activer le filtre de publications longues (paramètre personnel, ce navigateur uniquement)
+LONGPOST_THRESHOLD_LABEL=Seuil de lignes :
+LONGPOST_COLLAPSED_TEXT=Une publication de plus de {N} lignes a été réduite.
+LONGPOST_EXPAND_LINK=Afficher
+LONGPOST_COLLAPSE_LINK=Réduire
+
+# 20260801 Gikoneko: LaTeX math rendering JS feature
+LATEX_SETTING_LABEL=Activer le rendu mathématique LaTeX (paramètre personnel, ce navigateur uniquement, charge KaTeX depuis un CDN)
+
+# 20260801 Gikoneko: JS settings panel
+JS_SETTINGS_LEGEND=Paramètres JS
+JS_GIKO_LABEL=Gikoneko-to-issho (quand il n'y a pas de messages non lus)
+JS_IMGTHUMB_LABEL=Miniatures d'images
+JS_KAOMOJI_LABEL=Palette de kaomoji
+JS_LATEX_LABEL=Rendu mathématique LaTeX (charge KaTeX depuis un CDN)
+JS_LINEBREAKER_LEN_LABEL=Longueur cible des sauts de ligne :
+JS_LINEBREAKER_NOTE=Remarque : le séparateur de ligne lui-même ne peut pas être désactivé (les limites de publication le requièrent). Le nombre ci-dessus ajuste uniquement l'endroit où les lignes sont coupées.
+JS_LONGPOST_LABEL=Filtre de publications longues
+JS_TREEHIDE_LABEL=Masquage des fils non lus
+JS_UPTHUMB_LABEL=Miniatures de téléversement
+JS_VIDEMBED_LABEL=Intégration vidéo

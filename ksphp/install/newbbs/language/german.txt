@@ -1,0 +1,364 @@
+# ksphp-plus language file (German / Deutsch)
+# Format: KEY=value  (no spaces around "=" -- anything after "=" is taken
+# literally, including leading/trailing spaces, up to end of line)
+# Lines starting with "#" or ";" are comments. Blank lines are ignored.
+# Encoding: UTF-8, no BOM.
+# Placeholders like {MAXNAMELENGTH} are substituted by the script and must
+# be kept as-is (same spelling, including the curly braces).
+
+# Service / access
+BBS_OUT_OF_SERVICE=Dieses Forum ist derzeit nicht verfügbar.
+ACCESS_PROHIBITED=Zugriff verweigert.
+
+# Generic / IO errors
+FAILED_TO_READ_MESSAGE=Nachricht konnte nicht gelesen werden
+FILE_AUTOCREATED=%s wurde nicht gefunden und wurde neu erstellt.
+FAILED_TO_OPEN_LOG=Protokolldatei konnte nicht geöffnet werden: %s
+FAILED_TO_OUTPUT_LOG=Nachrichtenprotokoll konnte nicht ausgegeben werden
+OLDLOG_TOO_LARGE=Nachrichtenprotokolldatei überschreitet die Dateigrößenbeschränkung
+PARTICIPANT_FILE_ERROR=Fehler bei der Ausgabe der Teilnehmerdatei
+
+# Posting / validation
+POSTING_SUSPENDED=Die Beitragsfunktion dieses Forums ist derzeit deaktiviert.
+ADMIN_ONLY_POSTING=Nur Administratoren dürfen in diesem Forum posten.
+ADMIN_POST_DISABLED=Administratorzugang über das Beitragsformular ist deaktiviert. Bitte den Verwaltungslink verwenden.
+BAD_REFERER=Beiträge können nicht von anderen URLs als folgender gesendet werden:
+POST_TOO_WIDE=Der Beitragsinhalt enthält zu viele Zeichen.
+POST_TOO_MANY_LINES=Der Beitragsinhalt enthält zu viele Zeilen.
+POST_TOO_LARGE=Der Beitragsinhalt ist zu groß.
+NAME_TOO_LONG=Das Namensfeld enthält zu viele Zeichen. (Bis zu %s Zeichen)
+EMAIL_TOO_LONG=Das E-Mail-Feld enthält zu viele Zeichen. (Bis zu %s Zeichen)
+TITLE_TOO_LONG=Das Titelfeld enthält zu viele Zeichen. (Bis zu %s Zeichen)
+POST_TOO_FAST=Der Abstand zwischen Beiträgen ist zu kurz. Bitte erneut versuchen.
+NGWORD_FOUND=Der Beitrag enthält verbotene Wörter.
+SPAM_KUN=Hau ab, Spam!!!
+
+# Caller / request
+INVALID_CALLER=Ungültige Anfrage.
+NO_PARAMETERS=Keine Parameter vorhanden.
+INVALID_PASSWORD=Das Passwort ist falsch.
+
+# Follow / search / reference
+MESSAGE_NOT_FOUND=Die angegebene Nachricht wurde nicht gefunden.
+REFERENCE_NOT_FOUND=Referenzbeitrag nicht gefunden.
+REFERENCE_COLON=Referenz:
+FOLLOW_UP_POST=Antwort
+POST_SEARCH=Beitrag suchen
+
+# Completion / undo
+POST_COMPLETE=Beitrag abgeschickt
+DELETION_COMPLETE=Löschung abgeschlossen
+UNDO_POST_NOT_FOUND=Der entsprechende Beitrag wurde nicht gefunden.
+UNDO_NOT_PERMITTED=Das Löschen des entsprechenden Beitrags ist nicht gestattet.
+
+# Main list footer
+POSTS_RANGE_NEWEST_TO_OLDEST=Oben werden die Beiträge {BINDEX} bis {EINDEX} angezeigt, vom neuesten zum ältesten. 
+NO_UNREAD_MESSAGES=Keine ungelesenen Nachrichten. 
+NO_POSTS_BELOW=Keine weiteren Beiträge unterhalb dieses Punktes.
+
+# New post page
+NEW_POST=Neuer Beitrag
+
+# Labels / tags inserted into messages
+HACKER_TAG= (Hacker)
+FRAUDSTER_TAG= (Betrüger)
+SELF_REPLY_TAG= (Selbstantwort)
+
+# Weekdays
+SUNDAY=So
+MONDAY=Mo
+TUESDAY=Di
+WEDNESDAY=Mi
+THURSDAY=Do
+FRIDAY=Fr
+SATURDAY=Sa
+
+# Admin / image upload errors
+NO_PASSWORD_SET=Es wurde kein Passwort festgelegt.
+FILE_SIZE_OVER_LIMIT=Die Dateigröße überschreitet %s KB.
+FILE_UPLOAD_FAILED=Der Datei-Upload ist fehlgeschlagen. Code: %s
+FAILED_TO_LOAD_UPLOAD_ID=Die hochgeladene Bilddatei konnte nicht geladen werden.
+IMAGE_WIDTH_EXCEEDED=Die Bildbreite überschreitet das Limit.
+IMAGE_FILEMSG=Bild%s %s %s*%s %s KB
+INVALID_FILE_FORMAT=Das Dateiformat ist falsch.
+DIRECTORY_OPEN_FAILED=Dieses Verzeichnis konnte nicht geöffnet werden.
+TOO_MANY_KEYWORDS=Es gibt zu viele Suchbegriffe.
+
+# Page titles
+TITLE_ADMIN_MENU=Verwaltungsmenü
+TITLE_MESSAGE_DELETE_MODE=Nachrichtenl-Löschmodus
+TITLE_PASSWORD_SETTINGS=Passwort-Einstellungsseite
+TITLE_OLDLOG_SEARCH=Nachrichtenarchiv-Suche
+TITLE_OLDLOG_SEARCH_RESULTS=Suchergebnisse im Nachrichtenarchiv
+TITLE_OLDLOG=Nachrichtenarchiv
+TITLE_TOPIC_LIST=Themenliste
+TITLE_OLDLOG_ARCHIVE=Nachrichtenarchiv-ZIP
+TITLE_TREEVIEW_MAIN=Baumansicht
+TITLE_ERROR=Fehler
+TITLE_NOTICE=Hinweis
+
+# HTML titles
+TITLE_FOLLOWUP=Antwort
+TITLE_SEARCH_BY_USER=Suche nach Benutzer
+TITLE_THREAD_VIEW=Thread-Ansicht
+TITLE_TREE_VIEW=Baumansicht
+TITLE_DELETE_POST=Beitrag löschen
+
+# Additional UI strings
+URL_REDIRECTION=URL-Weiterleitung
+USER_SETTINGS=Benutzereinstellungen
+COUNTER_ERROR=Zählerfehler
+
+# template.html UI strings
+NAV_PR_OFFICE=Startseite
+NAV_CONTACT=Kontakt
+NAV_MESSAGE_LOGS=Archiv
+NAV_MANAGE=Verwalten
+BRAND_NAME=KuzuhaScriptPHP+
+RETURN=Zurück
+MSG_USER_LABEL=Benutzer:
+MSG_POST_DATE_LABEL=Datum:
+NEXT_PAGE=Nächste Seite
+RELOAD=Neu laden
+UNREAD=Ungelesen
+TITLE_ADMIN_POST=Als Administrator posten
+FORM_NAME_LABEL=Name
+FORM_EMAIL_LABEL=E-Mail
+FORM_TITLE_LABEL=Titel
+POST_RELOAD=Absenden/Neu laden
+CLEAR=Löschen
+FORM_CONTENTS_LABEL=Inhalt
+FORM_CONTENTS_HELP_SIMPLE=(Bis zu %s Spalten und %s Zeilen. Bitte an geeigneten Stellen Zeilenumbrüche einfügen. HTML/BBCode-Tags können nicht verwendet werden.)
+FORM_CONTENTS_HELP_IMAGE=(Bis zu %s Spalten und %s Zeilen. Bitte an geeigneten Stellen Zeilenumbrüche einfügen. HTML/BBCode-Tags können nicht verwendet werden. <br>            Wenn Sie %s im Text schreiben, wird das hochgeladene Bild an dieser Position eingefügt.)
+KAOMOJI_SHOW_MORE=Mehr Kaomoji anzeigen
+KAOMOJI_INTRO=Weitere Kaomoji im Ayashii-World-Stil werden angezeigt. Schau auch bei <a target="_blank" href="//mattari.heyuri.net/">Mattari AA</a> vorbei.
+KAOMOJI_CAT_MATTARI=Entspannt / Ruhig
+KAOMOJI_CAT_DAUSO=Traurig / Niedergeschlagen
+KAOMOJI_CAT_ANGRY=Wütend / Böse
+KAOMOJI_CAT_EHHH=Was!?
+KAOMOJI_CAT_GESTURES=Gesten / Winken
+KAOMOJI_CAT_SLEEPY=Schläfrig / Sonstiges
+KAOMOJI_CAT_DROOLING=Sabbernd
+KAOMOJI_CAT_SMOKING=Rauchend / Tee trinkend
+KAOMOJI_CAT_FUN=Spaß / Diverses
+IMAGE_UPLOAD_LABEL=Bild hochladen
+IMAGE_UPLOAD_HELP=（Nur JPG/GIF/PNG. Max. Breite %spx; max. Höhe %spx; max. Dateigröße %s KB.）
+POSTS_DISPLAYED_LABEL=Angezeigte&nbsp;Beiträge
+AUTO_LINK_URLS_LABEL=URLs&nbsp;automatisch&nbsp;verlinken
+LOG_READING_MODE_LABEL=Archiv-Lesemodus
+HIDE_LINK_LINE_LABEL=Linkzeile&nbsp;ausblenden
+SHOW_IMAGES_LABEL=Bilder&nbsp;anzeigen
+COUNTER_TEXT=Seitenaufrufe&nbsp;seit&nbsp;%s:&nbsp;%s (Ausfallsicherheitsstufe:&nbsp;%s)
+MBRCOUNT_TEXT=Aktuelle&nbsp;Teilnehmer:&nbsp;%s&nbsp;Benutzer (innerhalb&nbsp;von&nbsp;%s&nbsp;Sekunden)
+LOGSAVE_TEXT=Max.&nbsp;gespeicherte&nbsp;Beiträge:&nbsp;%s
+THREAD_LABEL=Thread
+TREE_LABEL=Baum
+DELETE_PREVIOUS_POST=Vorherigen&nbsp;Beitrag&nbsp;löschen
+LATEST_30_POSTS=Neueste 30 Beiträge
+POSTS_FOUND= Beiträge gefunden.
+RETURN_TO_BBS_HELP=Klicken Sie auf den obigen Link oder drücken Sie <kbd>Alt</kbd>(+<kbd>Shift</kbd>)+<b><kbd>O</kbd></b>, um zum Forum zurückzukehren.
+DISPLAY_COLORS_LEGEND=Anzeigefarben (Hexadezimal)
+TEXT_COLOR_LABEL=Textfarbe
+BACKGROUND_COLOR_LABEL=Hintergrundfarbe
+LINK_COLOR_LABEL=Linkfarbe
+VISITED_LINK_COLOR_LABEL=Besuchte Linkfarbe
+ACTIVE_LINK_COLOR_LABEL=Aktive Linkfarbe
+MOUSEOVER_LINK_COLOR_LABEL=Mouseover-Linkfarbe
+TITLE_COLOR_LABEL=Titelfarbe
+QUOTE_COLOR_LABEL=Zitatfarbe
+ADDITIONAL_FEATURES_LEGEND=Zusätzliche Funktionen
+GZIP_LABEL=Mit gzip-Komprimierung übertragen (Anzeige wird schneller)
+LOG_READING_MODE_DESC_LABEL=Archiv-Lesemodus (das Beitragsformular wird nicht angezeigt)
+AUTO_LINK_URLS_DESC_LABEL=URLs automatisch verlinken (URLs im Beitragsinhalt werden beim Absenden automatisch zu Links)
+COOKIE_LABEL=Name und E-Mail-Adresse beim Posten in einem Cookie speichern
+HIDE_LINK_ROW_DESC_LABEL=Linkzeile ausblenden (die Liste der Links unter dem Formular wird nicht angezeigt)
+FOLLOW_DISPLAY_LEGEND=Anzeige der Antwortseite
+FOLLOW_NEW_WINDOW_LABEL=In einem neuen Fenster öffnen
+FOLLOW_SAME_PAGE_LABEL=Auf derselben Seite anzeigen
+BOOKMARK_HELP=Wenn Sie die URL, die nach dem Klick auf „Speichern" erscheint, als Lesezeichen speichern, können Sie das Forum mit den obigen Einstellungen aufrufen.
+REGISTER=Speichern
+UNDO_CHANGES=Änderungen rückgängig machen
+RESTORE_DEFAULTS=Standardwerte wiederherstellen
+REDIRECTING=Weiterleitung…
+PAGE_GEN_TIME_TEXT=Seitengenerierungszeit: %s Sekunden
+OG_LOCALE=de_DE
+
+# tmpltree.html UI strings
+STANDARD_VIEW=Standardansicht
+TOP_LABEL=Oben
+
+# login.html UI strings
+MOD_LOGIN_TITLE=Moderator-Anmeldung
+PASSWORD_LABEL=Passwort:
+LOGIN_BUTTON=Anmelden
+LOGIN_ERROR=Ungültiger Benutzername oder Passwort.
+
+# tmpladmin.html UI strings
+DELETE_MESSAGES_BTN=Nachrichten löschen
+VIEW_LOG_FILE_BTN=Protokolldatei anzeigen
+REGEN_PASSWORD_BTN=Verschlüsseltes Passwort neu generieren
+PHP_CONFIG_INFO_BTN=Server-PHP-Konfigurationsinformationen
+LOGOUT_BTN=Abmelden
+CLOSE_BTN=Schließen
+PERFORM_DELETION_BTN=Löschen ausführen
+DELETE_INSTRUCTIONS=Bitte die Kontrollkästchen der zu löschenden Beiträge aktivieren und dann auf [Löschen ausführen] klicken.
+DELETE_COL_HEADER=Löschen
+VIEW_COL_HEADER=Anzeigen
+DATE_POSTED_COL_HEADER=Datum
+SUBJECT_COL_HEADER=Betreff
+USERNAME_COL_HEADER=Benutzername
+HOST_COL_HEADER=Host
+COMMENT_COL_HEADER=Kommentar
+SETPASS_INSTRUCTIONS=Passwort festlegen.<br>		Bitte das Administrator-Passwort eingeben, das ab jetzt verwendet werden soll.<br>	Dieses Passwort wird zum Posten mit dem Administratornamen und zur Authentifizierung beim Betreten des Admin-Modus verwendet.
+ADMIN_PASSWORD_LABEL=Administrator-Passwort
+SET_BTN=Festlegen
+RESET_BTN=Zurücksetzen
+PASSWORD_GENERATED_MSG=Verschlüsseltes Passwort generiert!<br>	Die folgende verschlüsselte Passwortzeichenfolge in den dafür vorgesehenen Abschnitt des Haupt-Forum-Skripts einfügen.
+BULLETIN_BOARD_LABEL=Forum
+WARNING_LABEL=WARNUNG
+ADMIN_ACCESS_WARNING=DER ZUGRIFF DURCH UNBEFUGTES PERSONAL IST STRENG VERBOTEN. VERSTÖSSE WERDEN VERFOLGT, LOKALISIERT UND GEAHNDET.
+
+# tmpllog.html UI strings
+FROM_DAY_LABEL=Von Tag
+HOUR_LABEL=Uhr
+TO_DAY_LABEL=bis Tag
+MINUTE_LABEL=Minuten
+ZIP_ARCHIVES_LINK=ZIP-Archive der Nachrichtenprotokolle
+LIST_OF_LOGS_HEADING=Liste der Nachrichtenarchive
+DOWNLOAD_LABEL=Herunterladen
+SELECT_DESELECT_ALL_LABEL=Alle auswählen/abwählen
+JS_UNAVAILABLE_WARNING=JavaScript ist nicht verfügbar.
+JS_UNAVAILABLE_HELP=Bitte JavaScript aktivieren, um alle auswählen/abwählen zu verwenden.
+SEARCH_LOGS_HEADING=Nachrichtenarchive durchsuchen
+SPECIFY_KEYWORDS_LEGEND=Suchbegriffe angeben
+SEARCH_BTN=Suchen
+SPECIFY_TIME_RANGE_LEGEND=Zeitraum angeben
+BOOLEAN_OPERATOR_LEGEND=Boolescher Operator
+AND_SEARCH_OPTION=UND-Suche
+OR_SEARCH_OPTION=ODER-Suche
+SEARCH_TARGET_LEGEND=Suchziel
+ALL_TEXT_OPTION=Gesamter Text
+USERNAMES_OPTION=Benutzernamen
+TITLES_OPTION=Titel
+OTHER_LEGEND=Sonstige
+CASE_INSENSITIVE_LABEL=Groß- und Kleinschreibung ignorieren
+SHOW_POST_BUTTONS_LABEL=Beitragsschaltflächen anzeigen
+GZIP_SIMPLE_LABEL=Mit gzip-Komprimierung übertragen
+UNABLE_TO_OPEN_FILE_TEXT=%s kann nicht geöffnet werden.
+TOPIC_LIST_COLUMN_HEADERS=Thread-Ansicht - Baumansicht - Antworten - Zuletzt aktualisiert - Inhalt
+ZIP_ARCHIVES_HEADING=ZIP-Archive der Nachrichtenprotokolle
+ZIP_ARCHIVE_COLUMN_HEADERS=Herunterladen - Datum - Uhrzeit - Größe
+
+# JavaScript UI strings
+MAKE_LINE_BREAKS_BTN=Zeilenumbrüche einfügen
+UPLOADER_THUMBNAILS_LABEL=Upload-Miniaturansichten
+LINK_THUMBNAILS_LABEL=Link-Miniaturansichten
+LINK_THUMBNAIL_EXTENSIONS_LEGEND=Link-Miniaturansichten-Erweiterungen
+NGWORD_LINK_START=Gefilterte Wörter&nbsp;(
+NGWORD_LINK_HITS=&nbsp;Treffer)
+NGWORD_UPDATE_BTN=Aktualisieren
+ADMIN_FILTER_BY_LABEL=Filterung nach 
+ADMIN_FILTER_HOST_LABEL=Host
+ADMIN_FILTER_NAME_LABEL=Name
+ADMIN_FILTER_CLEAR_BTN=löschen ✕
+ADMIN_RANGE_START_MSG=Bereichsstart festgelegt — auf eine andere Datumszelle klicken, um zu beenden
+
+# sub/bbstree.php UI strings
+TREE_RANGE_TEXT=Oben werden die Threads {BINDEX} bis {EINDEX} angezeigt, geordnet nach zuletzt aktualisiert.
+TREE_NO_THREADS_BELOW=Keine weiteren Threads unterhalb dieses Punktes.
+TREE_DATE_UPDATED=[Aktualisiert: %s]
+TREE_USER_LABEL=Benutzer: 
+
+# sub/bbslog.php search result summary
+SEARCH_RESULT_FOR_QUERY=Für „%s" wurden 
+SEARCH_RESULTS_COUNT=%d Ergebnisse gefunden.
+SEARCH_NO_RESULTS=keine Ergebnisse gefunden.
+
+# sub/bbsimage.php error messages
+UPLOAD_DISABLED_ERROR=Fehler: Die Datei-Upload-Funktion ist nicht erlaubt.
+IMAGE_PROCESSING_UNSUPPORTED_ERROR=Fehler: Die Bildverarbeitungsfunktion wird nicht unterstützt.
+
+# title attribute tooltips
+TITLE_ADMIN_LOGIN=Administrator/Moderator-Anmeldung
+TITLE_SETTINGS_SHORTCUT=Alt(+Shift)+C, Einstellungsseite aufrufen
+TITLE_POST_RELOAD_SHORTCUT_P=Alt(+Shift)+P, wenn Sie ohne Inhalt auf Absenden klicken, wird die Seite neu geladen
+TITLE_POST_RELOAD_SHORTCUT_R=Alt(+Shift)+R, wenn Sie ohne Inhalt auf Absenden klicken, wird die Seite neu geladen
+TITLE_BOTTOM=Unten
+TITLE_BOTTOM_SHORTCUT=Unten Alt(+Shift)+B
+TITLE_BROWSE_OLD_POSTS=Alte Beiträge durchsuchen.
+TITLE_DELETE_CHANGES_RETURN=Alle Änderungen löschen und zum Forum zurückkehren.
+TITLE_DELETE_LAST_POST=Ihren letzten Beitrag löschen
+TITLE_STACK_BBS_DISPLAY=Beiträge als stapelförmiges Forum anzeigen.
+TITLE_DISPLAY_REPLY_THREAD=Die Antwort-Kette als Thread anzeigen
+TITLE_DISPLAY_AS_TREE=Den Thread als Baum anzeigen
+TITLE_DISPLAY_THREADS_BRANCHES=Threads als Äste anzeigen
+TITLE_EMAIL_ADMIN=Administrator per E-Mail kontaktieren
+TITLE_GO_TO_PR_OFFICE=Zur Startseite
+TITLE_TO_PR_OFFICE=Zur Startseite
+TITLE_PR_OFFICE=Startseite
+TITLE_LIST_USER_POSTS=Alle Beiträge desselben Benutzers auflisten
+TITLE_POST_REPLY=Eine Antwort posten
+TITLE_RETURN_PREV_PAGE=Zur vorherigen Seite zurückkehren
+TITLE_RETURN_PREV_PAGE2=Zur vorherigen Seite zurückkehren
+TITLE_RETURN_BBS_SHORTCUT=Zum Forum zurückkehren Alt(+Shift)+O
+TITLE_SAVE_SETTINGS_RETURN=Einstellungen speichern und zum Forum zurückkehren.
+TITLE_RESET_SETTINGS=Einstellungen zurücksetzen
+TITLE_TOP_SHORTCUT=Oben Alt(+Shift)+T
+
+# Gikoneko Together
+GIKO_TOGETHER=Gikoneko Together
+GIKO_TEACH_LINK_TEXT=Gikoneko ein Wort beibringen
+GIKO_FORTUNE_SHOKICHI=Kleiner Segen
+GIKO_FORTUNE_CHUKICHI=Mittlerer Segen
+GIKO_FORTUNE_KYOU=Fluch
+GIKO_FORTUNE_DAIKICHI=Großer Segen
+GIKO_FORTUNE_YOUKICHI=Junger Segen
+GIKO_FORTUNE_GOUKICHI=Donnernder Segen
+GIKO_FORTUNE_NEKOKICHI=Katzensegen
+GIKO_FORTUNE_DOKICHI=Wütender Segen
+GIKO_FORTUNE_AIKICHI=Liebevoller Segen
+GIKO_FORTUNE_INKICHI=Zurückgezogener Segen
+GIKO_FORTUNE_KICHI=Segen
+GIKO_FORTUNE_RAKUKICHI=Sorgloser Segen
+GIKO_ADD_TITLE=Gikoneko Together - Beitragsseite
+GIKO_ERR_DUPLICATE=Dies wurde bereits registriert.
+GIKO_ERR_TOO_LONG=Dieses Wort ist zu lang.
+GIKO_ERR_WRITE_FAILED=Schreiben fehlgeschlagen. Speicherort und Schreibrechte der Datendatei prüfen (%s).
+GIKO_POST_COMPLETE=Beitrag abgeschickt
+GIKO_BACK_TO_BBS=Zum Forum zurückkehren
+GIKO_ADD_PROMPT=Schreiben Sie etwas, das Gikoneko sagen soll (bis zu %s halbbreite Zeichen)
+GIKO_ADD_SUBMIT=Ein Wort beibringen
+GIKO_ADD_RESET=Löschen
+
+LANG_SELECT_LABEL=Sprache:
+
+# 20260801 Gikoneko: tree-hide JS feature
+TREE_HIDE_LINK=[Ausblenden]
+TREE_HIDE_SETTING_LABEL=Thread-Ausblendung aktivieren (persönliche Einstellung, nur dieser Browser)
+TREE_HIDDEN_PANEL_TITLE=Ausgeblendete Threads
+TREE_RESTORE_LINK=Wiederherstellen
+TREE_RESTORE_ALL_LINK=Alle wiederherstellen
+TREE_HIDDEN_EMPTY=Keine ausgeblendeten Threads.
+
+# 20260801 Gikoneko: long-post filter JS feature
+LONGPOST_SETTING_LABEL=Langer-Beitrag-Filter aktivieren (persönliche Einstellung, nur dieser Browser)
+LONGPOST_THRESHOLD_LABEL=Zeilenschwellenwert:
+LONGPOST_COLLAPSED_TEXT=Ein Beitrag mit mehr als {N} Zeilen wurde eingeklappt.
+LONGPOST_EXPAND_LINK=Anzeigen
+LONGPOST_COLLAPSE_LINK=Einklappen
+
+# 20260801 Gikoneko: LaTeX math rendering JS feature
+LATEX_SETTING_LABEL=LaTeX-Mathematikdarstellung aktivieren (persönliche Einstellung, nur dieser Browser, lädt KaTeX von einem CDN)
+
+# 20260801 Gikoneko: JS settings panel
+JS_SETTINGS_LEGEND=JS-Einstellungen
+JS_GIKO_LABEL=Gikoneko-to-issho (wenn keine ungelesenen Beiträge vorhanden sind)
+JS_IMGTHUMB_LABEL=Bild-Miniaturansichten
+JS_KAOMOJI_LABEL=Kaomoji-Palette
+JS_LATEX_LABEL=LaTeX-Mathematikdarstellung (lädt KaTeX von einem CDN)
+JS_LINEBREAKER_LEN_LABEL=Ziel-Zeilenumbruchlänge:
+JS_LINEBREAKER_NOTE=Hinweis: Der Zeilenumbruch selbst kann nicht deaktiviert werden (Beitragslimits erfordern ihn). Die obige Zahl legt nur fest, wo Zeilen umgebrochen werden.
+JS_LONGPOST_LABEL=Langer-Beitrag-Filter
+JS_TREEHIDE_LABEL=Ungelesene-Thread-Ausblendung
+JS_UPTHUMB_LABEL=Upload-Miniaturansichten
+JS_VIDEMBED_LABEL=Video-Einbettung
