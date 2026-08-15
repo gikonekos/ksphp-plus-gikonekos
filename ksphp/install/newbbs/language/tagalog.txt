@@ -1,0 +1,364 @@
+# ksphp-plus language file (Tagalog / Filipino)
+# Format: KEY=value  (no spaces around "=" -- anything after "=" is taken
+# literally, including leading/trailing spaces, up to end of line)
+# Lines starting with "#" or ";" are comments. Blank lines are ignored.
+# Encoding: UTF-8, no BOM.
+# Placeholders like {MAXNAMELENGTH} are substituted by the script and must
+# be kept as-is (same spelling, including the curly braces).
+
+# Service / access
+BBS_OUT_OF_SERVICE=Kasalukuyang hindi available ang bulletin board na ito.
+ACCESS_PROHIBITED=Ipinagbabawal ang access.
+
+# Generic / IO errors
+FAILED_TO_READ_MESSAGE=Nabigong basahin ang mensahe
+FILE_AUTOCREATED=Hindi natagpuan ang %s, kaya bago itong ginawa.
+FAILED_TO_OPEN_LOG=Nabigong buksan ang log file: %s
+FAILED_TO_OUTPUT_LOG=Nabigong i-output ang log ng mensahe
+OLDLOG_TOO_LARGE=Lumampas sa limitasyon ng laki ng file ang message log file
+PARTICIPANT_FILE_ERROR=Error sa output ng participant file
+
+# Posting / validation
+POSTING_SUSPENDED=Kasalukuyang suspendido ang function ng pag-post ng bulletin board na ito.
+ADMIN_ONLY_POSTING=Mga administrator lamang ang pinapayagang mag-post sa bulletin board.
+ADMIN_POST_DISABLED=Naka-disable ang admin access sa pamamagitan ng post form. Mangyaring gamitin ang Manage link.
+BAD_REFERER=Hindi maaaring mag-post mula sa anumang URL maliban sa
+POST_TOO_WIDE=Masyadong maraming karakter sa nilalaman ng post.
+POST_TOO_MANY_LINES=Masyadong maraming linya sa nilalaman ng post.
+POST_TOO_LARGE=Masyadong malaki ang nilalaman ng post.
+NAME_TOO_LONG=Masyadong maraming karakter sa field ng pangalan. (Hanggang %s karakter)
+EMAIL_TOO_LONG=Masyadong maraming karakter sa field ng email. (Hanggang %s karakter)
+TITLE_TOO_LONG=Masyadong maraming karakter sa field ng pamagat. (Hanggang %s karakter)
+POST_TOO_FAST=Masyadong maikli ang pagitan ng mga post. Mangyaring subukan muli.
+NGWORD_FOUND=Naglalaman ang post ng mga ipinagbabawal na salita.
+SPAM_KUN=Lumayas ka rito, spam!!!
+
+# Caller / request
+INVALID_CALLER=Hindi wastong kahilingan.
+NO_PARAMETERS=Walang mga parameter.
+INVALID_PASSWORD=Mali ang password.
+
+# Follow / search / reference
+MESSAGE_NOT_FOUND=Hindi natagpuan ang tinukoy na mensahe.
+REFERENCE_NOT_FOUND=Hindi natagpuan ang reference post.
+REFERENCE_COLON=Reference:
+FOLLOW_UP_POST=Tugon
+POST_SEARCH=Paghahanap ng post
+
+# Completion / undo
+POST_COMPLETE=Kumpleto na ang pag-post
+DELETION_COMPLETE=Kumpleto na ang pagtanggal
+UNDO_POST_NOT_FOUND=Hindi natagpuan ang kaukulang post.
+UNDO_NOT_PERMITTED=Hindi pinapayagan ang pagtanggal ng kaukulang post.
+
+# Main list footer
+POSTS_RANGE_NEWEST_TO_OLDEST=Ipinapakita sa itaas ang mga post {BINDEX} hanggang {EINDEX}, mula pinakabago hanggang pinakaluma. 
+NO_UNREAD_MESSAGES=Walang hindi pa nababasang mensahe. 
+NO_POSTS_BELOW=Walang mga post sa ibaba ng puntong ito.
+
+# New post page
+NEW_POST=Bagong post
+
+# Labels / tags inserted into messages
+HACKER_TAG= (hacker)
+FRAUDSTER_TAG= (mandaraya)
+SELF_REPLY_TAG= (sariling tugon)
+
+# Weekdays
+SUNDAY=Lin
+MONDAY=Lun
+TUESDAY=Mar
+WEDNESDAY=Miy
+THURSDAY=Huw
+FRIDAY=Biy
+SATURDAY=Sab
+
+# Admin / image upload errors
+NO_PASSWORD_SET=Walang naitakdang password.
+FILE_SIZE_OVER_LIMIT=Lumampas sa %sKB ang laki ng file.
+FILE_UPLOAD_FAILED=Nabigo ang proseso ng pag-upload ng file. Code: %s
+FAILED_TO_LOAD_UPLOAD_ID=Nabigong i-load ang na-upload na image file.
+IMAGE_WIDTH_EXCEEDED=Lumampas sa limitasyon ang lapad ng larawan.
+IMAGE_FILEMSG=Larawan%s %s %s*%s %sKB
+INVALID_FILE_FORMAT=Mali ang format ng file.
+DIRECTORY_OPEN_FAILED=Hindi mabuksan ang direktoryong ito.
+TOO_MANY_KEYWORDS=Masyadong maraming search keyword.
+
+# Page titles
+TITLE_ADMIN_MENU=Menu ng administration
+TITLE_MESSAGE_DELETE_MODE=Mode ng pagtanggal ng mensahe
+TITLE_PASSWORD_SETTINGS=Pahina ng mga setting ng password
+TITLE_OLDLOG_SEARCH=Paghahanap sa message log
+TITLE_OLDLOG_SEARCH_RESULTS=Mga resulta ng paghahanap sa message log
+TITLE_OLDLOG=Message log
+TITLE_TOPIC_LIST=Listahan ng paksa
+TITLE_OLDLOG_ARCHIVE=Message log archive
+TITLE_TREEVIEW_MAIN=Tree view
+TITLE_ERROR=Error
+TITLE_NOTICE=Paunawa
+
+# HTML titles
+TITLE_FOLLOWUP=Tugon
+TITLE_SEARCH_BY_USER=Maghanap ayon sa user
+TITLE_THREAD_VIEW=Thread view
+TITLE_TREE_VIEW=Tree view
+TITLE_DELETE_POST=Tanggalin ang post
+
+# Additional UI strings
+URL_REDIRECTION=URL redirection
+USER_SETTINGS=Mga setting ng user
+COUNTER_ERROR=Error sa counter
+
+# template.html UI strings
+NAV_PR_OFFICE=Home
+NAV_CONTACT=Kontak
+NAV_MESSAGE_LOGS=Mga archive
+NAV_MANAGE=Pamahalaan
+BRAND_NAME=KuzuhaScriptPHP+
+RETURN=Bumalik
+MSG_USER_LABEL=User:
+MSG_POST_DATE_LABEL=Petsa ng post:
+NEXT_PAGE=Susunod na pahina
+RELOAD=I-reload
+UNREAD=Hindi pa nababasa
+TITLE_ADMIN_POST=Mag-post bilang administrator
+FORM_NAME_LABEL=Pangalan
+FORM_EMAIL_LABEL=Email
+FORM_TITLE_LABEL=Pamagat
+POST_RELOAD=I-post/I-reload
+CLEAR=I-clear
+FORM_CONTENTS_LABEL=Nilalaman
+FORM_CONTENTS_HELP_SIMPLE=(Hanggang %s column at %s linya. Mangyaring maglagay ng line break kung saan angkop. Hindi magagamit ang mga HTML/BBCode tag.)
+FORM_CONTENTS_HELP_IMAGE=(Hanggang %s column at %s linya. Mangyaring maglagay ng line break kung saan angkop. Hindi magagamit ang mga HTML/BBCode tag. <br>            Kung isusulat mo ang %s sa iyong teksto, ilalagay ang na-upload na larawan sa posisyong iyon.)
+KAOMOJI_SHOW_MORE=Magpakita ng higit pang kaomoji
+KAOMOJI_INTRO=Nagpapakita ng higit pang kaomoji na istilong Ayashii World. Tingnan din ang <a target="_blank" href="//mattari.heyuri.net/">Mattari AA</a>.
+KAOMOJI_CAT_MATTARI=Relaks / Kalmado
+KAOMOJI_CAT_DAUSO=Malungkot / Nalulumbay
+KAOMOJI_CAT_ANGRY=Galit / Masama
+KAOMOJI_CAT_EHHH=Ha!?
+KAOMOJI_CAT_GESTURES=Mga galaw / Kaway
+KAOMOJI_CAT_SLEEPY=Inaantok / Iba pa
+KAOMOJI_CAT_DROOLING=Naglalaway
+KAOMOJI_CAT_SMOKING=Naninigarilyo / Umiinom ng tsaa
+KAOMOJI_CAT_FUN=Masaya / Iba't iba
+IMAGE_UPLOAD_LABEL=Mag-upload ng larawan
+IMAGE_UPLOAD_HELP=（JPG/GIF/PNG lamang. Maks. lapad %spx; maks. taas %spx; maks. laki ng file %sKB.）
+POSTS_DISPLAYED_LABEL=Mga&nbsp;post&nbsp;na&nbsp;ipinapakita
+AUTO_LINK_URLS_LABEL=Awtomatikong&nbsp;i-link&nbsp;ang&nbsp;mga&nbsp;URL
+LOG_READING_MODE_LABEL=Mode&nbsp;ng&nbsp;pagbabasa&nbsp;ng&nbsp;log
+HIDE_LINK_LINE_LABEL=Itago&nbsp;ang&nbsp;linya&nbsp;ng&nbsp;link
+SHOW_IMAGES_LABEL=Ipakita&nbsp;ang&nbsp;mga&nbsp;larawan
+COUNTER_TEXT=Mga&nbsp;page&nbsp;view&nbsp;mula&nbsp;%s:&nbsp;%s (bulletproof&nbsp;level:&nbsp;%s)
+MBRCOUNT_TEXT=Kasalukuyang&nbsp;mga&nbsp;kalahok:&nbsp;%s&nbsp;user (sa&nbsp;loob&nbsp;ng&nbsp;%s&nbsp;segundo)
+LOGSAVE_TEXT=Maks.&nbsp;na&nbsp;post&nbsp;na&nbsp;naka-save:&nbsp;%s&nbsp;post
+THREAD_LABEL=Thread
+TREE_LABEL=Tree
+DELETE_PREVIOUS_POST=Tanggalin&nbsp;ang&nbsp;naunang&nbsp;post
+LATEST_30_POSTS=Pinakabagong 30 post
+POSTS_FOUND= post ang natagpuan.
+RETURN_TO_BBS_HELP=I-click ang link sa itaas o pindutin ang <kbd>Alt</kbd>(+<kbd>Shift</kbd>)+<b><kbd>O</kbd></b> para bumalik sa bulletin board.
+DISPLAY_COLORS_LEGEND=Mga kulay ng display (hexadecimal)
+TEXT_COLOR_LABEL=Kulay ng teksto
+BACKGROUND_COLOR_LABEL=Kulay ng background
+LINK_COLOR_LABEL=Kulay ng link
+VISITED_LINK_COLOR_LABEL=Kulay ng binisitang link
+ACTIVE_LINK_COLOR_LABEL=Kulay ng aktibong link
+MOUSEOVER_LINK_COLOR_LABEL=Kulay ng link sa mouseover
+TITLE_COLOR_LABEL=Kulay ng pamagat
+QUOTE_COLOR_LABEL=Kulay ng quote
+ADDITIONAL_FEATURES_LEGEND=Mga karagdagang feature
+GZIP_LABEL=Ilipat gamit ang gzip compression (mas mabilis ang display)
+LOG_READING_MODE_DESC_LABEL=Mode ng pagbabasa ng log (hindi ipapakita ang post form)
+AUTO_LINK_URLS_DESC_LABEL=Awtomatikong i-link ang mga URL (awtomatikong magiging link ang mga URL sa nilalaman ng post kapag na-post)
+COOKIE_LABEL=I-save ang pangalan at email address sa cookie kapag nag-post
+HIDE_LINK_ROW_DESC_LABEL=Itago ang link row (hindi ipapakita ang listahan ng mga link sa ibaba ng post form)
+FOLLOW_DISPLAY_LEGEND=Paano ipapakita ang pahina ng tugon
+FOLLOW_NEW_WINDOW_LABEL=Magbukas at magpakita ng bagong window
+FOLLOW_SAME_PAGE_LABEL=Ipakita sa parehong pahina
+BOOKMARK_HELP=Kung ibo-bookmark mo ang URL na lumalabas pagkatapos mong i-click ang "Irehistro", magagawa mong i-browse ang bulletin board gamit ang mga setting sa itaas.
+REGISTER=Irehistro
+UNDO_CHANGES=I-undo ang mga pagbabago
+RESTORE_DEFAULTS=Ibalik ang mga default
+REDIRECTING=Nire-redirect…
+PAGE_GEN_TIME_TEXT=Oras ng paggawa ng pahina: %s segundo
+OG_LOCALE=fil_PH
+
+# tmpltree.html UI strings
+STANDARD_VIEW=Standard&nbsp;view
+TOP_LABEL=Itaas
+
+# login.html UI strings
+MOD_LOGIN_TITLE=Mod login
+PASSWORD_LABEL=Password:
+LOGIN_BUTTON=Mag-login
+LOGIN_ERROR=Hindi wastong username o password.
+
+# tmpladmin.html UI strings
+DELETE_MESSAGES_BTN=Tanggalin ang mga mensahe
+VIEW_LOG_FILE_BTN=Tingnan ang log file
+REGEN_PASSWORD_BTN=I-regenerate ang naka-encrypt na password
+PHP_CONFIG_INFO_BTN=Impormasyon ng PHP configuration ng server
+LOGOUT_BTN=Mag-logout
+CLOSE_BTN=Isara
+PERFORM_DELETION_BTN=Isagawa ang pagtanggal
+DELETE_INSTRUCTIONS=Mangyaring i-check ang mga checkbox ng mga post na nais mong tanggalin, pagkatapos ay i-click ang [Isagawa ang pagtanggal] na button sa ibaba.
+DELETE_COL_HEADER=Tanggalin
+VIEW_COL_HEADER=Tingnan
+DATE_POSTED_COL_HEADER=Petsa ng post
+SUBJECT_COL_HEADER=Paksa
+USERNAME_COL_HEADER=Username
+HOST_COL_HEADER=Host
+COMMENT_COL_HEADER=Komento
+SETPASS_INSTRUCTIONS=Itakda ang iyong password.<br>		Mangyaring ilagay ang administrator password na gagamitin mo sa pamamahala ng bulletin board mula ngayon.<br>	Ang password na ilalagay mo dito ay gagamitin sa pag-post gamit ang pangalan ng administrator, at sa pag-authenticate sa iyo kapag pumapasok sa admin mode.
+ADMIN_PASSWORD_LABEL=Admin password
+SET_BTN=Itakda
+RESET_BTN=I-reset
+PASSWORD_GENERATED_MSG=Nagawa na ang naka-encrypt na password!<br>	I-paste ang sumusunod na naka-encrypt na password string sa itinakdang seksyon ng pangunahing bulletin board script.
+BULLETIN_BOARD_LABEL=Bulletin board
+WARNING_LABEL=BABALA
+ADMIN_ACCESS_WARNING=MAHIGPIT NA IPINAGBABAWAL ANG ACCESS NG MGA HINDI AWTORISADONG TAO. ANG MGA LUMALABAG AY TUTUKUYIN, HAHANAPIN, AT ILILIGPIT.
+
+# tmpllog.html UI strings
+FROM_DAY_LABEL=Mula araw
+HOUR_LABEL=oras
+TO_DAY_LABEL=hanggang araw
+MINUTE_LABEL=minuto
+ZIP_ARCHIVES_LINK=Mga ZIP archive ng message log
+LIST_OF_LOGS_HEADING=Listahan ng mga message log
+DOWNLOAD_LABEL=I-download
+SELECT_DESELECT_ALL_LABEL=Piliin/alisin sa pagkakapili lahat
+JS_UNAVAILABLE_WARNING=Hindi available ang JavaScript.
+JS_UNAVAILABLE_HELP=Mangyaring i-enable ang JavaScript para gamitin ang piliin/alisin sa pagkakapili lahat.
+SEARCH_LOGS_HEADING=Maghanap sa mga message log
+SPECIFY_KEYWORDS_LEGEND=Tukuyin ang mga keyword
+SEARCH_BTN=Maghanap
+SPECIFY_TIME_RANGE_LEGEND=Tukuyin ang saklaw ng oras
+BOOLEAN_OPERATOR_LEGEND=Boolean operator
+AND_SEARCH_OPTION=AND search
+OR_SEARCH_OPTION=OR search
+SEARCH_TARGET_LEGEND=Target ng paghahanap
+ALL_TEXT_OPTION=Lahat ng teksto
+USERNAMES_OPTION=Mga username
+TITLES_OPTION=Mga pamagat
+OTHER_LEGEND=Iba pa
+CASE_INSENSITIVE_LABEL=Maghanap ng malaki at maliit na titik
+SHOW_POST_BUTTONS_LABEL=Ipakita ang mga post button
+GZIP_SIMPLE_LABEL=Ilipat gamit ang gzip compression
+UNABLE_TO_OPEN_FILE_TEXT=Hindi mabuksan ang %s.
+TOPIC_LIST_COLUMN_HEADERS=Thread view - Tree view - Mga tugon - Huling na-update - Nilalaman
+ZIP_ARCHIVES_HEADING=Mga ZIP archive ng message log
+ZIP_ARCHIVE_COLUMN_HEADERS=I-download - Petsa - Oras - Laki
+
+# JavaScript UI strings
+MAKE_LINE_BREAKS_BTN=Gumawa ng mga line break
+UPLOADER_THUMBNAILS_LABEL=Mga uploader thumbnail
+LINK_THUMBNAILS_LABEL=Mga link thumbnail
+LINK_THUMBNAIL_EXTENSIONS_LEGEND=Mga extension ng link thumbnail
+NGWORD_LINK_START=Mga na-filter na salita&nbsp;(
+NGWORD_LINK_HITS=&nbsp;hit)
+NGWORD_UPDATE_BTN=I-update
+ADMIN_FILTER_BY_LABEL=Nagfi-filter ayon sa 
+ADMIN_FILTER_HOST_LABEL=host
+ADMIN_FILTER_NAME_LABEL=pangalan
+ADMIN_FILTER_CLEAR_BTN=i-clear ✕
+ADMIN_RANGE_START_MSG=naitakda ang simula ng saklaw — i-click ang isa pang Petsa cell para tapusin
+
+# sub/bbstree.php UI strings
+TREE_RANGE_TEXT=Ipinapakita sa itaas ang mga thread {BINDEX} hanggang {EINDEX}, nakaayos mula pinakabagong na-update hanggang pinakalumang na-update.
+TREE_NO_THREADS_BELOW=Walang mga thread sa ibaba ng puntong ito.
+TREE_DATE_UPDATED=[Petsa ng update: %s]
+TREE_USER_LABEL=User: 
+
+# sub/bbslog.php search result summary
+SEARCH_RESULT_FOR_QUERY=Para sa "%s" ay may 
+SEARCH_RESULTS_COUNT=%d resulta ang natagpuan.
+SEARCH_NO_RESULTS=walang natagpuang resulta.
+
+# sub/bbsimage.php error messages
+UPLOAD_DISABLED_ERROR=Error: Hindi pinapayagan ang feature ng pag-upload ng file.
+IMAGE_PROCESSING_UNSUPPORTED_ERROR=Error: Hindi suportado ang feature ng pagproseso ng larawan.
+
+# title attribute tooltips
+TITLE_ADMIN_LOGIN=Admin/Mod login
+TITLE_SETTINGS_SHORTCUT=Alt(+Shift)+C, Pumasok sa pahina ng mga setting
+TITLE_POST_RELOAD_SHORTCUT_P=Alt(+Shift)+P, kung ic-click mo ang post button nang walang nilalaman, magre-reload ang pahina
+TITLE_POST_RELOAD_SHORTCUT_R=Alt(+Shift)+R, kung ic-click mo ang post button nang walang nilalaman, magre-reload ang pahina
+TITLE_BOTTOM=Ibaba
+TITLE_BOTTOM_SHORTCUT=Ibaba Alt(+Shift)+B
+TITLE_BROWSE_OLD_POSTS=Mag-browse at maghanap sa mga lumang post.
+TITLE_DELETE_CHANGES_RETURN=Tanggalin lahat ng pagbabago at bumalik sa bulletin board.
+TITLE_DELETE_LAST_POST=Tanggalin ang huling post na ginawa mo
+TITLE_STACK_BBS_DISPLAY=Ipakita ang mga post sa anyong stack-type na bulletin board.
+TITLE_DISPLAY_REPLY_THREAD=Ipakita ang reply chain bilang thread
+TITLE_DISPLAY_AS_TREE=Ipakita ang thread bilang tree
+TITLE_DISPLAY_THREADS_BRANCHES=Ipakita ang mga thread bilang mga sanga
+TITLE_EMAIL_ADMIN=I-email ang administrator
+TITLE_GO_TO_PR_OFFICE=Pumunta sa home
+TITLE_TO_PR_OFFICE=Sa home
+TITLE_PR_OFFICE=Home
+TITLE_LIST_USER_POSTS=Ilista lahat ng post na ginawa ng parehong user
+TITLE_POST_REPLY=Mag-post ng tugon
+TITLE_RETURN_PREV_PAGE=Bumalik sa nakaraang pahina
+TITLE_RETURN_PREV_PAGE2=Bumalik sa nakaraang pahina
+TITLE_RETURN_BBS_SHORTCUT=Bumalik sa bulletin board Alt(+Shift)+O
+TITLE_SAVE_SETTINGS_RETURN=I-save ang iyong mga setting at bumalik sa bulletin board.
+TITLE_RESET_SETTINGS=I-reset ang iyong mga setting
+TITLE_TOP_SHORTCUT=Itaas Alt(+Shift)+T
+
+# Gikoneko Together
+GIKO_TOGETHER=Gikoneko Together
+GIKO_TEACH_LINK_TEXT=Turuan ng salita si Gikoneko
+GIKO_FORTUNE_SHOKICHI=Maliit na Biyaya
+GIKO_FORTUNE_CHUKICHI=Katamtamang Biyaya
+GIKO_FORTUNE_KYOU=Sumpa
+GIKO_FORTUNE_DAIKICHI=Malaking Biyaya
+GIKO_FORTUNE_YOUKICHI=Batang Biyaya
+GIKO_FORTUNE_GOUKICHI=Dumadagundong na Biyaya
+GIKO_FORTUNE_NEKOKICHI=Biyaya ng Pusa
+GIKO_FORTUNE_DOKICHI=Galit na Biyaya
+GIKO_FORTUNE_AIKICHI=Mapagmahal na Biyaya
+GIKO_FORTUNE_INKICHI=Umuurong na Biyaya
+GIKO_FORTUNE_KICHI=Biyaya
+GIKO_FORTUNE_RAKUKICHI=Walang-alalahaning Biyaya
+GIKO_ADD_TITLE=Gikoneko Together - Screen ng Pag-post
+GIKO_ERR_DUPLICATE=Nakarehistro na ito.
+GIKO_ERR_TOO_LONG=Masyadong mahaba ang salitang iyan.
+GIKO_ERR_WRITE_FAILED=Nabigong magsulat. Tingnan ang lokasyon at write permission ng data file (%s).
+GIKO_POST_COMPLETE=Kumpleto na ang pag-post
+GIKO_BACK_TO_BBS=Bumalik sa bulletin board
+GIKO_ADD_PROMPT=Magsulat ng sasabihin ni Gikoneko (hanggang %s half-width na karakter)
+GIKO_ADD_SUBMIT=Magturo ng salita
+GIKO_ADD_RESET=I-clear
+
+LANG_SELECT_LABEL=Wika:
+
+# 20260801 Gikoneko: tree-hide JS feature
+TREE_HIDE_LINK=[Itago]
+TREE_HIDE_SETTING_LABEL=I-enable ang pagtatago ng thread (personal na setting, sa browser na ito lamang)
+TREE_HIDDEN_PANEL_TITLE=Mga nakatagong thread
+TREE_RESTORE_LINK=Ibalik
+TREE_RESTORE_ALL_LINK=Ibalik lahat
+TREE_HIDDEN_EMPTY=Walang nakatagong thread.
+
+# 20260801 Gikoneko: long-post filter JS feature
+LONGPOST_SETTING_LABEL=I-enable ang long-post filter (personal na setting, sa browser na ito lamang)
+LONGPOST_THRESHOLD_LABEL=Threshold ng linya:
+LONGPOST_COLLAPSED_TEXT=Na-collapse ang post na may higit sa {N} linya.
+LONGPOST_EXPAND_LINK=Ipakita
+LONGPOST_COLLAPSE_LINK=I-collapse
+
+# 20260801 Gikoneko: LaTeX math rendering JS feature
+LATEX_SETTING_LABEL=I-enable ang LaTeX math rendering (personal na setting, sa browser na ito lamang, naglo-load ng KaTeX mula sa CDN)
+
+# 20260801 Gikoneko: JS settings panel
+JS_SETTINGS_LEGEND=Mga JS Setting
+JS_GIKO_LABEL=Gikoneko-to-issho (kapag walang hindi pa nababasang post)
+JS_IMGTHUMB_LABEL=Mga image thumbnail
+JS_KAOMOJI_LABEL=Kaomoji palette
+JS_LATEX_LABEL=LaTeX math rendering (naglo-load ng KaTeX mula sa CDN)
+JS_LINEBREAKER_LEN_LABEL=Target na haba ng line-break:
+JS_LINEBREAKER_NOTE=Tandaan: hindi maaaring i-disable ang line breaker mismo (kinakailangan ito ng mga limitasyon sa laki ng post). Ang numero sa itaas ay nag-aadjust lamang kung saan ito nagbe-break ng linya.
+JS_LONGPOST_LABEL=Long-post filter
+JS_TREEHIDE_LABEL=Pagtatago ng hindi pa nababasang thread
+JS_UPTHUMB_LABEL=Mga upload thumbnail
+JS_VIDEMBED_LABEL=Pag-embed ng video
