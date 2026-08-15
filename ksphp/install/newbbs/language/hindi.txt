@@ -1,0 +1,364 @@
+# ksphp-plus language file (Hindi / हिन्दी)
+# Format: KEY=value  (no spaces around "=" -- anything after "=" is taken
+# literally, including leading/trailing spaces, up to end of line)
+# Lines starting with "#" or ";" are comments. Blank lines are ignored.
+# Encoding: UTF-8, no BOM.
+# Placeholders like {MAXNAMELENGTH} are substituted by the script and must
+# be kept as-is (same spelling, including the curly braces).
+
+# Service / access
+BBS_OUT_OF_SERVICE=यह बुलेटिन बोर्ड वर्तमान में सेवा में नहीं है।
+ACCESS_PROHIBITED=पहुँच प्रतिबंधित है।
+
+# Generic / IO errors
+FAILED_TO_READ_MESSAGE=संदेश पढ़ने में विफल
+FILE_AUTOCREATED=%s नहीं मिला, इसलिए इसे नया बनाया गया है।
+FAILED_TO_OPEN_LOG=लॉग फ़ाइल खोलने में विफल: %s
+FAILED_TO_OUTPUT_LOG=संदेश लॉग आउटपुट करने में विफल
+OLDLOG_TOO_LARGE=संदेश लॉग फ़ाइल फ़ाइल आकार सीमा से अधिक है
+PARTICIPANT_FILE_ERROR=प्रतिभागी फ़ाइल आउटपुट त्रुटि
+
+# Posting / validation
+POSTING_SUSPENDED=इस बुलेटिन बोर्ड की पोस्टिंग सुविधा वर्तमान में निलंबित है।
+ADMIN_ONLY_POSTING=इस बुलेटिन बोर्ड पर केवल व्यवस्थापकों को पोस्ट करने की अनुमति है।
+ADMIN_POST_DISABLED=पोस्ट फ़ॉर्म के माध्यम से व्यवस्थापक पहुँच अक्षम है। कृपया प्रबंधन लिंक का उपयोग करें।
+BAD_REFERER=निम्नलिखित के अलावा किसी अन्य URL से पोस्ट नहीं की जा सकती
+POST_TOO_WIDE=पोस्ट सामग्री में बहुत अधिक अक्षर हैं।
+POST_TOO_MANY_LINES=पोस्ट सामग्री में बहुत अधिक पंक्तियाँ हैं।
+POST_TOO_LARGE=पोस्ट सामग्री बहुत बड़ी है।
+NAME_TOO_LONG=नाम फ़ील्ड में बहुत अधिक अक्षर हैं। (अधिकतम %s अक्षर)
+EMAIL_TOO_LONG=ईमेल फ़ील्ड में बहुत अधिक अक्षर हैं। (अधिकतम %s अक्षर)
+TITLE_TOO_LONG=शीर्षक फ़ील्ड में बहुत अधिक अक्षर हैं। (अधिकतम %s अक्षर)
+POST_TOO_FAST=पोस्ट के बीच का समय बहुत कम है। कृपया पुनः प्रयास करें।
+NGWORD_FOUND=पोस्ट में प्रतिबंधित शब्द हैं।
+SPAM_KUN=यहाँ से निकल जाओ, स्पैम!!!
+
+# Caller / request
+INVALID_CALLER=अमान्य अनुरोध।
+NO_PARAMETERS=कोई पैरामीटर नहीं हैं।
+INVALID_PASSWORD=पासवर्ड गलत है।
+
+# Follow / search / reference
+MESSAGE_NOT_FOUND=निर्दिष्ट संदेश नहीं मिल सका।
+REFERENCE_NOT_FOUND=संदर्भ पोस्ट नहीं मिली।
+REFERENCE_COLON=संदर्भ:
+FOLLOW_UP_POST=उत्तर
+POST_SEARCH=पोस्ट खोज
+
+# Completion / undo
+POST_COMPLETE=पोस्ट पूर्ण
+DELETION_COMPLETE=हटाना पूर्ण
+UNDO_POST_NOT_FOUND=संबंधित पोस्ट नहीं मिली।
+UNDO_NOT_PERMITTED=संबंधित पोस्ट को हटाने की अनुमति नहीं है।
+
+# Main list footer
+POSTS_RANGE_NEWEST_TO_OLDEST=ऊपर {BINDEX} से {EINDEX} तक की पोस्ट दिखाई गई हैं, नवीनतम से पुरानी क्रम में। 
+NO_UNREAD_MESSAGES=कोई अपठित संदेश नहीं हैं। 
+NO_POSTS_BELOW=इस बिंदु के नीचे कोई पोस्ट नहीं हैं।
+
+# New post page
+NEW_POST=नई पोस्ट
+
+# Labels / tags inserted into messages
+HACKER_TAG= (हैकर)
+FRAUDSTER_TAG= (धोखेबाज़)
+SELF_REPLY_TAG= (स्व-उत्तर)
+
+# Weekdays
+SUNDAY=रवि
+MONDAY=सोम
+TUESDAY=मंगल
+WEDNESDAY=बुध
+THURSDAY=गुरु
+FRIDAY=शुक्र
+SATURDAY=शनि
+
+# Admin / image upload errors
+NO_PASSWORD_SET=कोई पासवर्ड सेट नहीं किया गया है।
+FILE_SIZE_OVER_LIMIT=फ़ाइल का आकार %sKB से अधिक है।
+FILE_UPLOAD_FAILED=फ़ाइल अपलोड प्रक्रिया विफल रही। कोड: %s
+FAILED_TO_LOAD_UPLOAD_ID=अपलोड की गई छवि फ़ाइल लोड करने में विफल।
+IMAGE_WIDTH_EXCEEDED=छवि की चौड़ाई सीमा से अधिक है।
+IMAGE_FILEMSG=छवि%s %s %s*%s %sKB
+INVALID_FILE_FORMAT=फ़ाइल प्रारूप गलत है।
+DIRECTORY_OPEN_FAILED=यह निर्देशिका नहीं खोली जा सकी।
+TOO_MANY_KEYWORDS=बहुत अधिक खोज कीवर्ड हैं।
+
+# Page titles
+TITLE_ADMIN_MENU=प्रशासन मेनू
+TITLE_MESSAGE_DELETE_MODE=संदेश हटाने का मोड
+TITLE_PASSWORD_SETTINGS=पासवर्ड सेटिंग पृष्ठ
+TITLE_OLDLOG_SEARCH=संदेश लॉग खोज
+TITLE_OLDLOG_SEARCH_RESULTS=संदेश लॉग खोज परिणाम
+TITLE_OLDLOG=संदेश लॉग
+TITLE_TOPIC_LIST=विषय सूची
+TITLE_OLDLOG_ARCHIVE=संदेश लॉग संग्रह
+TITLE_TREEVIEW_MAIN=वृक्ष दृश्य
+TITLE_ERROR=त्रुटि
+TITLE_NOTICE=सूचना
+
+# HTML titles
+TITLE_FOLLOWUP=उत्तर
+TITLE_SEARCH_BY_USER=उपयोगकर्ता द्वारा खोजें
+TITLE_THREAD_VIEW=थ्रेड दृश्य
+TITLE_TREE_VIEW=वृक्ष दृश्य
+TITLE_DELETE_POST=पोस्ट हटाएँ
+
+# Additional UI strings
+URL_REDIRECTION=URL पुनर्निर्देशन
+USER_SETTINGS=उपयोगकर्ता सेटिंग्स
+COUNTER_ERROR=काउंटर त्रुटि
+
+# template.html UI strings
+NAV_PR_OFFICE=होम
+NAV_CONTACT=संपर्क
+NAV_MESSAGE_LOGS=संग्रह
+NAV_MANAGE=प्रबंधन
+BRAND_NAME=KuzuhaScriptPHP+
+RETURN=वापस
+MSG_USER_LABEL=उपयोगकर्ता:
+MSG_POST_DATE_LABEL=पोस्ट तिथि:
+NEXT_PAGE=अगला पृष्ठ
+RELOAD=पुनः लोड करें
+UNREAD=अपठित
+TITLE_ADMIN_POST=व्यवस्थापक के रूप में पोस्ट करें
+FORM_NAME_LABEL=नाम
+FORM_EMAIL_LABEL=ईमेल
+FORM_TITLE_LABEL=शीर्षक
+POST_RELOAD=पोस्ट/पुनः लोड
+CLEAR=साफ़ करें
+FORM_CONTENTS_LABEL=सामग्री
+FORM_CONTENTS_HELP_SIMPLE=(अधिकतम %s कॉलम और %s पंक्तियाँ। कृपया उपयुक्त स्थानों पर पंक्ति विराम डालें। HTML/BBCode टैग का उपयोग नहीं किया जा सकता।)
+FORM_CONTENTS_HELP_IMAGE=(अधिकतम %s कॉलम और %s पंक्तियाँ। कृपया उपयुक्त स्थानों पर पंक्ति विराम डालें। HTML/BBCode टैग का उपयोग नहीं किया जा सकता। <br>            यदि आप अपने पाठ में %s लिखते हैं, तो अपलोड की गई छवि उस स्थान पर डाली जाएगी।)
+KAOMOJI_SHOW_MORE=और काओमोजी दिखाएँ
+KAOMOJI_INTRO=अधिक Ayashii World शैली के काओमोजी दिखा रहे हैं। <a target="_blank" href="//mattari.heyuri.net/">Mattari AA</a> भी देखें।
+KAOMOJI_CAT_MATTARI=आराम / शांत
+KAOMOJI_CAT_DAUSO=उदास / निराश
+KAOMOJI_CAT_ANGRY=क्रोधित / बुरा
+KAOMOJI_CAT_EHHH=क्या!?
+KAOMOJI_CAT_GESTURES=इशारे / अभिवादन
+KAOMOJI_CAT_SLEEPY=नींद / अन्य
+KAOMOJI_CAT_DROOLING=लार टपकाना
+KAOMOJI_CAT_SMOKING=धूम्रपान / चाय पीना
+KAOMOJI_CAT_FUN=मज़ा / विविध
+IMAGE_UPLOAD_LABEL=छवि अपलोड
+IMAGE_UPLOAD_HELP=（केवल JPG/GIF/PNG। अधिकतम चौड़ाई %spx; अधिकतम ऊँचाई %spx; अधिकतम फ़ाइल आकार %sKB।）
+POSTS_DISPLAYED_LABEL=प्रदर्शित&nbsp;पोस्ट
+AUTO_LINK_URLS_LABEL=URL&nbsp;स्वतः&nbsp;लिंक&nbsp;करें
+LOG_READING_MODE_LABEL=लॉग&nbsp;पढ़ने&nbsp;का&nbsp;मोड
+HIDE_LINK_LINE_LABEL=लिंक&nbsp;पंक्ति&nbsp;छिपाएँ
+SHOW_IMAGES_LABEL=छवियाँ&nbsp;दिखाएँ
+COUNTER_TEXT=%s&nbsp;से&nbsp;पृष्ठ&nbsp;दृश्य:&nbsp;%s (बुलेटप्रूफ&nbsp;स्तर:&nbsp;%s)
+MBRCOUNT_TEXT=वर्तमान&nbsp;प्रतिभागी:&nbsp;%s&nbsp;उपयोगकर्ता (%s&nbsp;सेकंड&nbsp;के&nbsp;भीतर)
+LOGSAVE_TEXT=अधिकतम&nbsp;सहेजी&nbsp;गई&nbsp;पोस्ट:&nbsp;%s&nbsp;पोस्ट
+THREAD_LABEL=थ्रेड
+TREE_LABEL=वृक्ष
+DELETE_PREVIOUS_POST=पिछली&nbsp;पोस्ट&nbsp;हटाएँ
+LATEST_30_POSTS=नवीनतम 30 पोस्ट
+POSTS_FOUND= पोस्ट मिलीं।
+RETURN_TO_BBS_HELP=बुलेटिन बोर्ड पर लौटने के लिए ऊपर दिए गए लिंक पर क्लिक करें या <kbd>Alt</kbd>(+<kbd>Shift</kbd>)+<b><kbd>O</kbd></b> दबाएँ।
+DISPLAY_COLORS_LEGEND=प्रदर्शन रंग (हेक्साडेसिमल)
+TEXT_COLOR_LABEL=पाठ रंग
+BACKGROUND_COLOR_LABEL=पृष्ठभूमि रंग
+LINK_COLOR_LABEL=लिंक रंग
+VISITED_LINK_COLOR_LABEL=देखे गए लिंक का रंग
+ACTIVE_LINK_COLOR_LABEL=सक्रिय लिंक रंग
+MOUSEOVER_LINK_COLOR_LABEL=माउसओवर लिंक रंग
+TITLE_COLOR_LABEL=शीर्षक रंग
+QUOTE_COLOR_LABEL=उद्धरण रंग
+ADDITIONAL_FEATURES_LEGEND=अतिरिक्त सुविधाएँ
+GZIP_LABEL=gzip संपीड़न का उपयोग करके स्थानांतरित करें (प्रदर्शन तेज़ होगा)
+LOG_READING_MODE_DESC_LABEL=लॉग पढ़ने का मोड (पोस्ट फ़ॉर्म प्रदर्शित नहीं होगा)
+AUTO_LINK_URLS_DESC_LABEL=URL स्वतः लिंक करें (पोस्ट सामग्री के अंदर URL पोस्ट करने पर स्वतः लिंक बन जाएँगे)
+COOKIE_LABEL=पोस्ट करते समय अपना नाम और ईमेल पता कुकी में सहेजें
+HIDE_LINK_ROW_DESC_LABEL=लिंक पंक्ति छिपाएँ (पोस्ट फ़ॉर्म के नीचे लिंक की सूची प्रदर्शित नहीं होगी)
+FOLLOW_DISPLAY_LEGEND=उत्तर पृष्ठ कैसे प्रदर्शित करें
+FOLLOW_NEW_WINDOW_LABEL=नई विंडो खोलें और प्रदर्शित करें
+FOLLOW_SAME_PAGE_LABEL=उसी पृष्ठ पर प्रदर्शित करें
+BOOKMARK_HELP=यदि आप "पंजीकरण करें" पर क्लिक करने के बाद दिखने वाले URL को बुकमार्क करते हैं, तो आप उपरोक्त सेटिंग्स के साथ बुलेटिन बोर्ड ब्राउज़ कर सकेंगे।
+REGISTER=पंजीकरण करें
+UNDO_CHANGES=परिवर्तन पूर्ववत करें
+RESTORE_DEFAULTS=डिफ़ॉल्ट पुनर्स्थापित करें
+REDIRECTING=पुनर्निर्देशित किया जा रहा है…
+PAGE_GEN_TIME_TEXT=पृष्ठ निर्माण समय: %s सेकंड
+OG_LOCALE=hi_IN
+
+# tmpltree.html UI strings
+STANDARD_VIEW=मानक&nbsp;दृश्य
+TOP_LABEL=शीर्ष
+
+# login.html UI strings
+MOD_LOGIN_TITLE=मॉड लॉगिन
+PASSWORD_LABEL=पासवर्ड:
+LOGIN_BUTTON=लॉगिन
+LOGIN_ERROR=अमान्य उपयोगकर्ता नाम या पासवर्ड।
+
+# tmpladmin.html UI strings
+DELETE_MESSAGES_BTN=संदेश हटाएँ
+VIEW_LOG_FILE_BTN=लॉग फ़ाइल देखें
+REGEN_PASSWORD_BTN=एन्क्रिप्टेड पासवर्ड पुनः उत्पन्न करें
+PHP_CONFIG_INFO_BTN=सर्वर PHP कॉन्फ़िगरेशन जानकारी
+LOGOUT_BTN=लॉगआउट
+CLOSE_BTN=बंद करें
+PERFORM_DELETION_BTN=हटाना निष्पादित करें
+DELETE_INSTRUCTIONS=कृपया उन पोस्ट के चेकबॉक्स चुनें जिन्हें आप हटाना चाहते हैं, फिर नीचे [हटाना निष्पादित करें] बटन पर क्लिक करें।
+DELETE_COL_HEADER=हटाएँ
+VIEW_COL_HEADER=देखें
+DATE_POSTED_COL_HEADER=पोस्ट तिथि
+SUBJECT_COL_HEADER=विषय
+USERNAME_COL_HEADER=उपयोगकर्ता नाम
+HOST_COL_HEADER=होस्ट
+COMMENT_COL_HEADER=टिप्पणी
+SETPASS_INSTRUCTIONS=अपना पासवर्ड सेट करें।<br>		कृपया वह व्यवस्थापक पासवर्ड दर्ज करें जिसका उपयोग आप अब से बुलेटिन बोर्ड के प्रशासन के लिए करेंगे।<br>	यहाँ दर्ज किया गया पासवर्ड व्यवस्थापक के नाम से पोस्ट करने और व्यवस्थापक मोड में प्रवेश करते समय आपको प्रमाणित करने के लिए उपयोग किया जाएगा।
+ADMIN_PASSWORD_LABEL=व्यवस्थापक पासवर्ड
+SET_BTN=सेट करें
+RESET_BTN=रीसेट करें
+PASSWORD_GENERATED_MSG=एन्क्रिप्टेड पासवर्ड उत्पन्न हुआ!<br>	निम्नलिखित एन्क्रिप्टेड पासवर्ड स्ट्रिंग को मुख्य बुलेटिन बोर्ड स्क्रिप्ट के निर्दिष्ट अनुभाग में चिपकाएँ।
+BULLETIN_BOARD_LABEL=बुलेटिन बोर्ड
+WARNING_LABEL=चेतावनी
+ADMIN_ACCESS_WARNING=अनधिकृत कर्मियों द्वारा पहुँच सख्त वर्जित है। उल्लंघनकर्ताओं का पता लगाया जाएगा, उनका स्थान ज्ञात किया जाएगा और उन्हें हिरासत में लिया जाएगा।
+
+# tmpllog.html UI strings
+FROM_DAY_LABEL=दिन से
+HOUR_LABEL=घंटा
+TO_DAY_LABEL=दिन तक
+MINUTE_LABEL=मिनट
+ZIP_ARCHIVES_LINK=संदेश लॉग के ZIP संग्रह
+LIST_OF_LOGS_HEADING=संदेश लॉग की सूची
+DOWNLOAD_LABEL=डाउनलोड
+SELECT_DESELECT_ALL_LABEL=सभी चुनें/अचयनित करें
+JS_UNAVAILABLE_WARNING=JavaScript उपलब्ध नहीं है।
+JS_UNAVAILABLE_HELP=सभी चुनें/अचयनित करें का उपयोग करने के लिए कृपया JavaScript सक्षम करें।
+SEARCH_LOGS_HEADING=संदेश लॉग खोजें
+SPECIFY_KEYWORDS_LEGEND=कीवर्ड निर्दिष्ट करें
+SEARCH_BTN=खोजें
+SPECIFY_TIME_RANGE_LEGEND=समय सीमा निर्दिष्ट करें
+BOOLEAN_OPERATOR_LEGEND=बूलियन ऑपरेटर
+AND_SEARCH_OPTION=AND खोज
+OR_SEARCH_OPTION=OR खोज
+SEARCH_TARGET_LEGEND=खोज लक्ष्य
+ALL_TEXT_OPTION=संपूर्ण पाठ
+USERNAMES_OPTION=उपयोगकर्ता नाम
+TITLES_OPTION=शीर्षक
+OTHER_LEGEND=अन्य
+CASE_INSENSITIVE_LABEL=बड़े और छोटे दोनों अक्षर खोजें
+SHOW_POST_BUTTONS_LABEL=पोस्ट बटन दिखाएँ
+GZIP_SIMPLE_LABEL=gzip संपीड़न का उपयोग करके स्थानांतरित करें
+UNABLE_TO_OPEN_FILE_TEXT=%s नहीं खोला जा सका।
+TOPIC_LIST_COLUMN_HEADERS=थ्रेड दृश्य - वृक्ष दृश्य - उत्तर - अंतिम अद्यतन - सामग्री
+ZIP_ARCHIVES_HEADING=संदेश लॉग के ZIP संग्रह
+ZIP_ARCHIVE_COLUMN_HEADERS=डाउनलोड - तिथि - समय - आकार
+
+# JavaScript UI strings
+MAKE_LINE_BREAKS_BTN=पंक्ति विराम बनाएँ
+UPLOADER_THUMBNAILS_LABEL=अपलोडर थंबनेल
+LINK_THUMBNAILS_LABEL=लिंक थंबनेल
+LINK_THUMBNAIL_EXTENSIONS_LEGEND=लिंक थंबनेल एक्सटेंशन
+NGWORD_LINK_START=फ़िल्टर किए गए शब्द&nbsp;(
+NGWORD_LINK_HITS=&nbsp;परिणाम)
+NGWORD_UPDATE_BTN=अद्यतन करें
+ADMIN_FILTER_BY_LABEL=इसके द्वारा फ़िल्टर किया जा रहा है 
+ADMIN_FILTER_HOST_LABEL=होस्ट
+ADMIN_FILTER_NAME_LABEL=नाम
+ADMIN_FILTER_CLEAR_BTN=साफ़ करें ✕
+ADMIN_RANGE_START_MSG=सीमा प्रारंभ सेट किया गया — समाप्त करने के लिए किसी अन्य तिथि सेल पर क्लिक करें
+
+# sub/bbstree.php UI strings
+TREE_RANGE_TEXT=ऊपर {BINDEX} से {EINDEX} तक के थ्रेड दिखाए गए हैं, सबसे हाल में अद्यतन से सबसे कम हाल में अद्यतन के क्रम में।
+TREE_NO_THREADS_BELOW=इस बिंदु के नीचे कोई थ्रेड नहीं हैं।
+TREE_DATE_UPDATED=[अद्यतन तिथि: %s]
+TREE_USER_LABEL=उपयोगकर्ता: 
+
+# sub/bbslog.php search result summary
+SEARCH_RESULT_FOR_QUERY="%s" के लिए 
+SEARCH_RESULTS_COUNT=%d परिणाम मिले।
+SEARCH_NO_RESULTS=कोई परिणाम नहीं मिला।
+
+# sub/bbsimage.php error messages
+UPLOAD_DISABLED_ERROR=त्रुटि: फ़ाइल अपलोड सुविधा की अनुमति नहीं है।
+IMAGE_PROCESSING_UNSUPPORTED_ERROR=त्रुटि: छवि प्रसंस्करण सुविधा समर्थित नहीं है।
+
+# title attribute tooltips
+TITLE_ADMIN_LOGIN=व्यवस्थापक/मॉड लॉगिन
+TITLE_SETTINGS_SHORTCUT=Alt(+Shift)+C, सेटिंग पृष्ठ पर जाएँ
+TITLE_POST_RELOAD_SHORTCUT_P=Alt(+Shift)+P, यदि आप बिना कोई सामग्री लिखे पोस्ट बटन पर क्लिक करते हैं, तो पृष्ठ पुनः लोड होगा
+TITLE_POST_RELOAD_SHORTCUT_R=Alt(+Shift)+R, यदि आप बिना कोई सामग्री लिखे पोस्ट बटन पर क्लिक करते हैं, तो पृष्ठ पुनः लोड होगा
+TITLE_BOTTOM=नीचे
+TITLE_BOTTOM_SHORTCUT=नीचे Alt(+Shift)+B
+TITLE_BROWSE_OLD_POSTS=पुरानी पोस्ट ब्राउज़ करें और खोजें।
+TITLE_DELETE_CHANGES_RETURN=सभी परिवर्तन हटाएँ और बुलेटिन बोर्ड पर लौटें।
+TITLE_DELETE_LAST_POST=आपकी की गई अंतिम पोस्ट हटाएँ
+TITLE_STACK_BBS_DISPLAY=पोस्ट को स्टैक-प्रकार के बुलेटिन बोर्ड के रूप में प्रदर्शित करें।
+TITLE_DISPLAY_REPLY_THREAD=उत्तर श्रृंखला को थ्रेड के रूप में प्रदर्शित करें
+TITLE_DISPLAY_AS_TREE=थ्रेड को वृक्ष के रूप में प्रदर्शित करें
+TITLE_DISPLAY_THREADS_BRANCHES=थ्रेड को शाखाओं के रूप में प्रदर्शित करें
+TITLE_EMAIL_ADMIN=व्यवस्थापक को ईमेल करें
+TITLE_GO_TO_PR_OFFICE=होम पर जाएँ
+TITLE_TO_PR_OFFICE=होम पर
+TITLE_PR_OFFICE=होम
+TITLE_LIST_USER_POSTS=उसी उपयोगकर्ता द्वारा की गई सभी पोस्ट सूचीबद्ध करें
+TITLE_POST_REPLY=उत्तर पोस्ट करें
+TITLE_RETURN_PREV_PAGE=पिछले पृष्ठ पर लौटें
+TITLE_RETURN_PREV_PAGE2=पिछले पृष्ठ पर लौटें
+TITLE_RETURN_BBS_SHORTCUT=बुलेटिन बोर्ड पर लौटें Alt(+Shift)+O
+TITLE_SAVE_SETTINGS_RETURN=अपनी सेटिंग्स सहेजें और बुलेटिन बोर्ड पर लौटें।
+TITLE_RESET_SETTINGS=अपनी सेटिंग्स रीसेट करें
+TITLE_TOP_SHORTCUT=शीर्ष Alt(+Shift)+T
+
+# Gikoneko Together
+GIKO_TOGETHER=Gikoneko Together
+GIKO_TEACH_LINK_TEXT=Gikoneko को एक शब्द सिखाएँ
+GIKO_FORTUNE_SHOKICHI=छोटा आशीर्वाद
+GIKO_FORTUNE_CHUKICHI=मध्यम आशीर्वाद
+GIKO_FORTUNE_KYOU=अभिशाप
+GIKO_FORTUNE_DAIKICHI=महान आशीर्वाद
+GIKO_FORTUNE_YOUKICHI=युवा आशीर्वाद
+GIKO_FORTUNE_GOUKICHI=गरजता आशीर्वाद
+GIKO_FORTUNE_NEKOKICHI=बिल्ली आशीर्वाद
+GIKO_FORTUNE_DOKICHI=क्रोधित आशीर्वाद
+GIKO_FORTUNE_AIKICHI=प्रेममय आशीर्वाद
+GIKO_FORTUNE_INKICHI=पीछे हटता आशीर्वाद
+GIKO_FORTUNE_KICHI=आशीर्वाद
+GIKO_FORTUNE_RAKUKICHI=निश्चिंत आशीर्वाद
+GIKO_ADD_TITLE=Gikoneko Together - पोस्टिंग स्क्रीन
+GIKO_ERR_DUPLICATE=यह पहले ही पंजीकृत किया जा चुका है।
+GIKO_ERR_TOO_LONG=वह शब्द बहुत लंबा है।
+GIKO_ERR_WRITE_FAILED=लिखने में विफल। डेटा फ़ाइल (%s) का स्थान और लिखने की अनुमति जाँचें।
+GIKO_POST_COMPLETE=पोस्ट पूर्ण
+GIKO_BACK_TO_BBS=बुलेटिन बोर्ड पर लौटें
+GIKO_ADD_PROMPT=Gikoneko के कहने के लिए कुछ लिखें (अधिकतम %s आधी-चौड़ाई अक्षर)
+GIKO_ADD_SUBMIT=एक शब्द सिखाएँ
+GIKO_ADD_RESET=साफ़ करें
+
+LANG_SELECT_LABEL=भाषा:
+
+# 20260801 Gikoneko: tree-hide JS feature
+TREE_HIDE_LINK=[छिपाएँ]
+TREE_HIDE_SETTING_LABEL=थ्रेड छिपाना सक्षम करें (व्यक्तिगत सेटिंग, केवल इस ब्राउज़र में)
+TREE_HIDDEN_PANEL_TITLE=छिपे हुए थ्रेड
+TREE_RESTORE_LINK=पुनर्स्थापित करें
+TREE_RESTORE_ALL_LINK=सभी पुनर्स्थापित करें
+TREE_HIDDEN_EMPTY=कोई छिपा हुआ थ्रेड नहीं है।
+
+# 20260801 Gikoneko: long-post filter JS feature
+LONGPOST_SETTING_LABEL=लंबी-पोस्ट फ़िल्टर सक्षम करें (व्यक्तिगत सेटिंग, केवल इस ब्राउज़र में)
+LONGPOST_THRESHOLD_LABEL=पंक्ति सीमा:
+LONGPOST_COLLAPSED_TEXT={N} से अधिक पंक्तियों वाली पोस्ट को संक्षिप्त किया गया।
+LONGPOST_EXPAND_LINK=दिखाएँ
+LONGPOST_COLLAPSE_LINK=संक्षिप्त करें
+
+# 20260801 Gikoneko: LaTeX math rendering JS feature
+LATEX_SETTING_LABEL=LaTeX गणित रेंडरिंग सक्षम करें (व्यक्तिगत सेटिंग, केवल इस ब्राउज़र में, CDN से KaTeX लोड करता है)
+
+# 20260801 Gikoneko: JS settings panel
+JS_SETTINGS_LEGEND=JS सेटिंग्स
+JS_GIKO_LABEL=Gikoneko-to-issho (जब कोई अपठित पोस्ट न हो)
+JS_IMGTHUMB_LABEL=छवि थंबनेल
+JS_KAOMOJI_LABEL=काओमोजी पैलेट
+JS_LATEX_LABEL=LaTeX गणित रेंडरिंग (CDN से KaTeX लोड करता है)
+JS_LINEBREAKER_LEN_LABEL=लक्ष्य पंक्ति-विराम लंबाई:
+JS_LINEBREAKER_NOTE=नोट: पंक्ति विभाजक स्वयं अक्षम नहीं किया जा सकता (पोस्ट-आकार सीमाओं के लिए यह आवश्यक है)। उपरोक्त संख्या केवल यह समायोजित करती है कि यह पंक्तियों को कहाँ तोड़ता है।
+JS_LONGPOST_LABEL=लंबी-पोस्ट फ़िल्टर
+JS_TREEHIDE_LABEL=अपठित थ्रेड छिपाना
+JS_UPTHUMB_LABEL=अपलोड थंबनेल
+JS_VIDEMBED_LABEL=वीडियो एम्बेडिंग
