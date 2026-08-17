@@ -3743,6 +3743,44 @@ class Func {
 // ============================================================
 
 /**
+ * 全角英字（Ａ–Ｚ、ａ–ｚ、U+FF21–FF3A / U+FF41–FF5A）を
+ * 対応する半角英字に変換する（mbstring不要、UTF-8バイト置換）。
+ * ハッシュ照合用の正規化として使用。全角数字（０–９）も半角化する。
+ */
+function ksphp_fullwidth_alpha_to_ascii(string $s): string {
+    // 全角英大文字 Ａ(EF BC A1)–Ｚ(EF BC BA) → A–Z
+    // 全角英小文字 ａ(EF BD 81)–ｚ(EF BD 9A) → a–z
+    // 全角数字　　 ０(EF BC 90)–９(EF BC 99) → 0–9
+    $len = strlen($s);
+    $out = '';
+    $i   = 0;
+    while ($i < $len) {
+        $b0 = ord($s[$i]);
+        if ($b0 === 0xEF && $i + 2 < $len) {
+            $b1 = ord($s[$i + 1]);
+            $b2 = ord($s[$i + 2]);
+            if ($b1 === 0xBC) {
+                if ($b2 >= 0xA1 && $b2 <= 0xBA) { // Ａ–Ｚ
+                    $out .= chr($b2 - 0xA1 + ord('A')); $i += 3; continue;
+                }
+                if ($b2 >= 0x90 && $b2 <= 0x99) { // ０–９
+                    $out .= chr($b2 - 0x90 + ord('0')); $i += 3; continue;
+                }
+            }
+            if ($b1 === 0xBD && $b2 >= 0x81 && $b2 <= 0x9A) { // ａ–ｚ
+                $out .= chr($b2 - 0x81 + ord('a')); $i += 3; continue;
+            }
+        }
+        // UTF-8バイト数を判定してそのままコピー
+        if      ($b0 < 0x80) { $out .= substr($s, $i, 1); $i += 1; }
+        elseif  ($b0 < 0xE0) { $out .= substr($s, $i, 2); $i += 2; }
+        elseif  ($b0 < 0xF0) { $out .= substr($s, $i, 3); $i += 3; }
+        else                  { $out .= substr($s, $i, 4); $i += 4; }
+    }
+    return $out;
+}
+
+/**
  * UTF-8文字列をコードポイント（文字）の配列に分解する（mbstring不要）。
  * 各要素はUTF-8バイト列（1〜4バイト）の文字列。
  */
@@ -3808,8 +3846,8 @@ function ksphp_nghash_censor(string $text, string $gz_path, int $min_chars = 4):
 
     // 元テキストをコードポイント配列に分解
     $cps_orig  = ksphp_utf8_split($text);
-    // SHA-256照合用に小文字化（半角ASCIIのみ。全角は変化なし）
-    $cps_lower = ksphp_utf8_split(strtolower($text));
+    // SHA-256照合用に正規化：全角英数字→半角→小文字化
+    $cps_lower = ksphp_utf8_split(strtolower(ksphp_fullwidth_alpha_to_ascii($text)));
     $n         = count($cps_orig);
 
     if ($n < $min_chars) return $text; // 文字数が最小以下ならスキップ

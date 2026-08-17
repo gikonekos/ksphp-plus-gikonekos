@@ -64,6 +64,19 @@
             .join('');
     }
 
+    // ---- 全角英数字を半角に変換（照合前正規化）----
+    // Ａ–Ｚ (U+FF21–FF3A) → A–Z、ａ–ｚ (U+FF41–FF5A) → a–z、
+    // ０–９ (U+FF10–FF19) → 0–9
+    function fullwidthToAscii(str) {
+        return str.replace(/[\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A]/g, function (c) {
+            var cp = c.codePointAt(0);
+            if (cp >= 0xFF21 && cp <= 0xFF3A) return String.fromCharCode(cp - 0xFF21 + 0x41); // A–Z
+            if (cp >= 0xFF41 && cp <= 0xFF5A) return String.fromCharCode(cp - 0xFF41 + 0x61); // a–z
+            if (cp >= 0xFF10 && cp <= 0xFF19) return String.fromCharCode(cp - 0xFF10 + 0x30); // 0–9
+            return c;
+        });
+    }
+
     // ---- Unicodeコードポイント配列に分解 ----
     // (surrogate pairを1文字として扱う)
     function splitCodepoints(str) {
@@ -81,7 +94,7 @@
     async function censorText(text, hashes) {
         if (!text) return { result: text, found: false };
         var cps      = splitCodepoints(text);
-        var cpsLower = splitCodepoints(text.toLowerCase());
+        var cpsLower = splitCodepoints(fullwidthToAscii(text).toLowerCase());
         var n        = cps.length;
         if (n < MIN_CHARS) return { result: text, found: false };
 
