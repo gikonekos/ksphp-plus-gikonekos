@@ -362,3 +362,8 @@ JS_LONGPOST_LABEL=Filter postingan panjang
 JS_TREEHIDE_LABEL=Penyembunyian utas belum dibaca
 JS_UPTHUMB_LABEL=Thumbnail unggahan
 JS_VIDEMBED_LABEL=Penyematan video
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=Postingan mengandung kata-kata terlarang. Posting dengan menggantikannya dengan tanda bintang (＊/*)?
+
+Klik Batal untuk kembali dan mengedit.

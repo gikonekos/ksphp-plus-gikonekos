@@ -369,3 +369,8 @@ JS_LONGPOST_LABEL=長文NGフィルター
 JS_TREEHIDE_LABEL=未読ツリー削除機能
 JS_UPTHUMB_LABEL=アップロードサムネイル表示
 JS_VIDEMBED_LABEL=動画埋め込み表示
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=NGワードが含まれています。伏字（＊/*）に変換して投稿しますか？
+
+キャンセルすると投稿フォームに戻ります。

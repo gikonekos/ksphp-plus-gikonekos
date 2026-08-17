@@ -362,3 +362,8 @@ JS_LONGPOST_LABEL=장문 NG 필터
 JS_TREEHIDE_LABEL=읽지 않은 트리 삭제 기능
 JS_UPTHUMB_LABEL=업로드 썸네일 표시
 JS_VIDEMBED_LABEL=동영상 임베드 표시
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=게시물에 금지 단어가 포함되어 있습니다. 별표(＊/*)로 대체하여 게시하시겠습니까?
+
+취소를 클릭하면 돌아가서 편집할 수 있습니다.

@@ -310,3 +310,8 @@ JS_LONGPOST_LABEL=Uzun gönderi filtresi
 JS_TREEHIDE_LABEL=Okunmamış konu silme
 JS_UPTHUMB_LABEL=Yükleme küçük resimleri
 JS_VIDEMBED_LABEL=Video gömme
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=Gönderi yasaklı kelimeler içeriyor. Yıldız işaretiyle (＊/*) değiştirilerek gönderilsin mi?
+
+Geri dönüp düzenlemek için İptal'e tıklayın.

@@ -362,3 +362,8 @@ JS_LONGPOST_LABEL=Bộ lọc bài đăng dài
 JS_TREEHIDE_LABEL=Ẩn luồng chưa đọc
 JS_UPTHUMB_LABEL=Hình thu nhỏ tải lên
 JS_VIDEMBED_LABEL=Nhúng video
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=Bài đăng chứa từ ngữ bị cấm. Đăng với chúng được thay thế bằng dấu hoa thị (＊/*)?
+
+Nhấp Hủy để quay lại và chỉnh sửa.

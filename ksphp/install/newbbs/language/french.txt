@@ -362,3 +362,8 @@ JS_LONGPOST_LABEL=Filtre de publications longues
 JS_TREEHIDE_LABEL=Masquage des fils non lus
 JS_UPTHUMB_LABEL=Miniatures de téléversement
 JS_VIDEMBED_LABEL=Intégration vidéo
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=La publication contient des mots interdits. Publier en les remplaçant par des astérisques (＊/*)?
+
+Cliquez sur Annuler pour revenir et modifier.

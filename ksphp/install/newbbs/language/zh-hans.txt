@@ -362,3 +362,8 @@ JS_LONGPOST_LABEL=长文过滤器
 JS_TREEHIDE_LABEL=未读树状删除功能
 JS_UPTHUMB_LABEL=上传缩略图显示
 JS_VIDEMBED_LABEL=视频嵌入显示
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=帖子包含违禁词汇。是否将其替换为星号（＊/*）后发送？
+
+点击"取消"可返回编辑。

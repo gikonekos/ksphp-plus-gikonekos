@@ -362,3 +362,8 @@ JS_LONGPOST_LABEL=लंबी-पोस्ट फ़िल्टर
 JS_TREEHIDE_LABEL=अपठित थ्रेड छिपाना
 JS_UPTHUMB_LABEL=अपलोड थंबनेल
 JS_VIDEMBED_LABEL=वीडियो एम्बेडिंग
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=पोस्ट में प्रतिबंधित शब्द हैं। उन्हें तारांकन (＊/*) से बदलकर पोस्ट करें?
+
+वापस जाने और संपादित करने के लिए रद्द करें पर क्लिक करें।

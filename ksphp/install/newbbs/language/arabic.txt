@@ -367,3 +367,8 @@ JS_LONGPOST_LABEL=مرشّح المشاركات الطويلة
 JS_TREEHIDE_LABEL=إخفاء السلاسل غير المقروءة
 JS_UPTHUMB_LABEL=مصغّرات المرفوعات
 JS_VIDEMBED_LABEL=تضمين الفيديو
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=يحتوي المنشور على كلمات محظورة. هل تريد النشر مع استبدالها بنجوم (＊/*)؟
+
+اضغط إلغاء للعودة وتعديل المنشور.

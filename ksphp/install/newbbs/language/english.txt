@@ -370,3 +370,8 @@ JS_LONGPOST_LABEL=Long-post filter
 JS_TREEHIDE_LABEL=Unread thread deletion
 JS_UPTHUMB_LABEL=Upload thumbnails
 JS_VIDEMBED_LABEL=Video embedding
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=The post contains prohibited words. Post with them replaced by asterisks (＊/*)?
+
+Click Cancel to go back and edit.

@@ -938,6 +938,9 @@ function tripuse($key) {
         $tmp['FORM_CONTENTS_HELP_SIMPLE'] = sprintf($GLOBALS['MSG']['FORM_CONTENTS_HELP_SIMPLE'], $this->c['MAXMSGCOL'], $this->c['MAXMSGLINE']);
         $tmp['FORM_CONTENTS_HELP_IMAGE'] = sprintf($GLOBALS['MSG']['FORM_CONTENTS_HELP_IMAGE'], $this->c['MAXMSGCOL'], $this->c['MAXMSGLINE'], $this->c['IMAGETEXT'] ?? '');
         $tmp['IMAGE_UPLOAD_HELP'] = sprintf($GLOBALS['MSG']['IMAGE_UPLOAD_HELP'], $this->c['MAX_IMAGEWIDTH'] ?? '', $this->c['MAX_IMAGEHEIGHT'] ?? '', $this->c['MAX_IMAGESIZE'] ?? '');
+        // 20260815 Gikoneko: NGハッシュフィルター用のCGIBASE（filter/のベースURL）を
+        // bbs.phpのURLから dirname して生成。JS設定注入に使用。
+        $tmp['CGIBASE'] = rtrim(preg_replace('/[^\/?#]*(?:\?.*)?$/', '', $this->c['CGIURL']), '/').'/';
         $tmp['JS_LANG_JSON'] = $GLOBALS['MSG_JSON'];
         $tmp['JS_SETTINGS_JSON'] = $GLOBALS['KSPHP_JS_SETTINGS_JSON'];
         $tmp['JS_LOCKED_JSON'] = $GLOBALS['KSPHP_JS_LOCKED_JSON'];
@@ -2415,6 +2418,30 @@ $msgmore = ob_get_clean();
             }
         } ## mod end
 
+        // ---- ハッシュ化NGワード辞書による伏字変換 ----------------------------------------
+        // SHA-256ハッシュ辞書（filter/hashes.txt.gz）を参照し、本文・名前・タイトル中の
+        // NGワードを全角→＊、半角→* に伏字変換する。投稿は通す（ブロックしない）。
+        // JS側でも同じ処理を行うが、PHPはJSオフ時の確実なフォールバック。
+        // mbstring不要（iconv/gzfile使用）。
+        if (!empty($this->c['NGHASH_FILE'])) {
+            $this->f['v'] = ksphp_nghash_censor(
+                (string)(@$this->f['v']),
+                $this->c['NGHASH_FILE'],
+                (int)($this->c['NGHASH_MIN'] ?? 4)
+            );
+            $this->f['l'] = ksphp_nghash_censor(
+                (string)(@$this->f['l']),
+                $this->c['NGHASH_FILE'],
+                (int)($this->c['NGHASH_MIN'] ?? 4)
+            );
+            $this->f['t'] = ksphp_nghash_censor(
+                (string)(@$this->f['t']),
+                $this->c['NGHASH_FILE'],
+                (int)($this->c['NGHASH_MIN'] ?? 4)
+            );
+        }
+        // ---- ハッシュ化NGワード辞書ここまで -----------------------------------------------
+
         #20240204 猫 spam detection (https://php.o0o0.jp/article/php-spam)
         # Number of characters: char_num = mb_strlen( @$this->f['v'], 'UTF8');
         # Number of bytes: byte_num = strlen( @$this->f['v']);
@@ -3709,3 +3736,115 @@ class Func {
     }
 }
 /* end of class Func */
+
+// ============================================================
+// ksphp_nghash_censor() — ハッシュ化NGワード辞書による伏字変換
+// mbstring不要。UTF-8コードポイント単位で処理。iconv/gzfile使用。
+// ============================================================
+
+/**
+ * UTF-8文字列をコードポイント（文字）の配列に分解する（mbstring不要）。
+ * 各要素はUTF-8バイト列（1〜4バイト）の文字列。
+ */
+function ksphp_utf8_split(string $s): array {
+    $out = [];
+    $len = strlen($s);
+    $i   = 0;
+    while ($i < $len) {
+        $b = ord($s[$i]);
+        if      ($b < 0x80) { $out[] = substr($s, $i, 1); $i += 1; }
+        elseif  ($b < 0xE0) { $out[] = substr($s, $i, 2); $i += 2; }
+        elseif  ($b < 0xF0) { $out[] = substr($s, $i, 3); $i += 3; }
+        else                 { $out[] = substr($s, $i, 4); $i += 4; }
+    }
+    return $out;
+}
+
+/**
+ * コードポイント（UTF-8バイト列）が全角かどうか（バイト長 > 1 なら全角）。
+ */
+function ksphp_is_fullwidth(string $cp): bool {
+    return strlen($cp) > 1;
+}
+
+/**
+ * gzip圧縮されたSHA-256ハッシュ辞書を読み込みSetとして返す。
+ * 同一リクエスト内でのキャッシュあり。
+ *
+ * @param string $gz_path gzipファイルのパス
+ * @return array<string,true>|null 失敗時null（フィルタなしで続行）
+ */
+function ksphp_nghash_load(string $gz_path): ?array {
+    static $cache = [];
+    if (array_key_exists($gz_path, $cache)) return $cache[$gz_path];
+    if (!is_readable($gz_path)) {
+        $cache[$gz_path] = null;
+        return null;
+    }
+    $lines = gzfile($gz_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($lines === false) {
+        $cache[$gz_path] = null;
+        return null;
+    }
+    $cache[$gz_path] = array_fill_keys(array_map('trim', $lines), true);
+    return $cache[$gz_path];
+}
+
+/**
+ * 文字列中のNGワードをSHA-256ハッシュ辞書で検出し伏字に置換して返す。
+ * マッチした文字が全角なら＊、半角なら* に置換。
+ * 投稿はブロックせずそのまま通す（伏字変換のみ）。
+ *
+ * @param string $text      入力テキスト
+ * @param string $gz_path   filter/hashes.txt.gz のパス
+ * @param int    $min_chars 照合する最小コードポイント数（デフォルト4）
+ * @return string 伏字変換後のテキスト
+ */
+function ksphp_nghash_censor(string $text, string $gz_path, int $min_chars = 4): string {
+    if ($text === '' || $min_chars < 1) return $text;
+
+    $hashes = ksphp_nghash_load($gz_path);
+    if ($hashes === null) return $text; // 辞書読み込み失敗→フィルタなしで続行
+
+    // 元テキストをコードポイント配列に分解
+    $cps_orig  = ksphp_utf8_split($text);
+    // SHA-256照合用に小文字化（半角ASCIIのみ。全角は変化なし）
+    $cps_lower = ksphp_utf8_split(strtolower($text));
+    $n         = count($cps_orig);
+
+    if ($n < $min_chars) return $text; // 文字数が最小以下ならスキップ
+
+    $masked = array_fill(0, $n, false);
+
+    // 長いウィンドウから優先してマッチ（長い語を先に確定させる）
+    for ($win = $n; $win >= $min_chars; $win--) {
+        for ($start = 0; $start + $win <= $n; $start++) {
+            // マスク済みの文字を含む区間はスキップ
+            $skip = false;
+            for ($k = $start; $k < $start + $win; $k++) {
+                if ($masked[$k]) { $skip = true; break; }
+            }
+            if ($skip) continue;
+
+            // 部分文字列をハッシュ化して辞書照合
+            $substr = implode('', array_slice($cps_lower, $start, $win));
+            $hash   = hash('sha256', $substr);
+            if (isset($hashes[$hash])) {
+                for ($k = $start; $k < $start + $win; $k++) {
+                    $masked[$k] = true;
+                }
+            }
+        }
+    }
+
+    // マスクされた文字を伏字に置換
+    $out = '';
+    for ($i = 0; $i < $n; $i++) {
+        if ($masked[$i]) {
+            $out .= ksphp_is_fullwidth($cps_orig[$i]) ? '＊' : '*';
+        } else {
+            $out .= $cps_orig[$i];
+        }
+    }
+    return $out;
+}

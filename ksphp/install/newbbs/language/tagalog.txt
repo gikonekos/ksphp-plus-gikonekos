@@ -362,3 +362,8 @@ JS_LONGPOST_LABEL=Long-post filter
 JS_TREEHIDE_LABEL=Pagtatago ng hindi pa nababasang thread
 JS_UPTHUMB_LABEL=Mga upload thumbnail
 JS_VIDEMBED_LABEL=Pag-embed ng video
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=Ang post ay naglalaman ng mga ipinagbabawal na salita. I-post na may kapalit na asterisk (＊/*)?
+
+I-click ang Kanselahin para bumalik at i-edit.

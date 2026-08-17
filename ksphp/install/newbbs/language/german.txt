@@ -362,3 +362,8 @@ JS_LONGPOST_LABEL=Langer-Beitrag-Filter
 JS_TREEHIDE_LABEL=Ungelesene-Thread-Ausblendung
 JS_UPTHUMB_LABEL=Upload-Miniaturansichten
 JS_VIDEMBED_LABEL=Video-Einbettung
+
+# 20260815 Gikoneko: NG-hash censor confirm dialog
+NGHASH_CONFIRM=Der Beitrag enthält verbotene Wörter. Beitrag mit Sternchen (＊/*) als Ersatz posten?
+
+Auf Abbrechen klicken, um zurückzugehen und zu bearbeiten.
