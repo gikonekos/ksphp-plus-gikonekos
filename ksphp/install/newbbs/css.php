@@ -230,6 +230,8 @@ $css = <<<'CSS'
     input[type="text"]:hover,input[type="number"]:hover, input[type="password"]:hover,textarea:hover { background-color: #cdf; border-color: #888; }
     input[type="text"]:focus,input[type="number"]:focus, input[type="password"]:focus,textarea:focus { background-color: #ccc; border-color: #08c; }
     input[type="number"] { max-width: 4em; }
+    /* RTL: tree view uses box-drawing characters; keep LTR and right-align */
+    [dir="rtl"] .msgtree { direction: ltr; text-align: end; }
     /* Plugins */
     /* Custom */
     @media screen and (min-width: 1020px) {  div.contents {   overflow-x: auto;  } } 
