@@ -3369,16 +3369,12 @@ Design:
 
 File layout:
   filter/hashes.txt.gz  — gzip-compressed dictionary (132 KB)
-  filter/hashes.txt     — plain-text fallback (228 KB) for environments
-                          where gzfile() / zlib is unavailable.
-                          Safe to delete if zlib is confirmed present.
   js/ngfilter.js        — client-side filter (179 lines)
 
 PHP side (ksphp_nghash_censor / ksphp_nghash_load /
            ksphp_fullwidth_alpha_to_ascii):
   - mbstring-free; UTF-8 handled byte-by-byte.
-  - gzfile() availability checked with function_exists(); falls back to
-    plain hashes.txt when zlib is absent.
+  - gzfile() used for reading (zlib is available on the target server).
   - $CONF['NGHASH_FILE'] (default './filter/hashes.txt.gz') sets the path.
   - $CONF['NGHASH_MIN']  (default 4) sets the minimum codepoint window.
   - Applied to body (v), name (l), and title (t) fields on every post.

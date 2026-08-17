@@ -2901,13 +2901,10 @@ NGワードを伏字（全角→＊、半角→*）に置換して投稿を通�
 
 ファイル構成：
   filter/hashes.txt.gz  — gzip圧縮辞書（132KB）
-  filter/hashes.txt     — 平文辞書（228KB）。gzfile()が使えない環境向け
-                          フォールバック用。zlib確認済みなら削除可。
   js/ngfilter.js        — クライアント側フィルター（179行）
 
 PHP側（ksphp_nghash_censor / ksphp_nghash_load / ksphp_fullwidth_alpha_to_ascii）：
   - mbstring 不要。UTF-8バイト操作のみ。
-  - gzfile() の有無を function_exists() で確認し、なければ平文にフォールバック。
   - $CONF['NGHASH_FILE']（デフォルト './filter/hashes.txt.gz'）で辞書パスを指定。
   - $CONF['NGHASH_MIN']（デフォルト 4）で照合する最小コードポイント数を指定。
   - 本文（v）・名前（l）・タイトル（t）の3フィールドに適用。

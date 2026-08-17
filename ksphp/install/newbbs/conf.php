@@ -552,8 +552,6 @@ $CONF = array(
   // ハッシュ化NGワード辞書（SHA-256、部分一致、伏字変換）
   // Path to the gzipped SHA-256 hash dictionary for NG-word censoring.
   // Set to '' to disable. Matched words are replaced with ＊/*, not blocked.
-  // If zlib (gzfile) is unavailable, falls back to filter/hashes.txt (plain).
-  // Both files are bundled; delete hashes.txt if zlib is confirmed available.
   'NGHASH_FILE' => './filter/hashes.txt.gz',
   // Minimum codepoint length of substrings to check against the hash list.
   'NGHASH_MIN'  => 4,

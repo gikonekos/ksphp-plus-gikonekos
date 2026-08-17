@@ -3816,21 +3816,13 @@ function ksphp_nghash_load(string $gz_path): ?array {
     static $cache = [];
     if (array_key_exists($gz_path, $cache)) return $cache[$gz_path];
 
-    // gzip版を優先。zlibが使えない場合は平文版（.gz抜き）にフォールバック。
-    // qptns.comはmbstring禁止だがzlibの有無は環境依存のため両方同梱。
-    if (is_readable($gz_path) && function_exists('gzfile')) {
-        $lines = gzfile($gz_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    } else {
-        // zlibなし→平文版（hashes.txt）を試みる
-        $plain_path = preg_replace('/\.gz$/i', '', $gz_path);
-        if (!is_readable($plain_path)) {
-            $cache[$gz_path] = null;
-            return null; // 両方読めない→フィルタなしで続行
-        }
-        $lines = file($plain_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if (!is_readable($gz_path)) {
+        $cache[$gz_path] = null;
+        return null;
     }
+    $lines = gzfile($gz_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
-    if ($lines === false || $lines === null) {
+    if ($lines === false) {
         $cache[$gz_path] = null;
         return null;
     }
