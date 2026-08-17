@@ -3255,7 +3255,9 @@ posts are not blocked. See doc/en/changelog.txt for full details.
   filter/hashes.txt     — plain fallback when zlib is unavailable (228 KB)
   js/ngfilter.js        — client-side filter with confirm() dialog
 
-New conf.php settings: NGHASH_FILE, NGHASH_MIN
+New conf.php settings: NGHASH_FILE, NGHASH_MIN (3), NGHASH_MAX (20)
+The window cap keeps the scan O(n*k); without it a 3000-char post took
+over a minute (now 38 ms).
 New language key: NGHASH_CONFIRM (all 15 language files)
 
 

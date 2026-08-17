@@ -2427,17 +2427,20 @@ $msgmore = ob_get_clean();
             $this->f['v'] = ksphp_nghash_censor(
                 (string)(@$this->f['v']),
                 $this->c['NGHASH_FILE'],
-                (int)($this->c['NGHASH_MIN'] ?? 4)
+                (int)($this->c['NGHASH_MIN'] ?? 3),
+                (int)($this->c['NGHASH_MAX'] ?? 20)
             );
             $this->f['l'] = ksphp_nghash_censor(
                 (string)(@$this->f['l']),
                 $this->c['NGHASH_FILE'],
-                (int)($this->c['NGHASH_MIN'] ?? 4)
+                (int)($this->c['NGHASH_MIN'] ?? 3),
+                (int)($this->c['NGHASH_MAX'] ?? 20)
             );
             $this->f['t'] = ksphp_nghash_censor(
                 (string)(@$this->f['t']),
                 $this->c['NGHASH_FILE'],
-                (int)($this->c['NGHASH_MIN'] ?? 4)
+                (int)($this->c['NGHASH_MIN'] ?? 3),
+                (int)($this->c['NGHASH_MAX'] ?? 20)
             );
         }
         // ---- ハッシュ化NGワード辞書ここまで -----------------------------------------------
@@ -3837,10 +3840,14 @@ function ksphp_nghash_load(string $gz_path): ?array {
  *
  * @param string $text      入力テキスト
  * @param string $gz_path   filter/hashes.txt.gz のパス
- * @param int    $min_chars 照合する最小コードポイント数（デフォルト4）
+ * @param int    $min_chars 照合する最小コードポイント数（デフォルト3）
+ * @param int    $max_chars 照合する最大コードポイント数（デフォルト20）。
+ *                          総当りはO(n*k)。上限を設けないと長文で実用不能に
+ *                          なる（3000文字で1分超）。NGワードが20文字を超える
+ *                          ことは稀なため、この値で打ち切る。
  * @return string 伏字変換後のテキスト
  */
-function ksphp_nghash_censor(string $text, string $gz_path, int $min_chars = 4): string {
+function ksphp_nghash_censor(string $text, string $gz_path, int $min_chars = 3, int $max_chars = 20): string {
     if ($text === '' || $min_chars < 1) return $text;
 
     $hashes = ksphp_nghash_load($gz_path);
@@ -3856,8 +3863,10 @@ function ksphp_nghash_censor(string $text, string $gz_path, int $min_chars = 4):
 
     $masked = array_fill(0, $n, false);
 
-    // 長いウィンドウから優先してマッチ（長い語を先に確定させる）
-    for ($win = $n; $win >= $min_chars; $win--) {
+    // 長いウィンドウから優先してマッチ（長い語を先に確定させる）。
+    // $max_chars で打ち切ることで計算量を O(n^2) から O(n*k) に抑える。
+    $win_start = ($max_chars > 0 && $max_chars < $n) ? $max_chars : $n;
+    for ($win = $win_start; $win >= $min_chars; $win--) {
         for ($start = 0; $start + $win <= $n; $start++) {
             // マスク済みの文字を含む区間はスキップ
             $skip = false;

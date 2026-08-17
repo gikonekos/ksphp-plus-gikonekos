@@ -3360,8 +3360,13 @@ management overhead while still neutralising the content.
 Design:
   - The dictionary stores only SHA-256 hashes; source words are absent.
     Downloading the hash list reveals nothing about the original words.
-  - Substrings of 4+ codepoints are checked from longest to shortest.
+  - Substrings of 3-20 codepoints are checked from longest to shortest.
     Longer matches are committed first, preventing double-masking.
+  - The upper bound exists for performance. Without it the scan is O(n^2):
+    a 3000-character post (MAXMSGSIZE=9000 bytes) took over a minute and was
+    unusable. Capping the window makes it O(n*k) — the same post now takes
+    38 ms. NG words rarely exceed 20 characters; adjust $CONF['NGHASH_MAX']
+    if a longer dictionary entry is needed.
   - Before hashing, fullwidth alphanumerics (Ａ–Ｚ, ａ–ｚ, ０–９) are
     normalised to halfwidth, then lowercased. This blocks fullwidth bypass.
   - The dictionary covers English and Japanese only. Other languages pass
@@ -3376,7 +3381,8 @@ PHP side (ksphp_nghash_censor / ksphp_nghash_load /
   - mbstring-free; UTF-8 handled byte-by-byte.
   - gzfile() used for reading (zlib is available on the target server).
   - $CONF['NGHASH_FILE'] (default './filter/hashes.txt.gz') sets the path.
-  - $CONF['NGHASH_MIN']  (default 4) sets the minimum codepoint window.
+  - $CONF['NGHASH_MIN']  (default 3)  sets the minimum codepoint window.
+  - $CONF['NGHASH_MAX']  (default 20) sets the maximum codepoint window.
   - Applied to body (v), name (l), and title (t) fields on every post.
 
 JS side (ngfilter.js):
@@ -3394,7 +3400,8 @@ JS side (ngfilter.js):
 
 New conf.php settings:
   'NGHASH_FILE' => './filter/hashes.txt.gz'
-  'NGHASH_MIN'  => 4
+  'NGHASH_MIN'  => 3
+  'NGHASH_MAX'  => 20
 
 New language key (added to all 15 language/*.txt files):
   NGHASH_CONFIRM  — text for the confirm() dialog

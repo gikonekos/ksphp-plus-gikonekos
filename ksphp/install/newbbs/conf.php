@@ -554,7 +554,11 @@ $CONF = array(
   // Set to '' to disable. Matched words are replaced with ＊/*, not blocked.
   'NGHASH_FILE' => './filter/hashes.txt.gz',
   // Minimum codepoint length of substrings to check against the hash list.
-  'NGHASH_MIN'  => 4,
+  'NGHASH_MIN'  => 3,
+  // Maximum codepoint length to check. Scanning is O(n*k); without a cap a
+  // 3000-character post takes over a minute. NG words are rarely longer
+  // than this, so the scan stops here.
+  'NGHASH_MAX'  => 20,
 
   // 投稿禁止ワード
   // Prohibited words

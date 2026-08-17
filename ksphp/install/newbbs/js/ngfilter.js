@@ -12,7 +12,8 @@
 // 設定値は window.KSPHP_NGHASH_CONFIG で外部から注入する:
 //   window.KSPHP_NGHASH_CONFIG = {
 //     hashesUrl : './filter/hashes.txt.gz',  // gzip辞書のURL
-//     minChars  : 4,                          // 最小照合文字数
+//     minChars  : 3,                          // 最小照合文字数
+//     maxChars  : 20,                         // 最大照合文字数（性能上の打ち切り）
 //     confirmMsg: '...',                      // confirm()に表示するメッセージ
 //   };
 
@@ -29,7 +30,9 @@
 
     var cfg = window.KSPHP_NGHASH_CONFIG || {};
     var HASHES_URL  = cfg.hashesUrl  || './filter/hashes.txt.gz';
-    var MIN_CHARS   = parseInt(cfg.minChars, 10) || 4;
+    var MIN_CHARS   = parseInt(cfg.minChars, 10) || 3;
+    // 走査は O(n*k)。上限を設けないと長文（3000字）で数十秒かかるため打ち切る。
+    var MAX_CHARS   = parseInt(cfg.maxChars, 10) || 20;
     var CONFIRM_MSG = cfg.confirmMsg || 'NGワードが含まれています。伏字に変換して投稿しますか？';
 
     // ---- 辞書ロード（Promise、1回だけfetch）----
@@ -101,8 +104,9 @@
         var masked = new Array(n).fill(false);
         var found  = false;
 
-        // 長いウィンドウから優先（より長い語を先に確定）
-        for (var win = n; win >= MIN_CHARS; win--) {
+        // 長いウィンドウから優先（より長い語を先に確定）。MAX_CHARSで打ち切る。
+        var winStart = (MAX_CHARS > 0 && MAX_CHARS < n) ? MAX_CHARS : n;
+        for (var win = winStart; win >= MIN_CHARS; win--) {
             for (var start = 0; start + win <= n; start++) {
                 // マスク済み区間はスキップ
                 var skip = false;
