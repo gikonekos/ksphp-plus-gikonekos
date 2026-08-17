@@ -141,6 +141,19 @@ PHP, Apache modülü olarak çalışıyorsa bbs.php salt okunur (644) olabilir. 
 
 Herhangi bir sürümün tam ayrıntıları için `doc/changelog-2026-07-16-01.txt` dosyasına bakın.
 
+### RC19 (2026/08/12)
+* RTL aşama 1; Arapça dil dosyası eklendi (language/arabic.txt, 298 anahtar)
+
+### RC20 (2026/08/15)
+* Arapça yükleyici UI dosyası; 7 dil eklendi (İspanyolca, Fransızca, Almanca, Endonezce, Vietnamca, Tagalogca, Hintçe), her iki küme. Toplam: 15 dil
+* Belge dosya adları sabitlendi; install/index.html kaldırıldı
+
+### RC21 (2026/08/17)
+* NG karma filtresi (SHA-256, kısmi eşleşme, yıldız işareti değiştirme, onay diyaloğu)
+* Karma işleminden önce tam genişlikli alfasayısalların normalleştirilmesi
+
+Herhangi bir sürümün tam ayrıntıları için `doc/changelog.txt` dosyasına bakın.
+
 ## Yapılacaklar
 
 * **Yükleyici küçük resim JS** — upthumb.js'yi Uploader@Heyuri dışındaki Uploader örnekleri için kolayca yapılandırılabilir hale getir

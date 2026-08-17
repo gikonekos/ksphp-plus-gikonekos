@@ -141,6 +141,19 @@ Se o PHP rodar como módulo Apache, bbs.php pode ser somente leitura (644). Se r
 
 Para detalhes completos de qualquer versão, consulte `doc/changelog-2026-07-16-01.txt`.
 
+### RC19 (2026/08/12)
+* RTL fase 1; ficheiro de idioma árabe adicionado (language/arabic.txt, 298 chaves)
+
+### RC20 (2026/08/15)
+* Ficheiro UI do instalador árabe; 7 idiomas adicionados (espanhol, francês, alemão, indonésio, vietnamita, tagalo, hindi) em ambos os conjuntos. Total: 15 idiomas
+* Nomes de ficheiros de documentação estabilizados; install/index.html removido
+
+### RC21 (2026/08/17)
+* Filtro de censura por hash NG (SHA-256, correspondência parcial, substituição por asteriscos, diálogo de confirmação)
+* Normalização de alfanuméricos de largura total antes do hashing
+
+Para detalhes completos de qualquer versão, consulte `doc/changelog.txt`.
+
 ## A fazer
 * **JS de miniatura do uploader** — tornar upthumb.js facilmente configurável para instâncias de software Uploader além do Uploader@Heyuri
 * **Formulário não aparece na tela de novo post** — intermitente; condições de reprodução desconhecidas

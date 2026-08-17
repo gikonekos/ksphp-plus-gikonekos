@@ -50,7 +50,7 @@ if (file_exists($ksphp_local_secrets_file)) {
 unset($ksphp_local_secrets_file, $ksphp_local_secrets);
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '擬古猫+RC20 [20260815] (Heyuri, ヶ, ＠Links, 擬古猫)';
+$CONF['VERSION'] = '擬古猫+RC21 [20260817] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
@@ -3815,12 +3815,22 @@ function ksphp_is_fullwidth(string $cp): bool {
 function ksphp_nghash_load(string $gz_path): ?array {
     static $cache = [];
     if (array_key_exists($gz_path, $cache)) return $cache[$gz_path];
-    if (!is_readable($gz_path)) {
-        $cache[$gz_path] = null;
-        return null;
+
+    // gzip版を優先。zlibが使えない場合は平文版（.gz抜き）にフォールバック。
+    // qptns.comはmbstring禁止だがzlibの有無は環境依存のため両方同梱。
+    if (is_readable($gz_path) && function_exists('gzfile')) {
+        $lines = gzfile($gz_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    } else {
+        // zlibなし→平文版（hashes.txt）を試みる
+        $plain_path = preg_replace('/\.gz$/i', '', $gz_path);
+        if (!is_readable($plain_path)) {
+            $cache[$gz_path] = null;
+            return null; // 両方読めない→フィルタなしで続行
+        }
+        $lines = file($plain_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     }
-    $lines = gzfile($gz_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    if ($lines === false) {
+
+    if ($lines === false || $lines === null) {
         $cache[$gz_path] = null;
         return null;
     }

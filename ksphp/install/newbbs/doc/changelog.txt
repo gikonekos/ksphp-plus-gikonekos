@@ -3180,3 +3180,89 @@ $ksphp_lang_labels への登録は済ませてあったため、ファイルを�
   なお install/language/ は247キーの別体系であり、そちらのアラビア語版は
   未着手。インストーラの言語一覧はディレクトリ走査で構築されるため、
   ファイルが無い間はプルダウンに現れないだけで不整合は起きない。
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+[MULTILINGUAL EXPANSION — ARABIC INSTALLER + 7 LANGUAGES (BOTH SETS)]
+Files: install/language/arabic.txt (new),
+       install/newbbs/language/{spanish,french,german,indonesian,
+       vietnamese,tagalog,hindi}.txt (new),
+       install/language/{spanish,french,german,indonesian,
+       vietnamese,tagalog,hindi}.txt (new)
+
+RC19 added the board-side Arabic language file (language/arabic.txt,
+298 keys). The installer-side counterpart (install/language/, 247 keys,
+entirely separate key set) was outstanding. This release adds arabic.txt
+for the installer, then adds seven further languages in both sets.
+
+  - install/language/arabic.txt: 247 keys, RTL.
+  - Seven new languages (298 keys board-side + 247 keys installer-side each):
+      Spanish, French, German, Indonesian, Vietnamese, Tagalog, Hindi
+  - Key-set diff against english.txt confirmed zero for every file.
+
+Total supported languages: 15
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+[RENAME DOC FILES TO STABLE NAMES]
+Files: doc/changelog-2026-07-16-01.txt → doc/changelog.txt (×3 dirs)
+       doc/migrate-spec-2026-07-19-01.txt → doc/migrate-spec.txt (×3 dirs)
+       doc/admin-secrets-concept-2026-07-19-01.txt
+         → doc/admin-secrets-concept.txt (×3 dirs)
+       doc/README.md, InstallGuide.txt (all 8 language variants, references updated)
+
+Date suffixes in doc filenames prevent stable linking. Nine files renamed
+using git mv. Historical mentions inside changelog body left untouched.
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+[REMOVE install/index.html]
+Files: install/index.html (deleted),
+       InstallGuide.txt + README.md (all 8 language variants, updated)
+
+Removed because it advertises the installer location to scanners.
+install/backup/index.html (dynamically generated) remains unchanged.
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+[VERSION BUMP: RC20 [20260815]]
+File: bbs.php ($CONF['VERSION'])
+
+Updated from RC19 [20260812] to RC20 [20260815].
+
+
+============================================================
+2026-08-17T00:00 UTC
+------------------------------------------------------------
+[NG-HASH CENSOR FILTER]
+Files: filter/hashes.txt.gz (new), filter/hashes.txt (new),
+       js/ngfilter.js (new), bbs.php, conf.php,
+       language/*.txt (all 15), sub/template.html
+
+SHA-256 hash dictionary (3,588 entries) with sliding-window partial-match.
+Prohibited words are replaced with ＊/* (fullwidth/halfwidth per character);
+posts are not blocked. See doc/en/changelog.txt for full details.
+
+  filter/hashes.txt.gz  — gzip dictionary (132 KB)
+  filter/hashes.txt     — plain fallback when zlib is unavailable (228 KB)
+  js/ngfilter.js        — client-side filter with confirm() dialog
+
+New conf.php settings: NGHASH_FILE, NGHASH_MIN
+New language key: NGHASH_CONFIRM (all 15 language files)
+
+
+============================================================
+2026-08-17T00:00 UTC
+------------------------------------------------------------
+[VERSION BUMP: RC21 [20260817]]
+File: bbs.php ($CONF['VERSION'])
+
+Updated from RC20 [20260815] to RC21 [20260817].

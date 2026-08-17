@@ -2791,3 +2791,151 @@ $ksphp_lang_labels への登録は済ませてあったため、ファイルを�
   なお install/language/ は247キーの別体系であり、そちらのアラビア語版は
   未着手。インストーラの言語一覧はディレクトリ走査で構築されるため、
   ファイルが無い間はプルダウンに現れないだけで不整合は起きない。
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+【多言語対応の拡充（インストーラ用アラビア語＋7言語両体系）】
+対象：install/language/arabic.txt（新規）、
+      install/newbbs/language/{spanish,french,german,indonesian,
+      vietnamese,tagalog,hindi}.txt（新規）、
+      install/language/{spanish,french,german,indonesian,
+      vietnamese,tagalog,hindi}.txt（新規）
+
+RC19でアラビア語の掲示板本体用言語ファイル（language/arabic.txt、298キー）
+を追加していたが、インストーラ用（install/language/、247キー、別体系）が
+未着手だった。今回まず arabic.txt を追加し、続けて7言語を両体系で追加した。
+
+  - install/language/arabic.txt：247キー、RTL。install.phpの$install_lang_tags
+    と$install_lang_labelsにはarabicが登録済みだったため、ファイルを置くだけで
+    インストーラのプルダウンに「العربية」として現れる。
+
+  - 新規7言語（各298キー＋247キー）：
+      スペイン語（Español）、フランス語（Français）、ドイツ語（Deutsch）、
+      インドネシア語（Bahasa Indonesia）、ベトナム語（Tiếng Việt）、
+      タガログ語（Filipino）、ヒンディー語（हिन्दी）
+
+  - 各言語とも$ksphp_lang_tags・$install_lang_tags等にはすでに登録済みで、
+    ファイルを追加するだけで言語選択プルダウンに反映される。
+
+  - 全ファイルについて english.txt とのキー差分をゼロに確認（Python自動照合）。
+
+対応言語の合計：15言語
+（japanese, english, korean, portuguese, turkish, zh-hans, zh-hant, arabic,
+  spanish, french, german, indonesian, vietnamese, tagalog, hindi）
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+【doc文書の安定名へのリネーム】
+対象：doc/changelog-2026-07-16-01.txt → doc/changelog.txt（3方向）
+      doc/migrate-spec-2026-07-19-01.txt → doc/migrate-spec.txt（3方向）
+      doc/admin-secrets-concept-2026-07-19-01.txt
+        → doc/admin-secrets-concept.txt（3方向）
+      doc/{en,ja,root}/README.md・InstallGuide.txt（参照パス更新）
+
+配布するたびに変わる日付サフィックスは安定した名前のリンクを妨げるため、
+doc/、doc/en/、doc/ja/ の3方向それぞれで3ファイルをリネームした（計9個）。
+git mv で履歴を保持している。
+
+README.md・InstallGuide.txt の全8言語版にある現役参照パスを
+新しい名前（changelog.txt等）に更新した。changelog.txt 本文内の
+過去の履歴記述（「対象：doc/migrate-spec-2026-07-19-01.txt（新規）」等）は
+歴史的記録のため書き換えていない。
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+【install/index.html 削除】
+対象：install/index.html（削除）、
+      doc/{root,en,ja,ko,pt,tr,zh-hans,zh-hant}/InstallGuide.txt（更新）
+      doc/{root,en,ja,ko,pt,tr,zh-hans,zh-hant}/README.md（更新）
+
+install/index.html はディレクトリ一覧の抑止を目的として追加したものだが、
+逆にインストーラの存在場所を検索エンジンやスキャナに対して明示する結果になる
+と判断して削除した。install/backup/index.html は install.php が動的生成する
+ものであり引き続き存在する（backup/直下のリスティング抑止）。
+
+各言語版の InstallGuide.txt から「install/index.html を同梱しており」という
+記述を削除し、backup/index.html のみに絞った説明に修正した。
+README.md の ToDo から完了済み項目（アラビア語インストーラ用ファイル、
+追加7言語、install/index.html同梱の言及）を削除した。
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+【バージョン RC20 [20260815]】
+対象：bbs.php（$CONF['VERSION']）
+
+$CONF['VERSION'] を '擬古猫+RC19 [20260812]' から
+'擬古猫+RC20 [20260815]' に更新した。
+
+
+============================================================
+2026-08-17T00:00 UTC
+------------------------------------------------------------
+【NGハッシュフィルター実装】
+対象：filter/hashes.txt.gz（新規）、filter/hashes.txt（新規）、
+      js/ngfilter.js（新規）、bbs.php（関数追加・投稿処理追加）、
+      conf.php（設定追加）、language/*.txt（全15言語、キー追加）、
+      sub/template.html（JS設定注入・読み込み追加）
+
+SHA-256ハッシュ化された辞書（3588エントリ）と部分一致照合を組み合わせ、
+NGワードを伏字（全角→＊、半角→*）に置換して投稿を通す。
+投稿のブロックではなく伏字変換であるため、書き込めないフラストレーションを
+与えず、管理コストを抑える。
+
+設計：
+  - 辞書は SHA-256 ハッシュのみ収録（元の単語は存在しない）。
+    ハッシュをダウンロードされても元の単語は逆引きできない。
+  - 4コードポイント以上の部分文字列を長いウィンドウから順に照合する。
+    長い語を先に確定させてから短い語に進むことで、重複マスクを防ぐ。
+  - 照合前に全角英数字（Ａ–Ｚ、ａ–ｚ、０–９）を半角に変換してから
+    小文字化する。全角文字による辞書迂回を防ぐための正規化。
+  - 辞書は英語・日本語のみ収録。他言語のNGワードは対象外（将来の追加は
+    hashes.txt.gz の更新のみで対応可能）。
+
+ファイル構成：
+  filter/hashes.txt.gz  — gzip圧縮辞書（132KB）
+  filter/hashes.txt     — 平文辞書（228KB）。gzfile()が使えない環境向け
+                          フォールバック用。zlib確認済みなら削除可。
+  js/ngfilter.js        — クライアント側フィルター（179行）
+
+PHP側（ksphp_nghash_censor / ksphp_nghash_load / ksphp_fullwidth_alpha_to_ascii）：
+  - mbstring 不要。UTF-8バイト操作のみ。
+  - gzfile() の有無を function_exists() で確認し、なければ平文にフォールバック。
+  - $CONF['NGHASH_FILE']（デフォルト './filter/hashes.txt.gz'）で辞書パスを指定。
+  - $CONF['NGHASH_MIN']（デフォルト 4）で照合する最小コードポイント数を指定。
+  - 本文（v）・名前（l）・タイトル（t）の3フィールドに適用。
+
+JS側（ngfilter.js）：
+  - DecompressionStream / crypto.subtle.digest / TextEncoder が必要。
+    非対応環境では黙って無効化し投稿を妨げない。
+    （Chrome 80+, Firefox 113+, Safari 16.4+ で動作）
+  - 送信直前に辞書を fetch（同一セッション内ではキャッシュ）。
+  - NGワード検出時は window.confirm() で「伏字変換して投稿しますか？」を表示。
+    OKなら変換後の文字列をフォームに書き戻して送信。キャンセルなら送信を止める。
+  - 設定は window.KSPHP_NGHASH_CONFIG として bbs.php からテンプレート変数で注入
+    （hashesUrl・minChars・confirmMsg）。confirmMsg は window.KSPHP_LANG の
+    NGHASH_CONFIRM キーを参照し、選択言語でダイアログが表示される。
+
+追加設定（conf.php）：
+  'NGHASH_FILE' => './filter/hashes.txt.gz'
+  'NGHASH_MIN'  => 4
+
+追加言語キー（全15言語の language/*.txt に追記）：
+  NGHASH_CONFIRM  — 確認ダイアログのメッセージ文字列
+
+
+============================================================
+2026-08-17T00:00 UTC
+------------------------------------------------------------
+【バージョン RC21 [20260817]】
+対象：bbs.php（$CONF['VERSION']）
+
+$CONF['VERSION'] を '擬古猫+RC20 [20260815]' から
+'擬古猫+RC21 [20260817]' に更新した。

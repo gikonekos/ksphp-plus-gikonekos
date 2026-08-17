@@ -267,6 +267,19 @@ If PHP runs as an Apache module, bbs.php can be read-only (644). If it runs as C
 
 For full details on any release, see `doc/changelog-2026-07-16-01.txt`.
 
+### RC19 (2026/08/12)
+* RTL phase 1; Arabic language file (language/arabic.txt, 298 keys)
+
+### RC20 (2026/08/15)
+* Arabic installer UI file; 7 further languages (Spanish, French, German, Indonesian, Vietnamese, Tagalog, Hindi) in both sets. Total: 15 languages
+* Doc filenames stabilised; install/index.html removed
+
+### RC21 (2026/08/17)
+* NG-hash censor filter (SHA-256, partial-match, asterisk replacement, confirm dialog)
+* Fullwidth alphanumeric normalisation before hashing
+
+For full details on any release, see `doc/changelog.txt`.
+
 ## ToDo
 * **Uploader thumbnail JS** — make upthumb.js easily configurable for Uploader software instances other than Uploader@Heyuri
 * **New-post form not appearing** — intermittent; reproduction conditions unknown

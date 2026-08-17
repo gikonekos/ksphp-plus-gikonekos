@@ -3254,3 +3254,161 @@ file was enough to turn right-to-left rendering on.
   The installer builds its language list by scanning the directory, so
   Arabic simply does not appear there until the file exists -- nothing is
   left inconsistent in the meantime.
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+[MULTILINGUAL EXPANSION — ARABIC INSTALLER + 7 LANGUAGES (BOTH SETS)]
+Files: install/language/arabic.txt (new),
+       install/newbbs/language/{spanish,french,german,indonesian,
+       vietnamese,tagalog,hindi}.txt (new),
+       install/language/{spanish,french,german,indonesian,
+       vietnamese,tagalog,hindi}.txt (new)
+
+RC19 added the board-side Arabic language file (language/arabic.txt,
+298 keys). The installer-side counterpart (install/language/, 247 keys,
+entirely separate key set) was outstanding. This release adds arabic.txt
+for the installer, then adds seven further languages in both sets.
+
+  - install/language/arabic.txt: 247 keys, RTL. 'arabic' was already
+    registered in $install_lang_tags and $install_lang_labels, so placing
+    the file is sufficient to make "العربية" appear in the installer
+    language drop-down.
+
+  - Seven new languages (298 keys board-side + 247 keys installer-side each):
+      Spanish (Español), French (Français), German (Deutsch),
+      Indonesian (Bahasa Indonesia), Vietnamese (Tiếng Việt),
+      Tagalog (Filipino), Hindi (हिन्दी)
+
+  - All languages were pre-registered in $ksphp_lang_tags and related
+    tables; file placement alone activates them.
+
+  - Key-set diff against english.txt confirmed zero for every file
+    (automated Python check).
+
+Total supported languages: 15
+(japanese, english, korean, portuguese, turkish, zh-hans, zh-hant, arabic,
+ spanish, french, german, indonesian, vietnamese, tagalog, hindi)
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+[RENAME DOC FILES TO STABLE NAMES]
+Files: doc/changelog-2026-07-16-01.txt → doc/changelog.txt (×3 dirs)
+       doc/migrate-spec-2026-07-19-01.txt → doc/migrate-spec.txt (×3 dirs)
+       doc/admin-secrets-concept-2026-07-19-01.txt
+         → doc/admin-secrets-concept.txt (×3 dirs)
+       doc/{en,ja,root}/README.md, InstallGuide.txt (live references updated)
+
+Date suffixes in doc filenames prevent stable linking. Nine files were
+renamed across doc/, doc/en/, and doc/ja/ using git mv to preserve history.
+
+Live path references in README.md and InstallGuide.txt (all 8 language
+variants) were updated to the new names. Historical mentions of the old
+names inside changelog.txt body text were left untouched, as they are
+accurate records of the time they were written.
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+[REMOVE install/index.html]
+Files: install/index.html (deleted),
+       doc/{root,en,ja,ko,pt,tr,zh-hans,zh-hant}/InstallGuide.txt (updated)
+       doc/{root,en,ja,ko,pt,tr,zh-hans,zh-hant}/README.md (updated)
+
+install/index.html was originally added to suppress directory listing, but
+it has the opposite effect of advertising the installer's location to
+search engines and scanners. It has been removed.
+
+install/backup/index.html remains — it is generated dynamically by
+install.php and suppresses listing of the backup directory.
+
+InstallGuide.txt (all 8 language variants) was updated to remove the
+mention of install/index.html; the install/backup/index.html note was
+kept. README.md ToDo items that had been completed (Arabic installer file,
+7 further languages, index.html note) were removed.
+
+
+============================================================
+2026-08-15T00:00 UTC
+------------------------------------------------------------
+[VERSION BUMP: RC20 [20260815]]
+File: bbs.php ($CONF['VERSION'])
+
+$CONF['VERSION'] updated from '擬古猫+RC19 [20260812]'
+to '擬古猫+RC20 [20260815]'.
+
+
+============================================================
+2026-08-17T00:00 UTC
+------------------------------------------------------------
+[NG-HASH CENSOR FILTER]
+Files: filter/hashes.txt.gz (new), filter/hashes.txt (new),
+       js/ngfilter.js (new), bbs.php (functions + post-processing),
+       conf.php (settings), language/*.txt (all 15 languages, key added),
+       sub/template.html (config injection + script load)
+
+A SHA-256 hash dictionary (3,588 entries) with sliding-window partial-match
+is used to replace prohibited words with asterisks (fullwidth → ＊,
+halfwidth → *) before saving the post. The post is not blocked — the
+substitution is transparent to the poster, reducing frustration and
+management overhead while still neutralising the content.
+
+Design:
+  - The dictionary stores only SHA-256 hashes; source words are absent.
+    Downloading the hash list reveals nothing about the original words.
+  - Substrings of 4+ codepoints are checked from longest to shortest.
+    Longer matches are committed first, preventing double-masking.
+  - Before hashing, fullwidth alphanumerics (Ａ–Ｚ, ａ–ｚ, ０–９) are
+    normalised to halfwidth, then lowercased. This blocks fullwidth bypass.
+  - The dictionary covers English and Japanese only. Other languages pass
+    through unfiltered. Future additions require only updating hashes.txt.gz.
+
+File layout:
+  filter/hashes.txt.gz  — gzip-compressed dictionary (132 KB)
+  filter/hashes.txt     — plain-text fallback (228 KB) for environments
+                          where gzfile() / zlib is unavailable.
+                          Safe to delete if zlib is confirmed present.
+  js/ngfilter.js        — client-side filter (179 lines)
+
+PHP side (ksphp_nghash_censor / ksphp_nghash_load /
+           ksphp_fullwidth_alpha_to_ascii):
+  - mbstring-free; UTF-8 handled byte-by-byte.
+  - gzfile() availability checked with function_exists(); falls back to
+    plain hashes.txt when zlib is absent.
+  - $CONF['NGHASH_FILE'] (default './filter/hashes.txt.gz') sets the path.
+  - $CONF['NGHASH_MIN']  (default 4) sets the minimum codepoint window.
+  - Applied to body (v), name (l), and title (t) fields on every post.
+
+JS side (ngfilter.js):
+  - Requires DecompressionStream / crypto.subtle.digest / TextEncoder.
+    Silently disabled on unsupported browsers; never blocks posting.
+    (Chrome 80+, Firefox 113+, Safari 16.4+)
+  - Dictionary is fetched once per session (cached after first load).
+  - On NG detection, window.confirm() asks whether to post with asterisks.
+    OK: writes censored text back into the form and submits.
+    Cancel: returns to the form without submitting.
+  - window.KSPHP_NGHASH_CONFIG is injected by bbs.php via template
+    variable (hashesUrl, minChars, confirmMsg). confirmMsg references
+    window.KSPHP_LANG.NGHASH_CONFIRM so the dialog appears in the active UI
+    language.
+
+New conf.php settings:
+  'NGHASH_FILE' => './filter/hashes.txt.gz'
+  'NGHASH_MIN'  => 4
+
+New language key (added to all 15 language/*.txt files):
+  NGHASH_CONFIRM  — text for the confirm() dialog
+
+
+============================================================
+2026-08-17T00:00 UTC
+------------------------------------------------------------
+[VERSION BUMP: RC21 [20260817]]
+File: bbs.php ($CONF['VERSION'])
+
+$CONF['VERSION'] updated from '擬古猫+RC20 [20260815]'
+to '擬古猫+RC21 [20260817]'.
