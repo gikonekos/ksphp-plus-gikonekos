@@ -282,6 +282,13 @@ For full details on any release, see `doc/changelog-2026-07-16-01.txt`.
 * JS side: fetch → confirm() → censor → submit (DecompressionStream); PHP side: mbstring-free, falls back to plain hashes.txt when zlib is absent
 * Fullwidth alphanumerics (Ａ–Ｚ, ａ–ｚ, ０–９) normalised to halfwidth before hashing to prevent bypass
 
+### RC22 (2026/08/21)
+* archive.org URL handling: ttps://web.archive.org/web/.../ttps://... is now output as a proper link with `h` restored in the href only; the visible text intentionally keeps the `ttps` form so the post is not rejected by ttp-based NG filters
+* Fixed ttp→http link conversion: the old `[^h]` pattern consumed one character before the URL, silently deleting a space, newline, full-width space, full-width colon, etc.; replaced with the zero-width lookbehind `(?<!h)`
+* As a side-effect of the above fix, ttp:// at the very start of a message body is now converted (was silently dropped before)
+* Fixed spurious `h` prefix on ftp:// and news:// URLs (the old pattern turned them into hftp:// / hnews://; schemes are now handled separately)
+* Fixed double-nesting of `<a>` tags when an archive.org link was followed by a plain ttp:// URL in the same message (already-linked segments are now passed through untouched)
+
 For full details on any release, see `doc/changelog.txt`.
 
 ## ToDo
