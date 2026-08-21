@@ -5,6 +5,60 @@ Timestamp format: ISO 8601 (minute precision), timezone UTC
   CHANGELOG_HANDOFF.txt)
 
 ============================================================
+2026-08-21T00:00 UTC
+------------------------------------------------------------
+[RC22: archive.org URL linking; ttp→http conversion bug fixes]
+Target: bbs.php
+
+  [1] bbs.php: three bugs fixed in the URL auto-linking code inside
+      getdispmessage().
+
+      [Bug 1] `[^h]` consumed the character before the URL
+        The pattern `/[^h]((ttps?|ftp|news)://…)/` treated the
+        character immediately before the URL as part of the match.
+        The replacement string `<a href="h$1">$1</a>` then dropped
+        that character entirely. Affected characters: half-width
+        space, newline, full-width space, full-width colon, and any
+        other non-h character. Additionally, ttp:// at the very
+        start of the message body never matched (no preceding
+        character), so such URLs were silently left as plain text.
+        → Replaced with the zero-width lookbehind `(?<!h)`.
+
+      [Bug 2] ftp:// and news:// received a spurious `h` prefix
+        Because `(ttps?|ftp|news)` shared one alternation group,
+        ftp:// was turned into hftp:// and news:// into hnews://,
+        producing broken URLs.
+        → Separated into two preg_replace calls so only ttps? gets
+          the `h` prefix.
+
+      [Bug 3] ttps://web.archive.org/…/ttps://… was not handled
+        Wayback Machine archive URLs have the form
+        `ttps://web.archive.org/web/<date>/<original-URL>`,
+        where the original URL itself starts with ttps://. The old
+        code only linked the original URL part, leaving the archive
+        host orphaned as plain text. There was also a secondary
+        problem: archive.org URLs contain `http://`, causing them to
+        be rejected by boards that ban http:// in posts.
+        → A preg_replace_callback now handles the archive.org
+          pattern first, inserting `h` in the href only. The
+          visible text intentionally keeps the `ttps` form to stay
+          under the NG filter radar.
+
+      The fixes for bugs 2 and 3 introduced a potential double-
+      nesting problem: an <a>...</a> produced by the archive.org
+      step could have its inner ttp:// re-linked by the generic
+      step. Fixed by using preg_split to isolate existing <a>…</a>
+      blocks and pass them through untouched.
+
+      Verification: the code block was extracted as a standalone PHP
+      function and tested against 13 cases (ttp:// at start-of-body,
+      ttp:// after various delimiters, archive.org alone / after
+      text / mixed with a plain ttp://, existing http links, an
+      existing <a> tag pass-through, ftp://, news://, no URL, AA
+      art). All 13 matched their expected values exactly.
+
+
+============================================================
 2026-07-16T23:30 UTC
 ------------------------------------------------------------
 [Phase 1: porting ja-version-only improvements into the en version (the master)]
