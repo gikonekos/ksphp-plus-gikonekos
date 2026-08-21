@@ -278,6 +278,12 @@ For full details on any release, see `doc/changelog-2026-07-16-01.txt`.
 * NG-hash censor filter (SHA-256, partial-match, asterisk replacement, confirm dialog)
 * Fullwidth alphanumeric normalisation before hashing
 
+### RC22 (2026/08/21)
+* archive.org URL support: `ttps://web.archive.org/…/ttps://…` linked with `h` restored in href only
+* Fixed `[^h]` consuming a character before ttp:// URLs; replaced with zero-width lookbehind `(?<!h)`
+* Fixed `h` prefix applied to ftp:// and news:// (now handled separately)
+* Fixed double-nested `<a>` when archive.org and plain ttp:// links coexist
+
 For full details on any release, see `doc/changelog.txt`.
 
 ## ToDo
