@@ -5,6 +5,14 @@ Timestamp format: ISO 8601 (minute precision), timezone UTC
   CHANGELOG_HANDOFF.txt)
 
 ============================================================
+2026-08-21 RC22
+------------------------------------------------------------
+bbs.php: archive.org URL linking; [^h] char-consumption bug fix;
+ftp/news spurious h-prefix fix; double-nested <a> fix.
+Details in doc/en/changelog.txt.
+
+
+============================================================
 2026-07-16T23:30 UTC
 ------------------------------------------------------------
 [Phase 1: porting ja-version-only improvements into the en version (the master)]
