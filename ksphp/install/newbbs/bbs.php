@@ -1094,11 +1094,13 @@ function tripuse($key) {
         $message['MSG'] = preg_replace("/}/i","&#125;", $message['MSG'], -1);
 
 #20260601 gikoneko ttp -> http converted
-#20260821 RC22: [^h]→(?<!h) fix + ftp/news分離 + archive.org対応
-        // ■ archive.org Wayback Machine アーカイブURLを先に処理
-        // ttps://web.archive.org/web/<日付>/ttps://... 形式で元URLも ttps:// 始まりになる。
-        // hrefにのみhを付加し、表示テキストはttpsのまま保つ（NGフィルタhttp禁止回避を維持）。
-        // <a>…</a> ブロックは素通し（入れ子防止）。
+#20260821 RC22: [^h]→(?<!h) fix + split ftp/news + archive.org support
+        // ■ Process archive.org Wayback Machine URLs first.
+        // Archive URLs take the form ttps://web.archive.org/web/<date>/ttps://...,
+        // where the original URL also starts with ttps://.
+        // Prepend 'h' to href only; keep the display text as-is (ttps://)
+        // to avoid triggering the NG filter that blocks 'http'.
+        // Pass <a>...</a> blocks through unchanged to prevent nesting.
         $parts = preg_split('/(<a\b[^>]*>.*?<\/a>)/is', $message['MSG'], -1, PREG_SPLIT_DELIM_CAPTURE);
         foreach ($parts as $i => $part) {
             if ($i % 2 === 0) {
@@ -1112,10 +1114,11 @@ function tripuse($key) {
             }
         }
         $message['MSG'] = implode('', $parts);
-        // ■ 通常のttp→http変換・ftp/news変換（archive.org以外）
-        // <a>ブロック素通しで入れ子防止。
-        // ①[^h]→(?<!h)：ゼロ幅後読みで行頭ttp://にも対応、直前文字消費を解消
-        // ②ttps?にのみh付加。ftp/newsは別呼び出しでhを付けない。
+        // ■ Standard ttp→http and ftp/news conversion (non-archive.org).
+        // Pass <a> blocks through unchanged to prevent nesting caused by the pass above.
+        // ① [^h]→(?<!h): zero-width lookbehind; fixes character consumption and
+        //   handles ttp:// at the start of a line (previously never matched).
+        // ② Prepend 'h' to ttps? only; ftp/news are handled in a separate call without 'h'.
         $parts = preg_split('/(<a\b[^>]*>.*?<\/a>)/is', $message['MSG'], -1, PREG_SPLIT_DELIM_CAPTURE);
         foreach ($parts as $i => $part) {
             if ($i % 2 === 0) {
