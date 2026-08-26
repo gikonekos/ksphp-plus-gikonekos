@@ -422,14 +422,14 @@ class Getlog extends Webapp {
             $msgmode = 1;
         }
         $resultcount = 0;
-        #20260826 Gikoneko: ascending order for old logs (personal setting
-        # SORTORDER). Buffers only the message-level output paths (dat search,
+        #20260826 Gikoneko: ascending order for old logs (search form radio
+        # name so; 1 = oldest first). Buffers only the message-level output paths (dat search,
         # dat show-all, HTML search) and reverses them just before printing.
         # The HTML show-all path further down streams raw lines that carry no
         # message boundaries, so reversing there would corrupt the markup; it
         # is intentionally left on the existing descending path.
         # FALSE = buffering disabled, i.e. print straight through as before.
-        $sortbuf = $this->c['SORTORDER'] ? array() : FALSE;
+        $sortbuf = @$this->f['so'] ? array() : FALSE;
 
         # dat search
         if ($this->c['OLDLOGFMT']) {
