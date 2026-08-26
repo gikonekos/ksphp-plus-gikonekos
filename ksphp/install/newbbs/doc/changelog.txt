@@ -7,13 +7,17 @@ Timestamp format: ISO 8601 (minute precision), timezone UTC
 ============================================================
 2026-08-26 RC22 [20260826]
 ------------------------------------------------------------
-Added a personal "Display order" setting (SORTORDER): newest-first
-(default) or oldest-first. Applies to the standard view, tree view and
-old logs; only the displayed window is reversed, never the whole log.
-SORTORDER is prepended to the $flags bit list so settings saved by RC21
-and earlier keep working unchanged (verified over all 256 values).
-The HTML show-all path in old logs is deliberately not covered yet.
-Three keys added to all 15 language files.
+Added a personal "Display order" setting (SORTORDER) for the standard and
+tree views: newest-first (default) or oldest-first. Only the displayed
+window is reversed, never the whole log. SORTORDER is prepended to the
+$flags bit list so settings saved by RC21 and earlier keep working
+unchanged (verified over all 256 values).
+Old logs get their own radio group on the search form (name="so") instead,
+independent of the personal setting; so=0 (default) keeps the pre-existing
+oldest-first order and so=1 gives newest-first, reversing the per-file loop
+order as well. The HTML show-all path in old logs is deliberately not
+covered yet.
+Language keys added to all 15 language files.
 Details in doc/en/changelog.txt.
 
 ============================================================

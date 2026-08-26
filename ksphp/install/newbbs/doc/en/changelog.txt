@@ -43,24 +43,48 @@ Target: bbs.php, sub/bbstree.php, sub/bbslog.php,
       skipped during unread reload ($isreadnew), where the loop's early
       break relies on newest-first ordering.
 
-  [4] Old logs (sub/bbslog.php: prtoldlog())
+  [4] Old logs (sub/bbslog.php: prtoldlog() / search result loop)
+      Old-log display order is driven by a radio group (name="so") on the
+      OLD LOG SEARCH FORM, NOT by the personal SORTORDER setting. It is
+      independent of the standard and tree views and never reads $this->c.
+
       Old-log files are written with fopen(..., "ab"), so the file itself
       is in oldest-first order, whereas the main log is newest-first. This
-      asymmetry is pre-existing behaviour.
+      asymmetry is pre-existing behaviour. Therefore:
+        so=0 (default) = no reversal = oldest first (pre-existing behaviour)
+        so=1           = reversal    = newest first
+      The radio labels must follow this mapping. (The first implementation
+      had the two labels swapped; corrected the same day.)
+
       The three message-level output paths
         - dat search hit
         - dat show-all
         - HTML search hit
-      now accumulate output in $sortbuf and print it array_reverse'd in
-      one go.
+      accumulate output in $sortbuf and print it array_reverse'd in one go.
+
+      When so=1 the per-file loop order ($files) is reversed as well, so a
+      multi-file result set reads newest to oldest throughout. Without it
+      the files would stay in ascending order while each file's contents
+      were descending. The download path handles a single file and is
+      unaffected.
+
       The HTML show-all path streams raw lines with no message boundaries;
       reversing line by line would corrupt the markup, so it stays on the
-      existing descending path for now, pending feedback.
+      existing path for now, pending feedback.
 
-  [5] Added three keys to language/*.txt (15 languages):
-      SORT_ORDER_LEGEND / SORT_ORDER_DESC_LABEL / SORT_ORDER_ASC_LABEL,
-      inserted directly after FOLLOW_SAME_PAGE_LABEL. UTF-8 without BOM
+  [5] Added keys to language/*.txt (15 languages). UTF-8 without BOM
       preserved.
+      Personal setting (standard and tree views):
+        SORT_ORDER_LEGEND / SORT_ORDER_DESC_LABEL / SORT_ORDER_ASC_LABEL,
+        inserted directly after FOLLOW_SAME_PAGE_LABEL.
+      Old-log search form:
+        OLDLOG_SORT_ORDER_LEGEND / OLDLOG_SORT_DESC_LABEL /
+        OLDLOG_SORT_ASC_LABEL, inserted directly after GZIP_SIMPLE_LABEL.
+      Post-form placeholders:
+        FORM_NAME_PLACEHOLDER ("name#trip" form) and
+        FORM_EMAIL_PLACEHOLDER, applied to the two name fields and the two
+        mail fields in template.html. The message textarea placeholder is
+        deliberately left as an empty string.
 
   [6] Added a two-option radio group to the personal settings in
       sub/template.html. The existing commented-out rt fieldset was left

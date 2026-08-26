@@ -40,23 +40,48 @@
       未読リロード時（$isreadnew）はループ内の早期 break が新しい順を
       前提としているため、反転を適用しない。
 
-  [4] 過去ログ（sub/bbslog.php: prtoldlog()）
+  [4] 過去ログ（sub/bbslog.php: prtoldlog() / prtsearchresult()）
+      過去ログの表示順は【個人設定 SORTORDER ではなく、過去ログ検索
+      フォームのラジオ（name="so"）】で都度指定する。標準画面・ツリーとは
+      独立しており、個人設定は参照しない。
+
       過去ログファイルは fopen(..., "ab") の追記書き込みのため、
       ファイル自体が古い順に並ぶ（メインログは新しい順）。
-      この非対称は従来からの仕様。
+      この非対称は従来からの仕様。よって
+        so=0（既定）＝反転なし＝古い順（＝従来どおりの動作）
+        so=1        ＝反転あり＝新しい順
+      となる。ラジオのラベルもこの対応に合わせてあること。
+      （初回実装時にラベルを逆に付ける誤りがあり、同日修正済み）
+
       メッセージ単位で出力している3経路
         ・dat検索ヒット
         ・dat全件表示
         ・HTML検索ヒット
       について、出力を $sortbuf に溜めて array_reverse してから
       まとめて print する方式に変更。
+
+      加えて so=1 のときは複数ファイルをまたぐ表示順も揃えるため、
+      ファイルのループ順（$files）自体も array_reverse する。
+      これがないと「ファイルは古い順だが各ファイル内は新しい順」という
+      ちぐはぐな並びになる。ダウンロード処理は単一ファイル対象のため
+      影響しない。
+
       HTML全件表示の経路は生の行をそのまま流しておりメッセージ境界を
       持たないため、行単位で反転するとHTMLが壊れる。よって当面
-      従来の降順のまま据え置きとし、フィードバックを待って対応する。
+      従来どおり据え置きとし、フィードバックを待って対応する。
 
-  [5] language/*.txt（15言語）に3キーを追加。
-      SORT_ORDER_LEGEND / SORT_ORDER_DESC_LABEL / SORT_ORDER_ASC_LABEL
-      挿入位置は FOLLOW_SAME_PAGE_LABEL の直後。BOM無しUTF-8を維持。
+  [5] language/*.txt（15言語）にキーを追加。BOM無しUTF-8を維持。
+      個人設定（標準画面・ツリー）用：
+        SORT_ORDER_LEGEND / SORT_ORDER_DESC_LABEL / SORT_ORDER_ASC_LABEL
+        挿入位置は FOLLOW_SAME_PAGE_LABEL の直後。
+      過去ログ検索フォーム用：
+        OLDLOG_SORT_ORDER_LEGEND / OLDLOG_SORT_DESC_LABEL /
+        OLDLOG_SORT_ASC_LABEL
+        挿入位置は GZIP_SIMPLE_LABEL の直後。
+      投稿フォームのプレースホルダ：
+        FORM_NAME_PLACEHOLDER（「名前#trip」形式）／FORM_EMAIL_PLACEHOLDER
+        template.html の name 欄2箇所・mail 欄2箇所に適用。本文欄
+        （textarea）の placeholder は空文字のまま維持すること。
 
   [6] sub/template.html の個人環境設定にラジオ2択を追加。
       既存のコメントアウト済み rt 用 fieldset には手を触れていない。

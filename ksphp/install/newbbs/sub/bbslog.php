@@ -295,6 +295,13 @@ class Getlog extends Webapp {
             }
         }
 
+        #20260826 Gikoneko: when so=1 (newest-first) reverse the per-file order
+        # as well, so the whole result set reads newest to oldest instead of
+        # newest-within-each-file but files still ascending. No-op when so is 0.
+        if (@$this->f['so']) {
+            $files = array_reverse($files);
+        }
+
         $this->sethttpheader();
         $customstyle= "  .sq { color: #{$this->c['C_QUERY']}; }\n";
         print $this->prthtmlhead ($this->c['BBSTITLE'] . ' ' . T('TITLE_OLDLOG_SEARCH_RESULTS'), '', $customstyle);
