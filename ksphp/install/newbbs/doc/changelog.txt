@@ -5,6 +5,18 @@ Timestamp format: ISO 8601 (minute precision), timezone UTC
   CHANGELOG_HANDOFF.txt)
 
 ============================================================
+2026-08-26 RC22 [20260826]
+------------------------------------------------------------
+Added a personal "Display order" setting (SORTORDER): newest-first
+(default) or oldest-first. Applies to the standard view, tree view and
+old logs; only the displayed window is reversed, never the whole log.
+SORTORDER is prepended to the $flags bit list so settings saved by RC21
+and earlier keep working unchanged (verified over all 256 values).
+The HTML show-all path in old logs is deliberately not covered yet.
+Three keys added to all 15 language files.
+Details in doc/en/changelog.txt.
+
+============================================================
 2026-08-21 RC22
 ------------------------------------------------------------
 bbs.php: archive.org URL linking; [^h] char-consumption bug fix;

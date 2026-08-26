@@ -5,6 +5,68 @@ Timestamp format: ISO 8601 (minute precision), timezone UTC
   CHANGELOG_HANDOFF.txt)
 
 ============================================================
+2026-08-26T00:00 UTC
+------------------------------------------------------------
+[RC22 [20260826]: personal setting for display order (ascending/descending)]
+Target: bbs.php, sub/bbstree.php, sub/bbslog.php,
+        sub/template.html, language/*.txt (15 languages)
+
+  [1] Added "Display order" to the personal settings (form name so,
+      setting name SORTORDER). 0 = newest posts first (default, existing
+      behaviour), 1 = oldest posts first.
+
+      The setting lives in the $flags bit-flag list in refcustom().
+      IMPORTANT: SORTORDER must be inserted at the FRONT of $flags.
+      The settings string is decoded with
+        str_pad(base_convert($strflag, 32, 2), count($flags), "0", STR_PAD_LEFT)
+      so index 0 maps to the most significant bit. Prepending leaves the
+      eight pre-existing flags on their original bits and defaults the new
+      one to 0 (existing behaviour); appending would shift every flag by
+      one and corrupt saved settings. Verified across all 256 eight-bit
+      settings values written by RC21 and earlier: every pre-existing flag
+      is preserved and SORTORDER reads 0. Also verified across all 512
+      nine-bit values that the encoded string still fits in two base-32
+      characters (max 1023).
+
+  [2] Standard view (bbs.php: getdispmessage())
+      array_reverse added AFTER the RELTYPE handling. Only the display
+      window ($logdatadisp) is reversed; the log is never re-read in full,
+      so memory use stays proportional to the display count. RELTYPE
+      itself is untouched, so users who already set rt=1 see no change.
+
+  [3] Tree view (sub/bbstree.php: prttreeview())
+      indexthreads() derives $newest[$tid] on the assumption that $logdata
+      is strictly newest-first, so $logdata itself is NOT reversed.
+      Instead, after indexthreads(), only the slice of $order (thread IDs)
+      inside the current display window is reversed via array_splice.
+      This keeps paging boundaries and $newest consistent. The reversal is
+      skipped during unread reload ($isreadnew), where the loop's early
+      break relies on newest-first ordering.
+
+  [4] Old logs (sub/bbslog.php: prtoldlog())
+      Old-log files are written with fopen(..., "ab"), so the file itself
+      is in oldest-first order, whereas the main log is newest-first. This
+      asymmetry is pre-existing behaviour.
+      The three message-level output paths
+        - dat search hit
+        - dat show-all
+        - HTML search hit
+      now accumulate output in $sortbuf and print it array_reverse'd in
+      one go.
+      The HTML show-all path streams raw lines with no message boundaries;
+      reversing line by line would corrupt the markup, so it stays on the
+      existing descending path for now, pending feedback.
+
+  [5] Added three keys to language/*.txt (15 languages):
+      SORT_ORDER_LEGEND / SORT_ORDER_DESC_LABEL / SORT_ORDER_ASC_LABEL,
+      inserted directly after FOLLOW_SAME_PAGE_LABEL. UTF-8 without BOM
+      preserved.
+
+  [6] Added a two-option radio group to the personal settings in
+      sub/template.html. The existing commented-out rt fieldset was left
+      untouched.
+
+============================================================
 2026-08-21T00:00 UTC
 ------------------------------------------------------------
 [RC22: archive.org URL linking; ttp→http conversion bug fixes]

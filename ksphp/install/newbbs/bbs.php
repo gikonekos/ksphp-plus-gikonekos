@@ -50,7 +50,7 @@ if (file_exists($ksphp_local_secrets_file)) {
 unset($ksphp_local_secrets_file, $ksphp_local_secrets);
 
 // Version (for copyright notice)
-$CONF['VERSION'] = '擬古猫+RC21 [20260817] (Heyuri, ヶ, ＠Links, 擬古猫)';
+$CONF['VERSION'] = '擬古猫+RC22 [20260826] (Heyuri, ヶ, ＠Links, 擬古猫)';
 
 // Internal build identifier (matches the distribution zip filename, minus the
 // .zip extension: {name}(-rcN)?-{ISO date}-{NN}). $CONF['VERSION'] above is a
@@ -1353,6 +1353,8 @@ function tripuse($key) {
         $this->c['LINKOFF'] = 0;
         $this->c['HIDEFORM'] = 0;
         $this->c['RELTYPE'] = 0;
+        #20260826 Gikoneko: display-window sort order (0 = descending, existing behaviour)
+        $this->c['SORTORDER'] = 0;
         if (!isset($this->c['SHOWIMG'])) {
             $this->c['SHOWIMG'] = 0;
         }
@@ -1369,6 +1371,14 @@ function tripuse($key) {
             'C_A_HOVER',
         );
         $flags = array(
+            #20260826 Gikoneko: SORTORDER must stay at the FRONT of this array.
+            # The settings string is decoded with str_pad(..., count($flags),
+            # "0", STR_PAD_LEFT), so index 0 is the most significant bit.
+            # Prepending leaves every pre-existing flag on its original bit and
+            # defaults the new one to 0; appending would shift them all by one
+            # and silently corrupt saved settings. Verified against 8-bit
+            # cookies written by RC21 and earlier.
+            'SORTORDER',
             'GZIPU',
             'RELTYPE',
             'AUTOLINK',
@@ -1420,6 +1430,7 @@ function tripuse($key) {
             if (@$this->f['m'] == 'c') {
                 @$this->f['fw'] ? $this->c['FOLLOWWIN'] = 1 : $this->c['FOLLOWWIN'] = 0;
                 @$this->f['rt'] ? $this->c['RELTYPE'] = 1 : $this->c['RELTYPE'] = 0;
+                @$this->f['so'] ? $this->c['SORTORDER'] = 1 : $this->c['SORTORDER'] = 0;
                 @$this->f['cookie'] ? $this->c['COOKIE'] = 1 : $this->c['COOKIE'] = 0;
 
                 // 2026-08-01 Gikoneko: 「個人環境設定」内JS設定セクション。
@@ -1832,6 +1843,14 @@ $msgmore = ob_get_clean();
         if ($this->c['RELTYPE'] and (@$this->f['readnew'] or ($msgdisp == '0' and $bindex == 0))) {
             $logdatadisp = array_reverse($logdatadisp);
         }
+        #20260826 Gikoneko: ascending/descending toggle for the displayed window
+        # only (personal setting SORTORDER). Applied after RELTYPE so existing
+        # behaviour is untouched when SORTORDER is 0; reverses just the buffered
+        # display window, never the whole log, so memory use stays bounded by
+        # the display count.
+        if ($this->c['SORTORDER']) {
+            $logdatadisp = array_reverse($logdatadisp);
+        }
         $this->s['TOPPOSTID'] = $toppostid;
         $this->s['MSGDISP'] = $msgdisp;
         $this->t->addGlobalVars(array(
@@ -2168,6 +2187,10 @@ $msgmore = ob_get_clean();
             : $this->t->addVar('custom', 'CHK_FW_0', ' checked="checked"');
         $this->c['RELTYPE'] ? $this->t->addVar('custom', 'CHK_RT_1', ' checked="checked"')
             : $this->t->addVar('custom', 'CHK_RT_0', ' checked="checked"');
+
+        #20260826 Gikoneko: display-window sort order radio
+        $this->c['SORTORDER'] ? $this->t->addVar('custom', 'CHK_SO_1', ' checked="checked"')
+            : $this->t->addVar('custom', 'CHK_SO_0', ' checked="checked"');
 
         // 2026-08-01 Gikoneko: 「個人環境設定」内JS設定セクション。
         // cookie 'ksphp_js' の現在値を読み、フォームのチェック状態/数値欄

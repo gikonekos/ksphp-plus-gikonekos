@@ -422,6 +422,14 @@ class Getlog extends Webapp {
             $msgmode = 1;
         }
         $resultcount = 0;
+        #20260826 Gikoneko: ascending order for old logs (personal setting
+        # SORTORDER). Buffers only the message-level output paths (dat search,
+        # dat show-all, HTML search) and reverses them just before printing.
+        # The HTML show-all path further down streams raw lines that carry no
+        # message boundaries, so reversing there would corrupt the markup; it
+        # is intentionally left on the existing descending path.
+        # FALSE = buffering disabled, i.e. print straight through as before.
+        $sortbuf = $this->c['SORTORDER'] ? array() : FALSE;
 
         # dat search
         if ($this->c['OLDLOGFMT']) {
@@ -452,7 +460,12 @@ class Getlog extends Webapp {
                                 $prtmessage = preg_replace("/((?:\G|>)[^<]*?)($quoteq)/", "$1<span class=\"sq\"><mark>$2</mark></span>", $prtmessage);
                             }
                         }
-                        print $prtmessage;
+                        if ($sortbuf !== FALSE) {
+                            $sortbuf[] = $prtmessage;
+                        }
+                        else {
+                            print $prtmessage;
+                        }
                         $resultcount++;
                     }
                     # End of search
@@ -465,7 +478,12 @@ class Getlog extends Webapp {
             else {
                 while (($logline = Func::fgetline($fh)) !== FALSE) {
                     $messagestr = $this->prtmessage($this->getmessage($logline), $msgmode, $filename);
-                    print $messagestr;
+                    if ($sortbuf !== FALSE) {
+                        $sortbuf[] = $messagestr;
+                    }
+                    else {
+                        print $messagestr;
+                    }
                 }
             }
         }
@@ -507,7 +525,12 @@ class Getlog extends Webapp {
                                         $buffer = preg_replace("/((?:\G|>)[^<]*?)($quoteq)/", "$1<span class=\"sq\"><mark>$2</mark></span>", $buffer);
                                     }
                                 }
-                                print $buffer;
+                                if ($sortbuf !== FALSE) {
+                                    $sortbuf[] = $buffer;
+                                }
+                                else {
+                                    print $buffer;
+                                }
                                 $resultcount++;
                             }
                             else if ($result == 2) {
@@ -531,6 +554,12 @@ class Getlog extends Webapp {
                     print $htmlline;
                 }
             }
+        }
+        #20260826 Gikoneko: emit the buffered messages in reverse (oldest-first
+        # logs become newest-first). No-op when SORTORDER is 0.
+        if ($sortbuf !== FALSE and $sortbuf) {
+            print implode('', array_reverse($sortbuf));
+            $sortbuf = array();
         }
         flock ($fh, 3);
         fclose ($fh);

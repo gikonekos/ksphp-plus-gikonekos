@@ -200,6 +200,20 @@ class Treeview extends Bbs {
         #with single-pass indexing.
         list($order, $buckets, $newest) = $this->indexthreads($logdata);
 
+        #20260826 Gikoneko: ascending/descending toggle (so). Reverses only the
+        # thread order inside the current display window, so paging boundaries
+        # and $newest[] stay intact ($logdata itself must remain newest-first,
+        # because indexthreads() relies on that to derive $newest). Skipped
+        # during unread reload, where the loop below relies on newest-first
+        # order for its early break.
+        if ($this->c['SORTORDER'] and !$isreadnew and $this->s['MSGDISP'] > 0) {
+            $winstart = ($bindex > 1) ? $bindex - 1 : 0;
+            $window = array_slice($order, $winstart, $this->s['MSGDISP']);
+            if (count($window) > 1) {
+                array_splice($order, $winstart, count($window), array_reverse($window));
+            }
+        }
+
         # Process in order of threads with the latest post time
         foreach ($order as $tid) {
 
