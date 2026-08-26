@@ -422,8 +422,11 @@ class Getlog extends Webapp {
             $msgmode = 1;
         }
         $resultcount = 0;
-        #20260826 Gikoneko: ascending order for old logs (search form radio
-        # name so; 1 = oldest first). Buffers only the message-level output paths (dat search,
+        #20260826 Gikoneko: sort order for old logs (search form radio name so).
+        # Old-log files are append-only, so the file itself is oldest-first.
+        # so=0 (default) prints straight through = oldest-first, i.e. the
+        # pre-existing behaviour. so=1 buffers and reverses = newest-first.
+        # Buffers only the message-level output paths (dat search,
         # dat show-all, HTML search) and reverses them just before printing.
         # The HTML show-all path further down streams raw lines that carry no
         # message boundaries, so reversing there would corrupt the markup; it
@@ -556,7 +559,7 @@ class Getlog extends Webapp {
             }
         }
         #20260826 Gikoneko: emit the buffered messages in reverse (oldest-first
-        # logs become newest-first). No-op when SORTORDER is 0.
+        # logs become newest-first). No-op when so is 0.
         if ($sortbuf !== FALSE and $sortbuf) {
             print implode('', array_reverse($sortbuf));
             $sortbuf = array();
